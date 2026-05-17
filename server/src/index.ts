@@ -1,11 +1,26 @@
+import { Storage } from '@google-cloud/storage';
 import { loadConfig } from './config.js';
 import { createServer } from './createServer.js';
+import { createGcsFilesAdapter, type StorageLike } from './gcsFilesAdapter.js';
 import { createVertexAuth } from './vertexAuth.js';
 
 const config = loadConfig();
 const vertexAuth = config.backendFlavor === 'vertex' ? createVertexAuth() : undefined;
-const server = createServer(config, { vertexAuth });
+const gcsFilesAdapter =
+  config.backendFlavor === 'vertex' && config.gcs
+    ? createGcsFilesAdapter({
+        storage: new Storage() as unknown as StorageLike,
+        config: config.gcs,
+      })
+    : undefined;
+const server = createServer(config, { vertexAuth, gcsFilesAdapter });
 
 server.listen(config.port, '0.0.0.0', () => {
-  console.log(`API server listening on port ${config.port} (backend: ${config.backendFlavor})`);
+  const featureFlags = [
+    `backend: ${config.backendFlavor}`,
+    config.backendFlavor === 'vertex' && config.gcs ? `gcs-files: ${config.gcs.bucketName}` : null,
+  ]
+    .filter(Boolean)
+    .join(', ');
+  console.log(`API server listening on port ${config.port} (${featureFlags})`);
 });

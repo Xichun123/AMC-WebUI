@@ -1,9 +1,51 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createServer, readMacOsClipboardPng } from './createServer';
+import { createGcsFilesAdapter, type StorageLike } from './gcsFilesAdapter';
 import type { AddressInfo } from 'node:net';
 import http from 'node:http';
 import { Buffer } from 'node:buffer';
+
+function createInMemoryAdapter() {
+  const files = new Map<string, { data: Buffer; contentType: string; metadata: Record<string, string> }>();
+  const storage: StorageLike = {
+    bucket: (bucketName: string) => ({
+      file: (path: string) => {
+        const key = `${bucketName}/${path}`;
+        return {
+          save: async (data: Buffer, options) => {
+            files.set(key, {
+              data,
+              contentType: options.metadata?.contentType ?? options.contentType ?? 'application/octet-stream',
+              metadata: options.metadata?.metadata ?? {},
+            });
+          },
+          getMetadata: async () => {
+            const f = files.get(key);
+            if (!f) throw new Error('not found');
+            return [
+              {
+                size: f.data.byteLength,
+                contentType: f.contentType,
+                metadata: f.metadata,
+                timeCreated: '2026-05-18T00:00:00.000Z',
+                updated: '2026-05-18T00:00:00.000Z',
+              },
+            ];
+          },
+          exists: async () => [files.has(key)],
+        };
+      },
+    }),
+  };
+
+  return createGcsFilesAdapter({
+    storage,
+    config: { bucketName: 'test-bucket', objectPrefix: 'amc-files/', maxFileBytes: 1024 * 1024 },
+    randomId: () => 'test-id',
+    now: () => new Date('2026-05-18T12:00:00.000Z'),
+  });
+}
 
 async function startHttpServer(server: http.Server): Promise<{ baseUrl: string; close: () => Promise<void> }> {
   await new Promise<void>((resolve, reject) => {
@@ -506,6 +548,179 @@ describe('createServer', () => {
 
       expect(response.status).toBe(500);
       expect(body.error).toMatch(/Vertex auth provider/);
+    });
+  });
+
+  describe('vertex backend with GCS files adapter', () => {
+    it('returns 503 for Files API routes when adapter is not configured', async () => {
+      const vertexAuth = { getAccessToken: vi.fn(async () => 'access-token') };
+      const app = createServer(
+        {
+          geminiApiBase: 'https://example.test',
+          geminiApiKey: '',
+          backendFlavor: 'vertex',
+          vertex: { projectId: 'p', location: 'us-central1' },
+        },
+        { vertexAuth },
+      );
+      const started = await startHttpServer(app);
+      cleanupCallbacks.push(started.close);
+
+      const response = await fetch(`${started.baseUrl}/api/gemini/upload/v1beta/files`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ file: { displayName: 'a', mimeType: 'text/plain', sizeBytes: '1' } }),
+      });
+
+      expect(response.status).toBe(503);
+    });
+
+    it('initiate → chunk → finalize → metadata flow returns AI-Studio shaped File', async () => {
+      const vertexAuth = { getAccessToken: vi.fn(async () => 'tok') };
+      const adapter = createInMemoryAdapter();
+      const app = createServer(
+        {
+          geminiApiBase: 'https://example.test',
+          geminiApiKey: '',
+          backendFlavor: 'vertex',
+          vertex: { projectId: 'p', location: 'us-central1' },
+        },
+        { vertexAuth, gcsFilesAdapter: adapter },
+      );
+      const started = await startHttpServer(app);
+      cleanupCallbacks.push(started.close);
+
+      const initiate = await fetch(`${started.baseUrl}/api/gemini/upload/v1beta/files`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          file: { displayName: 'doc.bin', mimeType: 'application/octet-stream', sizeBytes: '6' },
+        }),
+      });
+      expect(initiate.status).toBe(200);
+      const uploadUrl = initiate.headers.get('x-goog-upload-url');
+      expect(uploadUrl).toMatch(/__gcs-upload-chunk__\//);
+
+      const sessionId = uploadUrl!.split('/').pop()!;
+
+      const firstChunk = await fetch(`${started.baseUrl}/api/gemini/__gcs-upload-chunk__/${sessionId}`, {
+        method: 'POST',
+        headers: { 'x-goog-upload-offset': '0', 'x-goog-upload-command': 'upload' },
+        body: Buffer.from('foo'),
+      });
+      expect(firstChunk.status).toBe(200);
+      expect(firstChunk.headers.get('x-goog-upload-status')).toBe('active');
+
+      const finalChunk = await fetch(`${started.baseUrl}/api/gemini/__gcs-upload-chunk__/${sessionId}`, {
+        method: 'POST',
+        headers: { 'x-goog-upload-offset': '3', 'x-goog-upload-command': 'upload, finalize' },
+        body: Buffer.from('bar'),
+      });
+      expect(finalChunk.status).toBe(200);
+      expect(finalChunk.headers.get('x-goog-upload-status')).toBe('final');
+      const finalBody = (await finalChunk.json()) as { file: { name: string; uri: string; state: string } };
+      expect(finalBody.file.name).toBe('files/test-id');
+      expect(finalBody.file.uri).toBe('https://generativelanguage.googleapis.com/v1beta/files/test-id');
+      expect(finalBody.file.state).toBe('ACTIVE');
+
+      const meta = await fetch(`${started.baseUrl}/api/gemini/v1beta/files/test-id`);
+      expect(meta.status).toBe(200);
+      const metaBody = (await meta.json()) as { name: string; state: string };
+      expect(metaBody.name).toBe('files/test-id');
+      expect(metaBody.state).toBe('ACTIVE');
+    });
+
+    it('rewrites AI Studio file URIs in generateContent body to gs:// URIs', async () => {
+      const capturedRequests: Array<{ url: string; body: string }> = [];
+      const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const body =
+          init?.body instanceof Uint8Array ? Buffer.from(init.body).toString('utf8') : String(init?.body ?? '');
+        capturedRequests.push({ url: String(input), body });
+        return new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } });
+      });
+      const vertexAuth = { getAccessToken: vi.fn(async () => 'tok') };
+      const adapter = createInMemoryAdapter();
+      const app = createServer(
+        {
+          geminiApiBase: 'https://example.test',
+          geminiApiKey: '',
+          backendFlavor: 'vertex',
+          vertex: { projectId: 'p', location: 'us-central1' },
+        },
+        { fetchImpl, vertexAuth, gcsFilesAdapter: adapter },
+      );
+      const started = await startHttpServer(app);
+      cleanupCallbacks.push(started.close);
+
+      const requestBody = {
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                fileData: {
+                  mimeType: 'image/png',
+                  fileUri: 'https://generativelanguage.googleapis.com/v1beta/files/abc-123',
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      const response = await fetch(`${started.baseUrl}/api/gemini/v1beta/models/gemini-2.5-flash:generateContent`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      });
+
+      expect(response.status).toBe(200);
+      expect(capturedRequests).toHaveLength(1);
+      expect(capturedRequests[0].body).toContain('"fileUri":"gs://test-bucket/amc-files/abc-123"');
+      expect(capturedRequests[0].body).not.toContain('generativelanguage.googleapis.com');
+    });
+
+    it('returns 400 when initiate metadata is malformed', async () => {
+      const vertexAuth = { getAccessToken: vi.fn() };
+      const adapter = createInMemoryAdapter();
+      const app = createServer(
+        {
+          geminiApiBase: 'https://example.test',
+          geminiApiKey: '',
+          backendFlavor: 'vertex',
+          vertex: { projectId: 'p', location: 'us-central1' },
+        },
+        { vertexAuth, gcsFilesAdapter: adapter },
+      );
+      const started = await startHttpServer(app);
+      cleanupCallbacks.push(started.close);
+
+      const response = await fetch(`${started.baseUrl}/api/gemini/upload/v1beta/files`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: '{"file":{"displayName":"a"}}',
+      });
+
+      expect(response.status).toBe(400);
+    });
+
+    it('returns 404 for unknown file metadata', async () => {
+      const vertexAuth = { getAccessToken: vi.fn() };
+      const adapter = createInMemoryAdapter();
+      const app = createServer(
+        {
+          geminiApiBase: 'https://example.test',
+          geminiApiKey: '',
+          backendFlavor: 'vertex',
+          vertex: { projectId: 'p', location: 'us-central1' },
+        },
+        { vertexAuth, gcsFilesAdapter: adapter },
+      );
+      const started = await startHttpServer(app);
+      cleanupCallbacks.push(started.close);
+
+      const response = await fetch(`${started.baseUrl}/api/gemini/v1beta/files/missing-id`);
+      expect(response.status).toBe(404);
     });
   });
 });

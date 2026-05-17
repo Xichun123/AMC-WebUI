@@ -6,6 +6,7 @@ import type { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { ApiServerConfig } from './config.js';
+import type { GcsFilesAdapter } from './gcsFilesAdapter.js';
 import type { VertexAccessTokenProvider } from './vertexAuth.js';
 import { rewriteToVertex } from './vertexPathRewriter.js';
 
@@ -14,6 +15,11 @@ const IMAGE_PROXY_PATH = '/api/image-proxy';
 const LOCAL_CLIPBOARD_IMAGE_PATH = '/api/local-clipboard-image';
 const MAX_IMAGE_PROXY_BYTES = 25 * 1024 * 1024;
 const MAX_LOCAL_CLIPBOARD_IMAGE_BYTES = 25 * 1024 * 1024;
+const MAX_REWRITE_BODY_BYTES = 50 * 1024 * 1024;
+const MAX_INITIATE_BODY_BYTES = 64 * 1024;
+const GCS_UPLOAD_INITIATE_PATH = '/upload/v1beta/files';
+const GCS_UPLOAD_CHUNK_PATTERN = /^\/__gcs-upload-chunk__\/([\w-]+)$/;
+const GCS_FILE_METADATA_PATTERN = /^\/v\d+(?:beta\d*|alpha\d*)?\/files\/([\w-]+)$/;
 const PNG_HEX_PREFIX = '89504e470d0a1a0a';
 const MACOS_CLIPBOARD_PNG_SCRIPT = `
 (() => {
@@ -51,6 +57,7 @@ interface CreateServerDependencies {
   fetchImpl?: typeof fetch;
   readLocalClipboardImage?: () => Promise<LocalClipboardImage | null>;
   vertexAuth?: VertexAccessTokenProvider;
+  gcsFilesAdapter?: GcsFilesAdapter;
 }
 
 interface LocalClipboardImage {
@@ -66,7 +73,7 @@ type ExecFileAsync = (
 ) => Promise<{ stdout: string; stderr: string }>;
 
 type CreateServerConfig = Pick<ApiServerConfig, 'geminiApiBase' | 'geminiApiKey'> &
-  Partial<Pick<ApiServerConfig, 'allowedOrigins' | 'backendFlavor' | 'vertex'>>;
+  Partial<Pick<ApiServerConfig, 'allowedOrigins' | 'backendFlavor' | 'vertex' | 'gcs'>>;
 
 interface ResolvedServerConfig extends CreateServerConfig {
   allowedOrigins: string[];
@@ -399,18 +406,258 @@ function buildProxyResponseHeaders(
   return responseHeaders;
 }
 
+async function readBufferedBody(request: IncomingMessage, maxBytes: number): Promise<Buffer> {
+  return await new Promise<Buffer>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let received = 0;
+    let aborted = false;
+
+    const onData = (chunk: Buffer) => {
+      if (aborted) {
+        return;
+      }
+
+      received += chunk.byteLength;
+      if (received > maxBytes) {
+        aborted = true;
+        request.off('data', onData);
+        request.off('end', onEnd);
+        request.off('error', onError);
+        reject(new RequestBodyTooLargeError(maxBytes));
+        return;
+      }
+
+      chunks.push(chunk);
+    };
+
+    const onEnd = () => {
+      if (!aborted) {
+        resolve(Buffer.concat(chunks));
+      }
+    };
+
+    const onError = (error: unknown) => {
+      if (!aborted) {
+        aborted = true;
+        reject(error instanceof Error ? error : new Error(String(error)));
+      }
+    };
+
+    request.on('data', onData);
+    request.on('end', onEnd);
+    request.on('error', onError);
+  });
+}
+
+class RequestBodyTooLargeError extends Error {
+  constructor(limit: number) {
+    super(`Request body exceeds ${limit} bytes.`);
+    this.name = 'RequestBodyTooLargeError';
+  }
+}
+
+interface InitiateUploadMetadata {
+  displayName: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+function parseInitiateUploadMetadata(body: Buffer): InitiateUploadMetadata | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body.toString('utf8'));
+  } catch {
+    return null;
+  }
+
+  if (!parsed || typeof parsed !== 'object') {
+    return null;
+  }
+
+  const fileWrapper = (parsed as { file?: unknown }).file;
+  const fileRecord = (typeof fileWrapper === 'object' && fileWrapper !== null ? fileWrapper : parsed) as {
+    displayName?: unknown;
+    display_name?: unknown;
+    mimeType?: unknown;
+    mime_type?: unknown;
+    sizeBytes?: unknown;
+    size_bytes?: unknown;
+  };
+
+  const displayName = typeof fileRecord.displayName === 'string' ? fileRecord.displayName : fileRecord.display_name;
+  const mimeType = typeof fileRecord.mimeType === 'string' ? fileRecord.mimeType : fileRecord.mime_type;
+  const rawSize = typeof fileRecord.sizeBytes !== 'undefined' ? fileRecord.sizeBytes : fileRecord.size_bytes;
+  const sizeBytes =
+    typeof rawSize === 'number' ? rawSize : Number.parseInt(typeof rawSize === 'string' ? rawSize : '', 10);
+
+  if (typeof displayName !== 'string' || typeof mimeType !== 'string' || !Number.isFinite(sizeBytes)) {
+    return null;
+  }
+
+  return { displayName, mimeType, sizeBytes };
+}
+
+function readHeader(request: IncomingMessage, name: string): string | undefined {
+  const value = request.headers[name.toLowerCase()];
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+  return value;
+}
+
+async function handleGcsFilesRequest(
+  request: IncomingMessage,
+  response: ServerResponse,
+  upstreamPath: string,
+  adapter: GcsFilesAdapter,
+  allowedOrigins: string[],
+): Promise<boolean> {
+  const method = request.method || 'GET';
+  const corsHeaders = getCorsHeaders(request, allowedOrigins);
+
+  if (
+    method === 'POST' &&
+    (upstreamPath === GCS_UPLOAD_INITIATE_PATH || upstreamPath === `${GCS_UPLOAD_INITIATE_PATH}/`)
+  ) {
+    let bodyBuffer: Buffer;
+    try {
+      bodyBuffer = await readBufferedBody(request, MAX_INITIATE_BODY_BYTES);
+    } catch (error) {
+      const status = error instanceof RequestBodyTooLargeError ? 413 : 400;
+      sendJson(request, response, status, { error: 'Failed to read initiate body.' }, allowedOrigins);
+      return true;
+    }
+
+    const metadata = parseInitiateUploadMetadata(bodyBuffer);
+    if (!metadata) {
+      sendJson(request, response, 400, { error: 'Invalid file metadata in upload initiate request.' }, allowedOrigins);
+      return true;
+    }
+
+    let initiated: ReturnType<GcsFilesAdapter['initiateUpload']>;
+    try {
+      initiated = adapter.initiateUpload(metadata);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown initiate error';
+      sendJson(request, response, 413, { error: message }, allowedOrigins);
+      return true;
+    }
+
+    response.writeHead(200, {
+      ...corsHeaders,
+      'x-goog-upload-url': initiated.uploadUrl,
+      'x-goog-upload-status': 'active',
+      'content-type': 'application/json; charset=utf-8',
+    });
+    response.end('{}');
+    return true;
+  }
+
+  const chunkMatch = GCS_UPLOAD_CHUNK_PATTERN.exec(upstreamPath);
+  if (method === 'POST' && chunkMatch) {
+    const sessionId = chunkMatch[1];
+    const offsetHeader = readHeader(request, 'x-goog-upload-offset');
+    const commandHeader = readHeader(request, 'x-goog-upload-command');
+    const offset = Number.parseInt(offsetHeader ?? '', 10);
+    if (!Number.isFinite(offset) || offset < 0 || !commandHeader) {
+      sendJson(request, response, 400, { error: 'Missing or invalid upload offset/command headers.' }, allowedOrigins);
+      return true;
+    }
+
+    let chunk: Buffer;
+    try {
+      chunk = await readBufferedBody(request, MAX_REWRITE_BODY_BYTES);
+    } catch (error) {
+      const status = error instanceof RequestBodyTooLargeError ? 413 : 400;
+      sendJson(request, response, status, { error: 'Upload chunk exceeded size limit.' }, allowedOrigins);
+      return true;
+    }
+
+    let result: Awaited<ReturnType<GcsFilesAdapter['uploadChunk']>>;
+    try {
+      result = await adapter.uploadChunk({ sessionId, offset, command: commandHeader, chunk });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown chunk upload error';
+      sendJson(request, response, 400, { error: message }, allowedOrigins);
+      return true;
+    }
+
+    if (result.file) {
+      response.writeHead(200, {
+        ...corsHeaders,
+        'x-goog-upload-status': 'final',
+        'content-type': 'application/json; charset=utf-8',
+      });
+      response.end(JSON.stringify({ file: result.file }));
+      return true;
+    }
+
+    response.writeHead(200, { ...corsHeaders, 'x-goog-upload-status': 'active' });
+    response.end();
+    return true;
+  }
+
+  const getMatch = GCS_FILE_METADATA_PATTERN.exec(upstreamPath);
+  if (method === 'GET' && getMatch) {
+    const fileId = getMatch[1];
+    const metadata = await adapter.getFileMetadata(fileId);
+    if (!metadata) {
+      sendJson(request, response, 404, { error: 'File not found.' }, allowedOrigins);
+      return true;
+    }
+    sendJson(request, response, 200, metadata as unknown as Record<string, unknown>, allowedOrigins);
+    return true;
+  }
+
+  return false;
+}
+
 async function proxyGeminiRequest(
   request: IncomingMessage,
   response: ServerResponse,
   config: ResolvedServerConfig,
   fetchImpl: typeof fetch,
   vertexAuth: VertexAccessTokenProvider | undefined,
+  gcsFilesAdapter: GcsFilesAdapter | undefined,
 ): Promise<void> {
   const requestUrl = new URL(request.url || '/', 'http://localhost');
   const upstreamPath = requestUrl.pathname.slice(GEMINI_PROXY_PREFIX.length) || '/';
 
+  if (config.backendFlavor === 'vertex') {
+    const looksLikeFilesRoute =
+      upstreamPath === GCS_UPLOAD_INITIATE_PATH ||
+      upstreamPath === `${GCS_UPLOAD_INITIATE_PATH}/` ||
+      GCS_UPLOAD_CHUNK_PATTERN.test(upstreamPath) ||
+      GCS_FILE_METADATA_PATTERN.test(upstreamPath);
+
+    if (looksLikeFilesRoute) {
+      if (!gcsFilesAdapter) {
+        sendJson(
+          request,
+          response,
+          503,
+          { error: 'GCS Files adapter is not configured; set GCS_BUCKET to enable Files API in vertex mode.' },
+          config.allowedOrigins,
+        );
+        return;
+      }
+
+      const handled = await handleGcsFilesRequest(
+        request,
+        response,
+        upstreamPath,
+        gcsFilesAdapter,
+        config.allowedOrigins,
+      );
+      if (handled) {
+        return;
+      }
+    }
+  }
+
   let upstreamUrl: string;
   let auth: ProxyAuth;
+  let isModelInvocation = false;
 
   if (config.backendFlavor === 'vertex') {
     if (!config.vertex) {
@@ -439,6 +686,7 @@ async function proxyGeminiRequest(
 
     const rewritten = rewriteToVertex(upstreamPath, requestUrl.search, config.vertex);
     upstreamUrl = rewritten.url;
+    isModelInvocation = rewritten.isModelInvocation;
     auth = { kind: 'bearer', accessToken };
   } else {
     const apiKeyForProxy = resolveRequestApiKey(request, config.geminiApiKey);
@@ -467,7 +715,35 @@ async function proxyGeminiRequest(
     signal: abortController.signal,
   };
 
-  if (hasBody) {
+  const shouldRewriteBody =
+    hasBody && config.backendFlavor === 'vertex' && gcsFilesAdapter !== undefined && isModelInvocation;
+
+  if (shouldRewriteBody) {
+    let bodyBuffer: Buffer;
+    try {
+      bodyBuffer = await readBufferedBody(request, MAX_REWRITE_BODY_BYTES);
+    } catch (error) {
+      if (error instanceof RequestBodyTooLargeError) {
+        sendJson(
+          request,
+          response,
+          413,
+          { error: `Request body exceeds ${MAX_REWRITE_BODY_BYTES} bytes; cannot rewrite file URIs.` },
+          config.allowedOrigins,
+        );
+        return;
+      }
+      const message = error instanceof Error ? error.message : 'Failed to read request body.';
+      sendJson(request, response, 400, { error: message }, config.allowedOrigins);
+      return;
+    }
+
+    const rewrittenBody = gcsFilesAdapter.rewriteFileUriInJsonBody(bodyBuffer);
+    const rewrittenBodyView = new Uint8Array(rewrittenBody.buffer, rewrittenBody.byteOffset, rewrittenBody.byteLength);
+    requestInit.body = rewrittenBodyView as unknown as BodyInit;
+    requestInit.headers = new Headers(requestInit.headers);
+    (requestInit.headers as Headers).set('content-length', String(rewrittenBody.byteLength));
+  } else if (hasBody) {
     requestInit.body = request as unknown as BodyInit;
     requestInit.duplex = 'half';
   }
@@ -527,6 +803,7 @@ export function createServer(config: CreateServerConfig, dependencies: CreateSer
   const fetchImpl = dependencies.fetchImpl ?? fetch;
   const readLocalClipboardImage = dependencies.readLocalClipboardImage ?? readMacOsClipboardPng;
   const vertexAuth = dependencies.vertexAuth;
+  const gcsFilesAdapter = dependencies.gcsFilesAdapter;
 
   return http.createServer(async (request, response) => {
     try {
@@ -577,7 +854,7 @@ export function createServer(config: CreateServerConfig, dependencies: CreateSer
       }
 
       if (path === GEMINI_PROXY_PREFIX || path.startsWith(`${GEMINI_PROXY_PREFIX}/`)) {
-        await proxyGeminiRequest(request, response, resolvedConfig, fetchImpl, vertexAuth);
+        await proxyGeminiRequest(request, response, resolvedConfig, fetchImpl, vertexAuth, gcsFilesAdapter);
         return;
       }
 

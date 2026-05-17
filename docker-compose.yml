@@ -15,6 +15,11 @@ services:
       # When GEMINI_BACKEND=vertex, place the Service Account JSON at ./secrets/sa.json on the host
       # and set GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/sa.json.
       GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
+      # Stage 2 — GCS-backed Files API (Vertex mode only). Set GCS_BUCKET to enable file upload.
+      # The SA must hold roles/storage.objectUser on the bucket.
+      GCS_BUCKET: ${GCS_BUCKET:-}
+      GCS_OBJECT_PREFIX: ${GCS_OBJECT_PREFIX:-amc-files/}
+      GCS_MAX_FILE_BYTES: ${GCS_MAX_FILE_BYTES:-104857600}
     volumes:
       - ./secrets:/run/secrets:ro
     expose:

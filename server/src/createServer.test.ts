@@ -411,4 +411,101 @@ describe('createServer', () => {
     expect(image?.fileName).toBe('clipboard-image.png');
     expect(image?.data.equals(pngBytes)).toBe(true);
   });
+
+  describe('vertex backend', () => {
+    it('rewrites host, path, and headers to the Vertex publisher endpoint', async () => {
+      const fetchImpl = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => {
+        return new Response('vertex-ok', { status: 200 });
+      });
+      const vertexAuth = { getAccessToken: vi.fn(async () => 'access-token-123') };
+      const app = createServer(
+        {
+          geminiApiBase: 'https://example.test',
+          geminiApiKey: '',
+          backendFlavor: 'vertex',
+          vertex: { projectId: 'my-proj', location: 'us-central1' },
+        },
+        { fetchImpl, vertexAuth },
+      );
+      const started = await startHttpServer(app);
+      cleanupCallbacks.push(started.close);
+
+      const response = await fetch(
+        `${started.baseUrl}/api/gemini/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse`,
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ contents: [] }),
+        },
+      );
+
+      expect(response.status).toBe(200);
+      expect(vertexAuth.getAccessToken).toHaveBeenCalledTimes(1);
+
+      const [url, init] = fetchImpl.mock.calls[0];
+      expect(String(url)).toBe(
+        'https://us-central1-aiplatform.googleapis.com/v1/projects/my-proj/locations/us-central1/publishers/google/models/gemini-2.5-flash:streamGenerateContent?alt=sse',
+      );
+      expect(init?.headers).toBeInstanceOf(Headers);
+      const headers = init?.headers as Headers;
+      expect(headers.get('authorization')).toBe('Bearer access-token-123');
+      expect(headers.get('x-goog-api-key')).toBeNull();
+    });
+
+    it('returns 500 when access token retrieval fails', async () => {
+      const fetchImpl = vi.fn();
+      const vertexAuth = {
+        getAccessToken: vi.fn(async () => {
+          throw new Error('credential file missing');
+        }),
+      };
+      const app = createServer(
+        {
+          geminiApiBase: 'https://example.test',
+          geminiApiKey: '',
+          backendFlavor: 'vertex',
+          vertex: { projectId: 'my-proj', location: 'us-central1' },
+        },
+        { fetchImpl, vertexAuth },
+      );
+      const started = await startHttpServer(app);
+      cleanupCallbacks.push(started.close);
+
+      const response = await fetch(`${started.baseUrl}/api/gemini/v1beta/models/gemini-2.5-flash:generateContent`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: '{}',
+      });
+      const body = (await response.json()) as Record<string, unknown>;
+
+      expect(response.status).toBe(500);
+      expect(body.error).toMatch(/credential file missing/);
+      expect(fetchImpl).not.toHaveBeenCalled();
+    });
+
+    it('returns 500 when vertexAuth dependency is missing', async () => {
+      const fetchImpl = vi.fn();
+      const app = createServer(
+        {
+          geminiApiBase: 'https://example.test',
+          geminiApiKey: '',
+          backendFlavor: 'vertex',
+          vertex: { projectId: 'my-proj', location: 'us-central1' },
+        },
+        { fetchImpl },
+      );
+      const started = await startHttpServer(app);
+      cleanupCallbacks.push(started.close);
+
+      const response = await fetch(`${started.baseUrl}/api/gemini/v1beta/models/gemini-2.5-flash:generateContent`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: '{}',
+      });
+      const body = (await response.json()) as Record<string, unknown>;
+
+      expect(response.status).toBe(500);
+      expect(body.error).toMatch(/Vertex auth provider/);
+    });
+  });
 });

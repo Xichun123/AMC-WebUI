@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { getPyodideBaseUrl, getRuntimeConfigAppSettingsOverrides } from './runtimeConfig';
+import { getBackendFlavor, getPyodideBaseUrl, getRuntimeConfigAppSettingsOverrides } from './runtimeConfig';
 
 const setRuntimeConfig = (config: Record<string, unknown>) => {
   (window as Window & { __AMC_RUNTIME_CONFIG__?: Record<string, unknown> }).__AMC_RUNTIME_CONFIG__ = config;
@@ -79,6 +79,25 @@ describe('runtimeConfig', () => {
     expect(runtimeConfigSource).toContain('pyodideBaseUrl: null');
   });
 
+  it('defaults the backend flavor to aistudio in the static runtime config', () => {
+    const runtimeConfigSource = fs.readFileSync(path.resolve(__dirname, '../../public/runtime-config.js'), 'utf8');
+
+    expect(runtimeConfigSource).toContain("backendFlavor: 'aistudio'");
+  });
+
+  it('reads backend flavor from window runtime config and defaults to aistudio', () => {
+    expect(getBackendFlavor()).toBe('aistudio');
+
+    setRuntimeConfig({ backendFlavor: 'vertex' });
+    expect(getBackendFlavor()).toBe('vertex');
+
+    setRuntimeConfig({ backendFlavor: 'VERTEX' });
+    expect(getBackendFlavor()).toBe('vertex');
+
+    setRuntimeConfig({ backendFlavor: 'something-else' });
+    expect(getBackendFlavor()).toBe('aistudio');
+  });
+
   it('defaults Docker runtime config to BYOK instead of server-managed credentials', () => {
     const projectRoot = path.resolve(__dirname, '../..');
     const webEntrypointSource = fs.readFileSync(path.join(projectRoot, 'docker/web-entrypoint.sh'), 'utf8');
@@ -87,11 +106,15 @@ describe('runtimeConfig', () => {
 
     expect(webEntrypointSource).toContain('RUNTIME_SERVER_MANAGED_API:-false');
     expect(webEntrypointSource).toContain('RUNTIME_PYODIDE_BASE_URL');
+    expect(webEntrypointSource).toContain('RUNTIME_BACKEND_FLAVOR');
     expect(composeSource).toContain('RUNTIME_SERVER_MANAGED_API:-false');
     expect(composeSource).toContain('RUNTIME_PYODIDE_BASE_URL');
+    expect(composeSource).toContain('RUNTIME_BACKEND_FLAVOR:-aistudio');
     expect(envExampleSource).toContain('GEMINI_API_KEY=');
     expect(envExampleSource).toContain('RUNTIME_SERVER_MANAGED_API=false');
     expect(envExampleSource).toContain('RUNTIME_PYODIDE_BASE_URL=');
+    expect(envExampleSource).toContain('RUNTIME_BACKEND_FLAVOR=aistudio');
+    expect(envExampleSource).toContain('GEMINI_BACKEND=aistudio');
     expect(envExampleSource).not.toContain('/api/live-token');
   });
 });

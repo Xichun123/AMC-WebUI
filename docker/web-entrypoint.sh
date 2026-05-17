@@ -38,6 +38,16 @@ use_api_proxy="$(to_bool "${RUNTIME_USE_API_PROXY:-true}")"
 api_proxy_url_json="$(json_string_or_null "${RUNTIME_API_PROXY_URL:-/api/gemini}")"
 pyodide_base_url_json="$(json_string_or_null "${RUNTIME_PYODIDE_BASE_URL:-}")"
 
+backend_flavor_raw="$(printf '%s' "${RUNTIME_BACKEND_FLAVOR:-aistudio}" | tr '[:upper:]' '[:lower:]')"
+case "$backend_flavor_raw" in
+  vertex)
+    backend_flavor='vertex'
+    ;;
+  *)
+    backend_flavor='aistudio'
+    ;;
+esac
+
 cat > /usr/share/nginx/html/runtime-config.js <<EOF
 window.__AMC_RUNTIME_CONFIG__ = {
   ...(window.__AMC_RUNTIME_CONFIG__ || {}),
@@ -46,5 +56,6 @@ window.__AMC_RUNTIME_CONFIG__ = {
   useApiProxy: ${use_api_proxy},
   apiProxyUrl: ${api_proxy_url_json},
   pyodideBaseUrl: ${pyodide_base_url_json},
+  backendFlavor: '${backend_flavor}',
 };
 EOF

@@ -1,12 +1,15 @@
 import type { AppSettings } from '@/types/settings';
 
+type BackendFlavor = 'aistudio' | 'vertex';
+
 type RuntimeConfigKey =
   | 'serverManagedApi'
   | 'useCustomApiConfig'
   | 'useApiProxy'
   | 'apiProxyUrl'
   | 'projectUrl'
-  | 'pyodideBaseUrl';
+  | 'pyodideBaseUrl'
+  | 'backendFlavor';
 
 type RuntimeConfigShape = Partial<Record<RuntimeConfigKey, unknown>>;
 
@@ -53,6 +56,14 @@ function getRuntimeConfig(): RuntimeConfigShape | undefined {
 
 export function getPyodideBaseUrl(): string | null {
   return readNullableString(getRuntimeConfig()?.pyodideBaseUrl) ?? null;
+}
+
+export function getBackendFlavor(): BackendFlavor {
+  const value = getRuntimeConfig()?.backendFlavor;
+  if (typeof value === 'string' && value.trim().toLowerCase() === 'vertex') {
+    return 'vertex';
+  }
+  return 'aistudio';
 }
 
 export function getRuntimeConfigAppSettingsOverrides(): Partial<

@@ -6,6 +6,8 @@ import type { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { ApiServerConfig } from './config.js';
+import type { VertexAccessTokenProvider } from './vertexAuth.js';
+import { rewriteToVertex } from './vertexPathRewriter.js';
 
 const GEMINI_PROXY_PREFIX = '/api/gemini';
 const IMAGE_PROXY_PATH = '/api/image-proxy';
@@ -48,6 +50,7 @@ const STRIPPED_PROXY_RESPONSE_HEADERS = new Set([...HOP_BY_HOP_HEADERS, 'content
 interface CreateServerDependencies {
   fetchImpl?: typeof fetch;
   readLocalClipboardImage?: () => Promise<LocalClipboardImage | null>;
+  vertexAuth?: VertexAccessTokenProvider;
 }
 
 interface LocalClipboardImage {
@@ -63,10 +66,11 @@ type ExecFileAsync = (
 ) => Promise<{ stdout: string; stderr: string }>;
 
 type CreateServerConfig = Pick<ApiServerConfig, 'geminiApiBase' | 'geminiApiKey'> &
-  Partial<Pick<ApiServerConfig, 'allowedOrigins'>>;
+  Partial<Pick<ApiServerConfig, 'allowedOrigins' | 'backendFlavor' | 'vertex'>>;
 
 interface ResolvedServerConfig extends CreateServerConfig {
   allowedOrigins: string[];
+  backendFlavor: NonNullable<ApiServerConfig['backendFlavor']>;
 }
 
 function getCorsHeaders(request: IncomingMessage, allowedOrigins: string[]): Record<string, string> {
@@ -339,7 +343,7 @@ function resolveRequestApiKey(request: IncomingMessage, serverApiKey?: string): 
   return browserApiKey?.trim() ?? '';
 }
 
-function buildProxyHeaders(request: IncomingMessage, apiKey: string): Headers {
+function buildProxyHeaders(request: IncomingMessage, auth: ProxyAuth): Headers {
   const headers = new Headers();
   const connectionManagedHeaders = getConnectionManagedHeaders(
     Array.isArray(request.headers.connection) ? request.headers.connection.join(',') : request.headers.connection,
@@ -363,9 +367,16 @@ function buildProxyHeaders(request: IncomingMessage, apiKey: string): Headers {
     headers.set(normalizedName, value);
   }
 
-  headers.set('x-goog-api-key', apiKey);
+  if (auth.kind === 'apiKey') {
+    headers.set('x-goog-api-key', auth.apiKey);
+  } else {
+    headers.delete('x-goog-api-key');
+    headers.set('authorization', `Bearer ${auth.accessToken}`);
+  }
   return headers;
 }
+
+type ProxyAuth = { kind: 'apiKey'; apiKey: string } | { kind: 'bearer'; accessToken: string };
 
 function buildProxyResponseHeaders(
   request: IncomingMessage,
@@ -393,18 +404,54 @@ async function proxyGeminiRequest(
   response: ServerResponse,
   config: ResolvedServerConfig,
   fetchImpl: typeof fetch,
+  vertexAuth: VertexAccessTokenProvider | undefined,
 ): Promise<void> {
-  const apiKeyForProxy = resolveRequestApiKey(request, config.geminiApiKey);
-
-  if (!apiKeyForProxy) {
-    sendJson(request, response, 500, { error: 'GEMINI_API_KEY is not configured.' }, config.allowedOrigins);
-    return;
-  }
-
   const requestUrl = new URL(request.url || '/', 'http://localhost');
   const upstreamPath = requestUrl.pathname.slice(GEMINI_PROXY_PREFIX.length) || '/';
-  const targetBase = config.geminiApiBase.replace(/\/$/, '');
-  const upstreamUrl = `${targetBase}${upstreamPath}${requestUrl.search}`;
+
+  let upstreamUrl: string;
+  let auth: ProxyAuth;
+
+  if (config.backendFlavor === 'vertex') {
+    if (!config.vertex) {
+      sendJson(request, response, 500, { error: 'Vertex backend config is missing.' }, config.allowedOrigins);
+      return;
+    }
+    if (!vertexAuth) {
+      sendJson(request, response, 500, { error: 'Vertex auth provider is not configured.' }, config.allowedOrigins);
+      return;
+    }
+
+    let accessToken: string;
+    try {
+      accessToken = await vertexAuth.getAccessToken();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown auth error';
+      sendJson(
+        request,
+        response,
+        500,
+        { error: `Vertex access token retrieval failed: ${message}` },
+        config.allowedOrigins,
+      );
+      return;
+    }
+
+    const rewritten = rewriteToVertex(upstreamPath, requestUrl.search, config.vertex);
+    upstreamUrl = rewritten.url;
+    auth = { kind: 'bearer', accessToken };
+  } else {
+    const apiKeyForProxy = resolveRequestApiKey(request, config.geminiApiKey);
+    if (!apiKeyForProxy) {
+      sendJson(request, response, 500, { error: 'GEMINI_API_KEY is not configured.' }, config.allowedOrigins);
+      return;
+    }
+
+    const targetBase = config.geminiApiBase.replace(/\/$/, '');
+    upstreamUrl = `${targetBase}${upstreamPath}${requestUrl.search}`;
+    auth = { kind: 'apiKey', apiKey: apiKeyForProxy };
+  }
+
   const method = request.method || 'GET';
   const hasBody = !['GET', 'HEAD'].includes(method);
   const abortController = new AbortController();
@@ -416,7 +463,7 @@ async function proxyGeminiRequest(
 
   const requestInit: RequestInit & { duplex?: 'half' } = {
     method,
-    headers: buildProxyHeaders(request, apiKeyForProxy),
+    headers: buildProxyHeaders(request, auth),
     signal: abortController.signal,
   };
 
@@ -474,10 +521,12 @@ export function createServer(config: CreateServerConfig, dependencies: CreateSer
   const resolvedConfig: ResolvedServerConfig = {
     ...config,
     allowedOrigins: config.allowedOrigins ?? [],
+    backendFlavor: config.backendFlavor ?? 'aistudio',
   };
 
   const fetchImpl = dependencies.fetchImpl ?? fetch;
   const readLocalClipboardImage = dependencies.readLocalClipboardImage ?? readMacOsClipboardPng;
+  const vertexAuth = dependencies.vertexAuth;
 
   return http.createServer(async (request, response) => {
     try {
@@ -528,7 +577,7 @@ export function createServer(config: CreateServerConfig, dependencies: CreateSer
       }
 
       if (path === GEMINI_PROXY_PREFIX || path.startsWith(`${GEMINI_PROXY_PREFIX}/`)) {
-        await proxyGeminiRequest(request, response, resolvedConfig, fetchImpl);
+        await proxyGeminiRequest(request, response, resolvedConfig, fetchImpl, vertexAuth);
         return;
       }
 

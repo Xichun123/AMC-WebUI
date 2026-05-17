@@ -8,6 +8,15 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_API_BASE: ${GEMINI_API_BASE:-https://generativelanguage.googleapis.com}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      # Vertex AI backend (leave GEMINI_BACKEND empty or "aistudio" to keep existing AI Studio behavior)
+      GEMINI_BACKEND: ${GEMINI_BACKEND:-aistudio}
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID:-}
+      GCP_LOCATION: ${GCP_LOCATION:-us-central1}
+      # When GEMINI_BACKEND=vertex, place the Service Account JSON at ./secrets/sa.json on the host
+      # and set GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/sa.json.
+      GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-}
+    volumes:
+      - ./secrets:/run/secrets:ro
     expose:
       - '3001'
     restart: unless-stopped
@@ -24,6 +33,7 @@ services:
       RUNTIME_USE_API_PROXY: ${RUNTIME_USE_API_PROXY:-true}
       RUNTIME_API_PROXY_URL: ${RUNTIME_API_PROXY_URL:-/api/gemini}
       RUNTIME_PYODIDE_BASE_URL: ${RUNTIME_PYODIDE_BASE_URL:-}
+      RUNTIME_BACKEND_FLAVOR: ${RUNTIME_BACKEND_FLAVOR:-aistudio}
     ports:
       - '${WEB_PORT:-8080}:80'
     restart: unless-stopped

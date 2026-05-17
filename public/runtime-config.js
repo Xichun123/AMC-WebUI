@@ -5,5 +5,6 @@ window.__AMC_RUNTIME_CONFIG__ = {
   apiProxyUrl: 'https://api-proxy.de/gemini',
   projectUrl: 'https://all-model-chat.pages.dev/',
   pyodideBaseUrl: null,
+  backendFlavor: 'aistudio',
   ...(window.__AMC_RUNTIME_CONFIG__ || {}),
 };

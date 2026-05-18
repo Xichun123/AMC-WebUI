@@ -1,0 +1,11 @@
+.git
+node_modules
+dist
+coverage
+playwright-report
+test-results
+tmp-live-artifact-demo
+.playwright-visible-demo-profile
+.codex-dev-server.*
+.env
+secrets

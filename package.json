@@ -22,6 +22,7 @@
     "verify": "npm run format:check && npm run typecheck && npm run lint && npm run test && npm run knip && npm run build && npm run build:api",
     "test:code-execution": "node scripts/runVitest.mjs run src/hooks/file-upload/fileUploadPolicy.test.ts src/features/chat-streaming/processors.test.ts src/utils/chat/builder.test.ts src/hooks/live-api/useLiveMessageProcessing.test.tsx src/services/api/chatApi.test.ts src/services/api/generation/tokenApi.test.ts src/services/api/apiClient.test.ts src/services/api/liveApiAuth.test.ts src/services/api/generationConfig.test.ts",
     "verify:code-execution:api": "node scripts/verify-code-execution.mjs",
+    "verify:vertex-e2e": "node scripts/verify-vertex-e2e.mjs",
     "start:api": "node server/dist/index.js",
     "test": "node scripts/runVitest.mjs run",
     "test:watch": "node scripts/runVitest.mjs",

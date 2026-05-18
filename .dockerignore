@@ -8,4 +8,5 @@ tmp-live-artifact-demo
 .playwright-visible-demo-profile
 .codex-dev-server.*
 .env
-secrets
+secrets/*
+!secrets/.gitignore

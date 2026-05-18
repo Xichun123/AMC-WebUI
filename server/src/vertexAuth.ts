@@ -13,7 +13,7 @@ interface CachedToken {
 }
 
 interface GoogleAuthLike {
-  getAccessToken(): Promise<{ token?: string | null; res?: unknown }>;
+  getAccessToken(): Promise<string | null | undefined | { token?: string | null; res?: unknown }>;
   getClient(): Promise<{
     credentials?: { expiry_date?: number | null };
   }>;
@@ -33,7 +33,7 @@ export function createVertexAuth(options: CreateVertexAuthOptions = {}): VertexA
 
   const fetchFreshToken = async (): Promise<CachedToken> => {
     const tokenResult = await auth.getAccessToken();
-    const token = tokenResult.token;
+    const token = typeof tokenResult === 'string' ? tokenResult : tokenResult?.token;
     if (!token) {
       throw new Error('Vertex auth returned an empty access token.');
     }

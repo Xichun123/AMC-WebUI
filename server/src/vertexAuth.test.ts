@@ -68,6 +68,21 @@ describe('createVertexAuth', () => {
     await expect(provider.getAccessToken()).rejects.toThrow(/empty access token/);
   });
 
+  it('accepts the bare-string token shape that real GoogleAuth.getAccessToken returns', async () => {
+    const provider = createVertexAuth({
+      auth: {
+        async getAccessToken() {
+          return 'ya29.real-shape-token';
+        },
+        async getClient() {
+          return { credentials: { expiry_date: Date.now() + 60 * 60 * 1000 } };
+        },
+      },
+    });
+
+    expect(await provider.getAccessToken()).toBe('ya29.real-shape-token');
+  });
+
   it('coalesces concurrent token fetches into a single inflight request', async () => {
     let resolveFetch: ((value: { token: string }) => void) | undefined;
     const auth = {

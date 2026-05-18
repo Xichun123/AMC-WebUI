@@ -112,7 +112,7 @@ async function checkTextGenerate() {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       contents: [{ role: 'user', parts: [{ text: 'Reply with the single word: ping' }] }],
-      generationConfig: { temperature: 0, maxOutputTokens: 10 },
+      generationConfig: { temperature: 0, maxOutputTokens: 256 },
     }),
   });
   const body = await expectJsonOk(result, `generateContent ${TEXT_MODEL}`);
@@ -146,8 +146,9 @@ async function checkFileUpload() {
   }
   const uploadUrl = initiate.response.headers.get('x-goog-upload-url');
   assert(uploadUrl, 'initiate did not return x-goog-upload-url');
-  // Frontend rewrites host through the proxy; we just call the URL path directly.
-  const chunkPath = new URL(uploadUrl).pathname;
+  // Mimic the frontend's buildProxiedUploadUrl: the server returns the chunk path under the
+  // upstream host, the frontend (or this script) routes it back through the /api/gemini proxy.
+  const chunkPath = `/api/gemini${new URL(uploadUrl).pathname}`;
   console.log(`  ✓ initiate → ${chunkPath}`);
 
   const chunk1Res = await http(chunkPath, {
@@ -209,7 +210,7 @@ async function checkMultimodalGenerate(file) {
           ],
         },
       ],
-      generationConfig: { temperature: 0, maxOutputTokens: 10 },
+      generationConfig: { temperature: 0, maxOutputTokens: 256 },
     }),
   });
   const body = await expectJsonOk(result, `multimodal generateContent`);

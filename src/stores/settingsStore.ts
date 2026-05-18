@@ -8,6 +8,7 @@ import { logService } from '@/services/logService';
 import { resolveSupportedModelId, sanitizeModelOptions } from '@/utils/modelHelpers';
 import { dbService } from '@/services/db/dbService';
 import { normalizeLiveArtifactsSystemPrompts } from '@/utils/liveArtifactsPromptSettings';
+import { getBackendFlavor, getRuntimeConfigAppSettingsOverrides } from '@/runtime/runtimeConfig';
 
 interface SettingsState {
   appSettings: AppSettings;
@@ -56,6 +57,21 @@ function sanitizeAppSettings(settings: AppSettings): AppSettings {
       ? sanitizedOpenAICompatibleModels
       : defaultSettings.openaiCompatibleModels;
 
+  // Vertex backend authenticates via the API container's Service Account, so the browser
+  // never holds a key. Force server-managed proxy mode regardless of any stale persisted
+  // values from a previous AI Studio session.
+  const isVertex = getBackendFlavor() === 'vertex';
+  const runtimeOverrides = getRuntimeConfigAppSettingsOverrides();
+  const vertexApiProxyUrl = runtimeOverrides.apiProxyUrl?.trim() ? runtimeOverrides.apiProxyUrl : '/api/gemini';
+  const vertexOverrides = isVertex
+    ? {
+        serverManagedApi: true,
+        useCustomApiConfig: true,
+        useApiProxy: true,
+        apiProxyUrl: vertexApiProxyUrl,
+      }
+    : {};
+
   return {
     ...settings,
     apiMode: isOpenAICompatibleApiEnabled ? settings.apiMode : 'gemini-native',
@@ -76,6 +92,7 @@ function sanitizeAppSettings(settings: AppSettings): AppSettings {
       defaultSettings.thoughtTranslationModelId ?? defaultSettings.modelId,
     ),
     liveArtifactsSystemPrompts: normalizeLiveArtifactsSystemPrompts(settings),
+    ...vertexOverrides,
   };
 }
 

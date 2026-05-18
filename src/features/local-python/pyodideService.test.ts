@@ -111,6 +111,16 @@ describe('buildPyodideWorkerScript', () => {
     expect(workerCode).toContain('pyodide.FS.chdir(runDir)');
     expect(workerCode).toContain('removePath(runDir)');
   });
+
+  it('recognizes generated bitmap image formats as images', () => {
+    const { workerCode } = buildPyodideWorkerScript('https://example.com/app/');
+
+    expect(workerCode).toContain("bmp: 'image/bmp'");
+    expect(workerCode).toContain("ppm: 'image/x-portable-pixmap'");
+    expect(workerCode).toContain("pgm: 'image/x-portable-graymap'");
+    expect(workerCode).toContain("pbm: 'image/x-portable-bitmap'");
+    expect(workerCode).toContain("pnm: 'image/x-portable-anymap'");
+  });
 });
 
 describe('PyodideService', () => {

@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanupFilePreviewUrl, cleanupFilePreviewUrls, cleanupReplacedFilePreviewUrl } from './fileHelpers';
+import {
+  cleanupFilePreviewUrl,
+  cleanupFilePreviewUrls,
+  cleanupReplacedFilePreviewUrl,
+  getExtensionFromMimeType,
+} from './fileHelpers';
 
 describe('file preview URL cleanup', () => {
   beforeEach(() => {
@@ -40,5 +45,15 @@ describe('file preview URL cleanup', () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledTimes(2);
     expect(URL.revokeObjectURL).toHaveBeenNthCalledWith(1, 'blob:preview-1');
     expect(URL.revokeObjectURL).toHaveBeenNthCalledWith(2, 'blob:preview-2');
+  });
+});
+
+describe('getExtensionFromMimeType', () => {
+  it('keeps generated bitmap image filenames instead of falling back to .bin', () => {
+    expect(getExtensionFromMimeType('image/bmp')).toBe('.bmp');
+    expect(getExtensionFromMimeType('image/x-portable-pixmap')).toBe('.ppm');
+    expect(getExtensionFromMimeType('image/x-portable-graymap')).toBe('.pgm');
+    expect(getExtensionFromMimeType('image/x-portable-bitmap')).toBe('.pbm');
+    expect(getExtensionFromMimeType('image/x-portable-anymap')).toBe('.pnm');
   });
 });

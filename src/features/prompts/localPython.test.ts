@@ -7,6 +7,7 @@ describe('LOCAL_PYTHON_SYSTEM_PROMPT', () => {
     expect(LOCAL_PYTHON_SYSTEM_PROMPT).toContain('Do not return fenced Python code blocks');
     expect(LOCAL_PYTHON_SYSTEM_PROMPT).toContain('After receiving the tool response');
     expect(LOCAL_PYTHON_SYSTEM_PROMPT).toContain('Do NOT write or simulate "Execution Result"');
+    expect(LOCAL_PYTHON_SYSTEM_PROMPT).toContain('markdown download links for generated files');
   });
 
   it('requires explicit file output for plots', () => {

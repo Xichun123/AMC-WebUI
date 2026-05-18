@@ -208,9 +208,19 @@ export const performStandardChatApiCall = async ({
           },
         ]
       : baseMessagesForApi;
+  const canUseLocalPythonForTurn = finalRole === 'user' && !isRawMode && !isImageModel(apiModelId);
+  const shouldRouteCodeExecutionToLocalPython =
+    canUseLocalPythonForTurn && !!sessionToUpdate.isCodeExecutionEnabled && !sessionToUpdate.isLocalPythonEnabled;
+  const sessionSettingsForGeneration = shouldRouteCodeExecutionToLocalPython
+    ? {
+        ...sessionToUpdate,
+        isCodeExecutionEnabled: false,
+        isLocalPythonEnabled: true,
+      }
+    : sessionToUpdate;
+
   const standardClientFunctions = createStandardClientFunctions({
-    isLocalPythonEnabled:
-      !!sessionToUpdate.isLocalPythonEnabled && finalRole === 'user' && !isRawMode && !isImageModel(apiModelId),
+    isLocalPythonEnabled: !!sessionSettingsForGeneration.isLocalPythonEnabled && canUseLocalPythonForTurn,
     inputFiles: collectLocalPythonInputFiles(
       [
         ...localPythonContextMessages,
@@ -230,15 +240,15 @@ export const performStandardChatApiCall = async ({
   });
   const standardFunctionDeclarations = Object.values(standardClientFunctions).map(({ declaration }) => declaration);
   const hasRequestedServerSideToolThatNeedsCombination =
-    !!sessionToUpdate.isGoogleSearchEnabled ||
-    !!sessionToUpdate.isDeepSearchEnabled ||
-    !!sessionToUpdate.isUrlContextEnabled;
+    !!sessionSettingsForGeneration.isGoogleSearchEnabled ||
+    !!sessionSettingsForGeneration.isDeepSearchEnabled ||
+    !!sessionSettingsForGeneration.isUrlContextEnabled;
   const isLocalPythonEnabledForTurn =
     standardFunctionDeclarations.length > 0 &&
     (isGemini3Model(apiModelId) || !hasRequestedServerSideToolThatNeedsCombination);
 
   const config = await buildGenerationConfig({
-    settings: sessionToUpdate,
+    settings: sessionSettingsForGeneration,
     modelId: apiModelId,
     aspectRatio,
     imageSize,

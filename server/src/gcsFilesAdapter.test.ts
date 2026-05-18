@@ -1,4 +1,5 @@
 import { Buffer } from 'node:buffer';
+import { Writable } from 'node:stream';
 import { describe, expect, it, vi } from 'vitest';
 import { createGcsFilesAdapter, type StorageLike } from './gcsFilesAdapter';
 import type { GcsConfig } from './config';
@@ -32,6 +33,25 @@ function createFakeStorage(): FakeStorage {
               metadata: options.metadata?.metadata ?? {},
               timeCreated: now,
               updated: now,
+            });
+          },
+          createWriteStream: (options) => {
+            const chunks: Buffer[] = [];
+            return new Writable({
+              write: (chunk, _encoding, callback) => {
+                chunks.push(Buffer.from(chunk));
+                callback();
+              },
+              final: (callback) => {
+                files.set(key, {
+                  data: Buffer.concat(chunks),
+                  contentType: options.metadata?.contentType ?? options.contentType ?? 'application/octet-stream',
+                  metadata: options.metadata?.metadata ?? {},
+                  timeCreated: now,
+                  updated: now,
+                });
+                callback();
+              },
             });
           },
           getMetadata: async () => {
@@ -182,6 +202,24 @@ describe('createGcsFilesAdapter', () => {
     expect(() =>
       adapter.initiateUpload({ displayName: 'big.bin', mimeType: 'application/octet-stream', sizeBytes: 200 }),
     ).toThrow(/exceeds GCS_MAX_FILE_BYTES/);
+  });
+
+  it('allows a declared 400MB video upload session when the configured limit permits it', () => {
+    const storage = createFakeStorage();
+    const adapter = createGcsFilesAdapter({
+      storage,
+      config: { ...baseConfig, maxFileBytes: 2 * 1024 * 1024 * 1024 },
+      randomId: () => 'video-400mb',
+    });
+
+    const init = adapter.initiateUpload({
+      displayName: 'large.mp4',
+      mimeType: 'video/mp4',
+      sizeBytes: 400 * 1024 * 1024,
+    });
+
+    expect(init.sessionId).toBe('video-400mb');
+    expect(init.uploadUrl).toBe('https://generativelanguage.googleapis.com/__gcs-upload-chunk__/video-400mb');
   });
 
   it('returns null for unknown file IDs in getFileMetadata', async () => {

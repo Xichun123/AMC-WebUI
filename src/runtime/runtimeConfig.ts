@@ -84,6 +84,13 @@ export function getRuntimeConfigAppSettingsOverrides(): Partial<
     overrides.serverManagedApi = serverManagedApi;
   }
 
+  // Vertex backend authenticates via the API container's Service Account, so the browser
+  // never holds an API key. Force server-managed mode regardless of RUNTIME_SERVER_MANAGED_API
+  // so the BYOK key check is skipped.
+  if (getBackendFlavor() === 'vertex') {
+    overrides.serverManagedApi = true;
+  }
+
   const useCustomApiConfig = readBooleanValue(runtimeConfig.useCustomApiConfig);
   if (useCustomApiConfig !== undefined) {
     overrides.useCustomApiConfig = useCustomApiConfig;

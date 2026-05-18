@@ -107,6 +107,7 @@ describe('vite.config runtime ownership', () => {
   it('keeps the service worker precache focused on the app shell instead of eager heavy feature payloads', () => {
     const config = fs.readFileSync(viteConfigPath, 'utf8');
 
+    expect(config).toContain("registerType: 'autoUpdate'");
     expect(config).toMatch(/globIgnores:\s*\[[\s\S]*pyodide/i);
     expect(config).toContain("'**/bundle-stats.html'");
     expect(config).toContain("'**/assets/markdownPdf-*.js'");

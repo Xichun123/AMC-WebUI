@@ -7,6 +7,27 @@ import { hasGeneratedImageFile } from './executionFiles';
 type PythonRunOptions = { files?: UploadedFile[]; abortSignal?: AbortSignal };
 type PythonRunResult = Omit<ExecutionResult, 'status'>;
 
+const summarizeLocalPythonResult = (result: PythonRunResult, outputFiles: PythonRunResult['files'] = []): string => {
+  const details: string[] = [];
+
+  if (result.output?.trim()) {
+    details.push('stdout/stderr output was captured');
+  }
+  if (result.result) {
+    details.push('a Python expression result was returned');
+  }
+  if (result.image || outputFiles.some((file) => file.type.startsWith('image/'))) {
+    details.push('an image artifact was generated');
+  }
+  if (outputFiles.length > 0) {
+    details.push(`generated files: ${outputFiles.map((file) => file.name).join(', ')}`);
+  }
+
+  return details.length > 0
+    ? `Python execution completed successfully; ${details.join('; ')}.`
+    : 'Python execution completed successfully with no stdout or generated files.';
+};
+
 interface CreateLocalPythonToolHandlerOptions<RunOptions extends PythonRunOptions> {
   getRunOptions: (options?: { abortSignal?: AbortSignal }) => RunOptions;
   runPython: (code: string, options?: RunOptions) => Promise<PythonRunResult>;
@@ -51,10 +72,14 @@ export const createLocalPythonToolHandler = <RunOptions extends PythonRunOptions
 
     return {
       response: {
+        status: 'completed',
+        summary: summarizeLocalPythonResult(result, outputFiles),
         output: result.output || null,
         result: result.result || null,
         imageGenerated: !!result.image,
         generatedFiles: outputFiles.map(({ name, type }) => ({ name, type })),
+        nextAction:
+          'Use these execution results to answer the user. Do not call run_local_python again unless a new or corrected computation is required.',
       },
       generatedFiles,
     };

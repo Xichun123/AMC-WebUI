@@ -5,6 +5,7 @@ import {
   isGemini3Model,
   getModelCapabilities,
   shouldStripThinkingFromContext,
+  normalizeThinkingLevelForModel,
   sanitizeModelOptions,
   resolveSupportedModelId,
   calculateTokenStats,
@@ -235,6 +236,14 @@ describe('getModelCapabilities', () => {
 });
 
 describe('getDefaultThinkingLevelForModel', () => {
+  it('normalizes stale MINIMAL thinking to LOW for Gemini 3.1 Pro', () => {
+    expect(normalizeThinkingLevelForModel('gemini-3.1-pro-preview', 'MINIMAL')).toBe('LOW');
+  });
+
+  it('keeps MINIMAL thinking for Gemini 3 Flash', () => {
+    expect(normalizeThinkingLevelForModel('gemini-3-flash-preview', 'MINIMAL')).toBe('MINIMAL');
+  });
+
   it('defaults Gemini 3.1 Flash Live to MINIMAL', () => {
     expect(resolveModelSwitchForTarget('gemini-3.1-flash-live-preview').thinkingLevel).toBe('MINIMAL');
   });
@@ -245,6 +254,12 @@ describe('getDefaultThinkingLevelForModel', () => {
 
   it('keeps fallback thinking level for non-special models', () => {
     expect(resolveModelSwitchForTarget('gemini-2.5-flash', { thinkingLevel: 'HIGH' }).thinkingLevel).toBe('HIGH');
+  });
+
+  it('uses LOW instead of inherited MINIMAL when switching to Gemini 3.1 Pro', () => {
+    expect(resolveModelSwitchForTarget('gemini-3.1-pro-preview', { thinkingLevel: 'MINIMAL' }).thinkingLevel).toBe(
+      'LOW',
+    );
   });
 });
 
@@ -525,5 +540,34 @@ describe('resolveModelSwitchSettings', () => {
       thinkingBudget: 0,
       thinkingLevel: 'MINIMAL',
     });
+  });
+
+  it('normalizes cached MINIMAL thinking when restoring Gemini 3.1 Pro settings', () => {
+    localStorage.setItem(
+      'model_settings_cache',
+      JSON.stringify({
+        'gemini-3.1-pro-preview': {
+          thinkingBudget: -1,
+          thinkingLevel: 'MINIMAL',
+        },
+      }),
+    );
+
+    const result = resolveModelSwitchSettings({
+      currentSettings: {
+        modelId: 'gemini-3-flash-preview',
+        mediaResolution: undefined,
+        thinkingBudget: -1,
+        thinkingLevel: 'MINIMAL',
+      },
+      sourceSettings: {
+        mediaResolution: undefined,
+        thinkingBudget: -1,
+        thinkingLevel: 'MINIMAL',
+      },
+      targetModelId: 'gemini-3.1-pro-preview',
+    });
+
+    expect(result.thinkingLevel).toBe('LOW');
   });
 });

@@ -51,6 +51,25 @@ describe('project documentation structure', () => {
     expect(nginxConfig).toMatch(/location\s+~\s+\\\.mjs\$[\s\S]*Cache-Control "no-cache"/);
   });
 
+  it('does not serve the app shell for missing hashed asset files in Docker', () => {
+    const nginxConfig = readProjectFile('docker/nginx.conf');
+
+    expect(nginxConfig).toMatch(/location\s+\/assets\/\s*\{[\s\S]*try_files\s+\$uri\s+=404;/);
+  });
+
+  it('does not cap API request bodies at the Nginx layer in Docker', () => {
+    const nginxConfig = readProjectFile('docker/nginx.conf');
+
+    expect(nginxConfig).toMatch(/client_max_body_size\s+0;/);
+  });
+
+  it('forces the app shell to revalidate after Docker redeploys', () => {
+    const nginxConfig = readProjectFile('docker/nginx.conf');
+
+    expect(nginxConfig).toMatch(/location\s+=\s+\/index\.html\s*\{[\s\S]*Cache-Control "no-cache"/);
+    expect(nginxConfig).toMatch(/location\s+\/\s*\{[\s\S]*Cache-Control "no-cache"/);
+  });
+
   it('describes local Python package loading precisely', () => {
     const zhReadme = readProjectFile('README.md');
     const enReadme = readProjectFile('README.en.md');

@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const { mockGetRuntimeConfigAppSettingsOverrides } = vi.hoisted(() => ({
+const { mockGetRuntimeConfigAppSettingsOverrides, mockGetBackendFlavor } = vi.hoisted(() => ({
   mockGetRuntimeConfigAppSettingsOverrides: vi.fn(() => ({})),
+  mockGetBackendFlavor: vi.fn(() => 'aistudio' as 'aistudio' | 'vertex'),
 }));
 
 vi.mock('@/services/db/dbService', async () => {
@@ -18,6 +19,7 @@ vi.mock('@/services/logService', async () => {
 
 vi.mock('@/runtime/runtimeConfig', () => ({
   getRuntimeConfigAppSettingsOverrides: mockGetRuntimeConfigAppSettingsOverrides,
+  getBackendFlavor: mockGetBackendFlavor,
 }));
 
 import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
@@ -32,6 +34,7 @@ describe('settingsStore', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetRuntimeConfigAppSettingsOverrides.mockReturnValue({});
+    mockGetBackendFlavor.mockReturnValue('aistudio');
     useSettingsStore.setState({
       appSettings: DEFAULT_APP_SETTINGS,
       currentTheme: createTheme(),
@@ -246,6 +249,32 @@ describe('settingsStore', () => {
       expect(appSettings.useApiProxy).toBe(true);
       expect(appSettings.apiProxyUrl).toBe('https://runtime-proxy.example.com/v1beta');
       expect(appSettings.serverManagedApi).toBe(true);
+    });
+
+    it('overrides stale stored proxy settings in vertex mode', async () => {
+      mockGetBackendFlavor.mockReturnValue('vertex');
+      mockGetRuntimeConfigAppSettingsOverrides.mockReturnValue({
+        serverManagedApi: true,
+        useCustomApiConfig: true,
+        useApiProxy: true,
+        apiProxyUrl: '/api/gemini',
+      });
+      vi.mocked(dbService.getAppSettings).mockResolvedValue(
+        createStoredSettingsSnapshot({
+          serverManagedApi: false,
+          useCustomApiConfig: false,
+          useApiProxy: false,
+          apiProxyUrl: 'https://old-ai-studio-proxy.example.com/v1beta',
+        }),
+      );
+
+      await useSettingsStore.getState().loadSettings();
+
+      const { appSettings } = useSettingsStore.getState();
+      expect(appSettings.serverManagedApi).toBe(true);
+      expect(appSettings.useCustomApiConfig).toBe(true);
+      expect(appSettings.useApiProxy).toBe(true);
+      expect(appSettings.apiProxyUrl).toBe('/api/gemini');
     });
 
     it('handles DB errors gracefully', async () => {

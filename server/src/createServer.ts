@@ -449,6 +449,88 @@ async function readBufferedBody(request: IncomingMessage, maxBytes: number): Pro
   });
 }
 
+function stripVertexUnsupportedToolConfig(body: Buffer): Buffer {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body.toString('utf8'));
+  } catch {
+    return body;
+  }
+
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return body;
+  }
+
+  const root = parsed as Record<string, unknown>;
+  const toolConfig = root.toolConfig;
+  if (!toolConfig || typeof toolConfig !== 'object' || Array.isArray(toolConfig)) {
+    return body;
+  }
+
+  const sanitizedToolConfig = { ...(toolConfig as Record<string, unknown>) };
+  if (!Object.prototype.hasOwnProperty.call(sanitizedToolConfig, 'includeServerSideToolInvocations')) {
+    return body;
+  }
+
+  delete sanitizedToolConfig.includeServerSideToolInvocations;
+  if (Object.keys(sanitizedToolConfig).length > 0) {
+    root.toolConfig = sanitizedToolConfig;
+  } else {
+    delete root.toolConfig;
+  }
+
+  return Buffer.from(JSON.stringify(root), 'utf8');
+}
+
+const stripFunctionResponseIds = (value: unknown): boolean => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  if (Array.isArray(value)) {
+    return value.reduce<boolean>((changed, item) => stripFunctionResponseIds(item) || changed, false);
+  }
+
+  const record = value as Record<string, unknown>;
+  let changed = false;
+  const functionResponse = record.functionResponse;
+
+  if (functionResponse && typeof functionResponse === 'object' && !Array.isArray(functionResponse)) {
+    const responseRecord = functionResponse as Record<string, unknown>;
+    if (Object.prototype.hasOwnProperty.call(responseRecord, 'id')) {
+      delete responseRecord.id;
+      changed = true;
+    }
+  }
+
+  for (const child of Object.values(record)) {
+    changed = stripFunctionResponseIds(child) || changed;
+  }
+
+  return changed;
+};
+
+function rewriteVertexRequestBody(body: Buffer, gcsFilesAdapter: GcsFilesAdapter | undefined): Buffer {
+  const toolConfigSanitizedBody = stripVertexUnsupportedToolConfig(body);
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(toolConfigSanitizedBody.toString('utf8'));
+  } catch {
+    return gcsFilesAdapter
+      ? gcsFilesAdapter.rewriteFileUriInJsonBody(toolConfigSanitizedBody)
+      : toolConfigSanitizedBody;
+  }
+
+  const functionResponseSanitizedBody = stripFunctionResponseIds(parsed)
+    ? Buffer.from(JSON.stringify(parsed), 'utf8')
+    : toolConfigSanitizedBody;
+
+  return gcsFilesAdapter
+    ? gcsFilesAdapter.rewriteFileUriInJsonBody(functionResponseSanitizedBody)
+    : functionResponseSanitizedBody;
+}
+
 class RequestBodyTooLargeError extends Error {
   constructor(limit: number) {
     super(`Request body exceeds ${limit} bytes.`);
@@ -715,8 +797,7 @@ async function proxyGeminiRequest(
     signal: abortController.signal,
   };
 
-  const shouldRewriteBody =
-    hasBody && config.backendFlavor === 'vertex' && gcsFilesAdapter !== undefined && isModelInvocation;
+  const shouldRewriteBody = hasBody && config.backendFlavor === 'vertex' && isModelInvocation;
 
   if (shouldRewriteBody) {
     let bodyBuffer: Buffer;
@@ -738,7 +819,7 @@ async function proxyGeminiRequest(
       return;
     }
 
-    const rewrittenBody = gcsFilesAdapter.rewriteFileUriInJsonBody(bodyBuffer);
+    const rewrittenBody = rewriteVertexRequestBody(bodyBuffer, gcsFilesAdapter);
     const rewrittenBodyView = new Uint8Array(rewrittenBody.buffer, rewrittenBody.byteOffset, rewrittenBody.byteLength);
     requestInit.body = rewrittenBodyView as unknown as BodyInit;
     requestInit.headers = new Headers(requestInit.headers);

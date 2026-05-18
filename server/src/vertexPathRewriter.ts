@@ -19,7 +19,7 @@ interface RewriteResult {
 }
 
 export function rewriteToVertex(upstreamPath: string, search: string, vertex: VertexBackendConfig): RewriteResult {
-  const host = `${vertex.location}${VERTEX_HOST_SUFFIX}`;
+  const host = vertex.location === 'global' ? 'aiplatform.googleapis.com' : `${vertex.location}${VERTEX_HOST_SUFFIX}`;
   const normalizedPath = upstreamPath.startsWith('/') ? upstreamPath : `/${upstreamPath}`;
 
   const withoutVersion = normalizedPath.replace(AISTUDIO_VERSION_PREFIX_PATTERN, '/');

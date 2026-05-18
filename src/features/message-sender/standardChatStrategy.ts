@@ -1,6 +1,6 @@
 import { logService } from '@/services/logService';
 import { buildContentParts } from '@/utils/chat/builder';
-import { getModelCapabilities } from '@/utils/modelHelpers';
+import { getModelCapabilities, normalizeThinkingLevelForModel } from '@/utils/modelHelpers';
 import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
 import type { UploadedFile } from '@/types';
 import { runOptimisticMessagePipeline } from './messagePipeline';
@@ -56,6 +56,7 @@ export const sendStandardMessage = async ({
     : activeModelId;
   const settingsForPersistence = { ...currentChatSettings };
   const settingsForApi = { ...currentChatSettings };
+  settingsForApi.thinkingLevel = normalizeThinkingLevelForModel(effectiveActiveModelId, settingsForApi.thinkingLevel);
 
   if (isFastMode) {
     const capabilities = getModelCapabilities(effectiveActiveModelId);
@@ -113,6 +114,7 @@ export const sendStandardMessage = async ({
     runMessageLifecycle,
     placement,
     userMessageOptions: {
+      apiParts: promptParts,
       cumulativeTotalTokens: cumulativeTotalTokens > 0 ? cumulativeTotalTokens : undefined,
     },
     modelMessageOptions: {

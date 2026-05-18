@@ -480,6 +480,21 @@ describe('buildGenerationConfig', () => {
     expect(config.thinkingConfig!.thinkingLevel).toBe('LOW');
   });
 
+  it('normalizes stale MINIMAL thinking to LOW for Gemini 3.1 Pro', async () => {
+    const config = await buildGenerationConfig(
+      'gemini-3.1-pro-preview',
+      'sys',
+      baseConfig,
+      false,
+      -1,
+      false,
+      false,
+      false,
+      'MINIMAL',
+    );
+    expect(config.thinkingConfig!.thinkingLevel).toBe('LOW');
+  });
+
   it('defaults thinkingLevel to HIGH for Gemini 3', async () => {
     const config = await buildGenerationConfig('gemini-3-flash-preview', 'sys', baseConfig, false, 0);
     expect(config.thinkingConfig!.thinkingLevel).toBe('HIGH');

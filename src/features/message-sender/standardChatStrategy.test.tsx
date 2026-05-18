@@ -71,6 +71,7 @@ vi.mock('@/utils/modelHelpers', () => ({
   isGemini3Model: vi.fn((id: string) => id.includes('gemini-3')),
   isImageModel: vi.fn((id: string) => id.includes('image')),
   shouldStripThinkingFromContext: vi.fn(() => false),
+  normalizeThinkingLevelForModel: vi.fn((_id: string, level?: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH') => level),
   getModelCapabilities: mockModelCapabilities,
 }));
 
@@ -266,6 +267,51 @@ describe('standardChatStrategy', () => {
     unmount();
   });
 
+  it('persists the API-ready user parts on the visible user message', async () => {
+    const updateAndPersistSessions = vi.fn();
+    const promptParts = [
+      {
+        fileData: {
+          mimeType: 'video/mp4',
+          fileUri: 'https://youtube.com/watch?v=abc',
+        },
+      },
+      { text: '这个视频讲了什么' },
+    ];
+    mockBuildContentParts.mockResolvedValue({
+      contentParts: promptParts,
+      enrichedFiles: [],
+    });
+
+    const { result, unmount } = renderStandardChat({ updateAndPersistSessions });
+
+    await act(async () => {
+      await result.current.sendStandardMessage({
+        text: '这个视频讲了什么',
+        files: [],
+        editingMessageId: null,
+        activeModelId: 'gemini-3-flash-preview',
+        request: createPreparedRequest(),
+      });
+    });
+
+    const optimisticUpdater = updateAndPersistSessions.mock.calls[0]?.[0];
+    expect(optimisticUpdater).toEqual(expect.any(Function));
+
+    optimisticUpdater([]);
+
+    const { createMessage } = await import('@/utils/chat/session');
+    expect(vi.mocked(createMessage)).toHaveBeenCalledWith(
+      'user',
+      '这个视频讲了什么',
+      expect.objectContaining({
+        apiParts: promptParts,
+      }),
+    );
+
+    unmount();
+  });
+
   it('does not register an auto Live Artifacts completion callback for standard chat', async () => {
     const getStreamHandlers = vi.fn(
       (...args: Parameters<Parameters<typeof sendStandardMessage>[0]['getStreamHandlers']>) => {
@@ -349,6 +395,58 @@ describe('standardChatStrategy', () => {
         personGeneration: 'ALLOW_ADULT',
       }),
     );
+
+    unmount();
+  });
+
+  it('routes the visible code tool through local Python so generated files are downloadable attachments', async () => {
+    const getStreamHandlers = vi.fn(() => ({
+      streamOnError: vi.fn(),
+      streamOnComplete: vi.fn(),
+      streamOnPart: vi.fn(),
+      onThoughtChunk: vi.fn(),
+    }));
+
+    mockAppendFunctionDeclarationsToTools.mockImplementation((_modelId, config, declarations) => ({
+      ...config,
+      tools: [{ functionDeclarations: declarations }],
+    }));
+
+    const { result, unmount } = renderStandardChat({
+      currentChatSettings: {
+        modelId: 'gemini-3-flash-preview',
+        isCodeExecutionEnabled: true,
+        isLocalPythonEnabled: false,
+      },
+      getStreamHandlers,
+    });
+
+    await act(async () => {
+      await result.current.sendStandardMessage({
+        text: '生成一个 bmp 文件',
+        files: [],
+        editingMessageId: null,
+        activeModelId: 'gemini-3-flash-preview',
+        request: createPreparedRequest(),
+      });
+    });
+
+    expect(mockCreateStandardClientFunctions).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isLocalPythonEnabled: true,
+      }),
+    );
+    expect(mockBuildGenerationConfig).toHaveBeenCalledWith(
+      expect.objectContaining({
+        settings: expect.objectContaining({
+          isCodeExecutionEnabled: false,
+          isLocalPythonEnabled: true,
+        }),
+        isLocalPythonEnabled: true,
+      }),
+    );
+    expect(mockRunStandardToolLoop).toHaveBeenCalledOnce();
+    expect(mockSendMessageStream).not.toHaveBeenCalled();
 
     unmount();
   });

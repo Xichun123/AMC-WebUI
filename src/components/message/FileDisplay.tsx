@@ -130,7 +130,7 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
               </div>
             ) : null}
 
-            {(file.name.startsWith('generated-image-') || file.name.startsWith('edited-image-')) && (
+            {isFromMessageList && !file.fileApiName && file.dataUrl && !file.error && (
               <button
                 type="button"
                 onClick={handleDownloadFile}

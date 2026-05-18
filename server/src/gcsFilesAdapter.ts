@@ -1,11 +1,13 @@
 import { Buffer } from 'node:buffer';
 import { randomUUID } from 'node:crypto';
+import type { Writable } from 'node:stream';
 import type { GcsConfig } from './config.js';
 
 const AISTUDIO_FILE_URI_HOST = 'https://generativelanguage.googleapis.com';
 const FILE_ID_PATTERN = /^[\w-]+$/;
 const AISTUDIO_FILE_URI_PATTERN = /https:\/\/generativelanguage\.googleapis\.com\/v1beta\/files\/([\w-]+)/g;
 const FILE_EXPIRATION_LEEWAY_MS = 365 * 24 * 60 * 60 * 1000;
+const UPLOAD_SESSION_TTL_MS = 6 * 60 * 60 * 1000;
 
 export interface StorageFile {
   save(
@@ -15,6 +17,11 @@ export interface StorageFile {
       metadata?: { contentType?: string; metadata?: Record<string, string> };
     },
   ): Promise<unknown>;
+  createWriteStream?(options: {
+    contentType?: string;
+    metadata?: { contentType?: string; metadata?: Record<string, string> };
+    resumable?: boolean;
+  }): Writable;
   getMetadata(): Promise<
     [
       {
@@ -78,7 +85,10 @@ interface UploadSessionState {
   mimeType: string;
   totalSize: number;
   receivedBytes: number;
-  chunks: Buffer[];
+  chunks?: Buffer[];
+  writeStream?: Writable;
+  cleanupTimer?: ReturnType<typeof setTimeout>;
+  streamError?: Error;
 }
 
 interface CreateGcsFilesAdapterOptions {
@@ -108,6 +118,65 @@ function buildChunkUploadUrl(sessionId: string): string {
   return `${AISTUDIO_FILE_URI_HOST}/__gcs-upload-chunk__/${sessionId}`;
 }
 
+function buildGcsSaveOptions(session: Pick<UploadSessionState, 'displayName' | 'mimeType'>) {
+  return {
+    contentType: session.mimeType,
+    metadata: {
+      contentType: session.mimeType,
+      metadata: {
+        'amc-display-name': session.displayName,
+      },
+    },
+  };
+}
+
+function cleanupSession(session: UploadSessionState): void {
+  if (session.cleanupTimer) {
+    clearTimeout(session.cleanupTimer);
+    session.cleanupTimer = undefined;
+  }
+  session.writeStream?.removeAllListeners('error');
+}
+
+function destroySessionStream(session: UploadSessionState, error: Error): void {
+  session.streamError = error;
+  session.writeStream?.destroy();
+}
+
+async function appendToSession(session: UploadSessionState, chunk: Buffer): Promise<void> {
+  if (session.writeStream) {
+    await new Promise<void>((resolve, reject) => {
+      session.writeStream?.write(chunk, (error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    });
+    return;
+  }
+
+  session.chunks?.push(chunk);
+}
+
+async function finalizeSessionUpload(session: UploadSessionState, file: StorageFile): Promise<void> {
+  if (session.writeStream) {
+    await new Promise<void>((resolve, reject) => {
+      session.writeStream?.end((error?: Error | null) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    });
+    return;
+  }
+
+  await file.save(Buffer.concat(session.chunks ?? []), buildGcsSaveOptions(session));
+}
+
 export function createGcsFilesAdapter(options: CreateGcsFilesAdapterOptions): GcsFilesAdapter {
   const { storage, config, now = () => new Date(), randomId = () => randomUUID().replace(/-/g, '') } = options;
   const sessions = new Map<string, UploadSessionState>();
@@ -124,14 +193,30 @@ export function createGcsFilesAdapter(options: CreateGcsFilesAdapterOptions): Gc
       }
 
       const sessionId = randomId();
-      sessions.set(sessionId, {
+      const file = storage.bucket(config.bucketName).file(`${config.objectPrefix}${sessionId}`);
+      const session: UploadSessionState = {
         id: sessionId,
         displayName,
         mimeType,
         totalSize: sizeBytes,
         receivedBytes: 0,
-        chunks: [],
+      };
+      if (typeof file.createWriteStream === 'function') {
+        session.writeStream = file.createWriteStream({ ...buildGcsSaveOptions(session), resumable: true });
+      } else {
+        session.chunks = [];
+      }
+      const cleanupTimer = setTimeout(() => {
+        sessions.delete(sessionId);
+        destroySessionStream(session, new Error(`Upload session ${sessionId} expired.`));
+        cleanupSession(session);
+      }, UPLOAD_SESSION_TTL_MS);
+      session.writeStream?.on('error', (error) => {
+        session.streamError = error instanceof Error ? error : new Error(String(error));
       });
+      cleanupTimer.unref?.();
+      session.cleanupTimer = cleanupTimer;
+      sessions.set(sessionId, session);
 
       return {
         sessionId,
@@ -151,10 +236,24 @@ export function createGcsFilesAdapter(options: CreateGcsFilesAdapterOptions): Gc
 
       if (session.receivedBytes + chunk.byteLength > config.maxFileBytes) {
         sessions.delete(sessionId);
+        destroySessionStream(session, new Error(`Upload exceeds GCS_MAX_FILE_BYTES ${config.maxFileBytes}.`));
+        cleanupSession(session);
         throw new Error(`Upload exceeds GCS_MAX_FILE_BYTES ${config.maxFileBytes}.`);
       }
 
-      session.chunks.push(chunk);
+      try {
+        await appendToSession(session, chunk);
+      } catch (error) {
+        sessions.delete(sessionId);
+        destroySessionStream(session, error instanceof Error ? error : new Error(String(error)));
+        cleanupSession(session);
+        throw error;
+      }
+      if (session.streamError) {
+        sessions.delete(sessionId);
+        cleanupSession(session);
+        throw session.streamError;
+      }
       session.receivedBytes += chunk.byteLength;
 
       const shouldFinalize = command
@@ -168,26 +267,22 @@ export function createGcsFilesAdapter(options: CreateGcsFilesAdapterOptions): Gc
 
       if (session.receivedBytes !== session.totalSize) {
         sessions.delete(sessionId);
+        destroySessionStream(session, new Error('File size mismatch on finalize.'));
+        cleanupSession(session);
         throw new Error(
           `File size mismatch on finalize: declared ${session.totalSize}, received ${session.receivedBytes}.`,
         );
       }
 
-      const data = Buffer.concat(session.chunks);
       const objectPath = `${config.objectPrefix}${session.id}`;
       const bucket = storage.bucket(config.bucketName);
       const file = bucket.file(objectPath);
-      await file.save(data, {
-        contentType: session.mimeType,
-        metadata: {
-          contentType: session.mimeType,
-          metadata: {
-            'amc-display-name': session.displayName,
-          },
-        },
-      });
-
-      sessions.delete(sessionId);
+      try {
+        await finalizeSessionUpload(session, file);
+      } finally {
+        sessions.delete(sessionId);
+        cleanupSession(session);
+      }
 
       const createdAt = now();
       const expirationTime = new Date(createdAt.getTime() + FILE_EXPIRATION_LEEWAY_MS);

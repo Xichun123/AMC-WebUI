@@ -45,8 +45,13 @@ describe('loadConfig', () => {
     expect(config.gcs).toEqual({
       bucketName: 'my-bucket',
       objectPrefix: 'amc-files/',
-      maxFileBytes: 100 * 1024 * 1024,
+      maxFileBytes: 2 * 1024 * 1024 * 1024,
     });
+  });
+
+  it('allows 400MB video uploads by default for the Vertex GCS Files adapter', () => {
+    const config = loadConfig({ GEMINI_BACKEND: 'vertex', GCP_PROJECT_ID: 'p', GCS_BUCKET: 'my-bucket' });
+    expect(config.gcs?.maxFileBytes).toBeGreaterThanOrEqual(400 * 1024 * 1024);
   });
 
   it('normalizes GCS_OBJECT_PREFIX by stripping leading slash and ensuring trailing slash', () => {
@@ -76,7 +81,7 @@ describe('loadConfig', () => {
       GCS_BUCKET: 'b',
       GCS_MAX_FILE_BYTES: 'not-a-number',
     });
-    expect(config.gcs?.maxFileBytes).toBe(100 * 1024 * 1024);
+    expect(config.gcs?.maxFileBytes).toBe(2 * 1024 * 1024 * 1024);
   });
 
   it('ignores GCS_BUCKET in aistudio mode', () => {

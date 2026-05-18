@@ -19,6 +19,12 @@ vi.mock('react-pdf', () => ({
   },
 }));
 
+const triggerDownloadMock = vi.fn();
+
+vi.mock('@/utils/export/core', () => ({
+  triggerDownload: (...args: unknown[]) => triggerDownloadMock(...args),
+}));
+
 const createImageFile = () =>
   createUploadedFile({
     id: 'image-1',
@@ -40,6 +46,32 @@ describe('FileDisplay', () => {
     expect(image).not.toBeNull();
     expect(image).toHaveClass('max-h-56');
     expect(image).toHaveClass('object-contain');
+  });
+
+  it('shows a download control for local Python generated BMP image attachments', () => {
+    act(() => {
+      renderer.root.render(
+        <FileDisplay
+          file={createUploadedFile({
+            id: 'bmp-1',
+            name: 'mime_fix_probe.bmp',
+            type: 'image/bmp',
+            size: 70,
+            dataUrl: 'blob:bmp',
+          })}
+          isFromMessageList
+        />,
+      );
+    });
+
+    const downloadButton = renderer.container.querySelector('button[title="Download Image"]');
+    expect(downloadButton).not.toBeNull();
+
+    act(() => {
+      downloadButton!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(triggerDownloadMock).toHaveBeenCalledWith('blob:bmp', 'mime_fix_probe.bmp', false);
   });
 
   it('renders a PDF thumbnail in message file cards', async () => {

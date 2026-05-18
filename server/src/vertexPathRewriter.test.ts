@@ -60,4 +60,15 @@ describe('rewriteToVertex', () => {
       'https://europe-west4-aiplatform.googleapis.com/v1/projects/p/locations/europe-west4/publishers/google/models/gemini-2.5-flash:generateContent',
     );
   });
+
+  it('uses the unprefixed aiplatform host when location is global', () => {
+    const result = rewriteToVertex('/v1beta/models/gemini-2.5-flash:generateContent', '', {
+      projectId: 'p',
+      location: 'global',
+    });
+
+    expect(result.url).toBe(
+      'https://aiplatform.googleapis.com/v1/projects/p/locations/global/publishers/google/models/gemini-2.5-flash:generateContent',
+    );
+  });
 });

@@ -9,6 +9,8 @@ import { MediaResolution } from '@/types/settings';
 import { useModelPreferencesStore, type CachedModelSettings } from '@/stores/modelPreferencesStore';
 import type { UsageMetadata } from '@google/genai';
 
+export type ThinkingLevel = 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH';
+
 // --- Model Sorting & Defaults ---
 
 export const sanitizeModelOptions = (models: ModelOption[]): ModelOption[] => {
@@ -259,13 +261,33 @@ export const normalizeImageSizeForModel = (modelId: string, imageSize?: string):
 
 const getDefaultThinkingLevelForModel = (
   modelId: string,
-  fallback: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH' = 'HIGH',
-): 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH' => {
+  fallback: ThinkingLevel = 'HIGH',
+): ThinkingLevel => {
   if (isGemini31FlashLiveModel(modelId) || isGemini31FlashImageModel(modelId)) {
     return 'MINIMAL';
   }
 
-  return fallback;
+  return normalizeThinkingLevelForModel(modelId, fallback);
+};
+
+export const normalizeThinkingLevelForModel = (
+  modelId: string,
+  thinkingLevel?: ThinkingLevel,
+): ThinkingLevel | undefined => {
+  if (thinkingLevel !== 'MINIMAL') {
+    return thinkingLevel;
+  }
+
+  const capabilities = getModelCapabilities(modelId);
+  if (capabilities.isGemini31FlashImageModel || capabilities.isGemini31FlashLiveModel) {
+    return 'MINIMAL';
+  }
+
+  if (capabilities.supportsThinkingLevel && !capabilities.isGemini3FlashModel && !capabilities.isGeminiRoboticsModel) {
+    return 'LOW';
+  }
+
+  return thinkingLevel;
 };
 
 export const shouldStripThinkingFromContext = (modelId: string, hideThinkingInContext?: boolean): boolean => {
@@ -315,7 +337,10 @@ export const resolveModelSwitchSettings = ({
   const mediaResolution =
     cached?.mediaResolution ?? sourceSettings.mediaResolution ?? MediaResolution.MEDIA_RESOLUTION_UNSPECIFIED;
   const thinkingLevel =
-    cached?.thinkingLevel ?? getDefaultThinkingLevelForModel(targetModelId, sourceSettings.thinkingLevel);
+    normalizeThinkingLevelForModel(
+      targetModelId,
+      cached?.thinkingLevel ?? getDefaultThinkingLevelForModel(targetModelId, sourceSettings.thinkingLevel),
+    );
   const thinkingBudget = adjustThinkingBudget(targetModelId, cached?.thinkingBudget ?? sourceSettings.thinkingBudget);
 
   return {

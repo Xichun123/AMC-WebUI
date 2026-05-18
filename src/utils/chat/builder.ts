@@ -82,8 +82,7 @@ export const buildContentParts = async (
       if (usesRemoteFileReference(file) && file.fileUri) {
         // 1. Files uploaded via API (or YouTube links)
         if (isYoutube) {
-          // For YouTube URLs, do NOT send mimeType, just fileUri.
-          part = { fileData: { fileUri: file.fileUri } };
+          part = { fileData: { mimeType: 'video/mp4', fileUri: file.fileUri } };
         } else {
           part = { fileData: { mimeType: file.type, fileUri: file.fileUri } };
         }

@@ -5,6 +5,7 @@ import { createGcsFilesAdapter, type StorageLike } from './gcsFilesAdapter';
 import type { AddressInfo } from 'node:net';
 import http from 'node:http';
 import { Buffer } from 'node:buffer';
+import { Writable } from 'node:stream';
 
 function createInMemoryAdapter() {
   const files = new Map<string, { data: Buffer; contentType: string; metadata: Record<string, string> }>();
@@ -18,6 +19,23 @@ function createInMemoryAdapter() {
               data,
               contentType: options.metadata?.contentType ?? options.contentType ?? 'application/octet-stream',
               metadata: options.metadata?.metadata ?? {},
+            });
+          },
+          createWriteStream: (options) => {
+            const chunks: Buffer[] = [];
+            return new Writable({
+              write: (chunk, _encoding, callback) => {
+                chunks.push(Buffer.from(chunk));
+                callback();
+              },
+              final: (callback) => {
+                files.set(key, {
+                  data: Buffer.concat(chunks),
+                  contentType: options.metadata?.contentType ?? options.contentType ?? 'application/octet-stream',
+                  metadata: options.metadata?.metadata ?? {},
+                });
+                callback();
+              },
             });
           },
           getMetadata: async () => {
@@ -494,6 +512,153 @@ describe('createServer', () => {
       expect(headers.get('x-goog-api-key')).toBeNull();
     });
 
+    it('removes AI Studio-only toolConfig fields before forwarding model invocations to Vertex', async () => {
+      const capturedRequests: Array<{ body: string; headers: Headers }> = [];
+      const fetchImpl = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+        const body =
+          init?.body instanceof Uint8Array ? Buffer.from(init.body).toString('utf8') : String(init?.body ?? '');
+        capturedRequests.push({ body, headers: init?.headers as Headers });
+        return new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } });
+      });
+      const vertexAuth = { getAccessToken: vi.fn(async () => 'tok') };
+      const app = createServer(
+        {
+          geminiApiBase: 'https://example.test',
+          geminiApiKey: '',
+          backendFlavor: 'vertex',
+          vertex: { projectId: 'p', location: 'us-central1' },
+        },
+        { fetchImpl, vertexAuth },
+      );
+      const started = await startHttpServer(app);
+      cleanupCallbacks.push(started.close);
+
+      const response = await fetch(
+        `${started.baseUrl}/api/gemini/v1beta/models/gemini-3-flash-preview:generateContent`,
+        {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            contents: [],
+            tools: [{ googleSearch: {} }],
+            toolConfig: {
+              includeServerSideToolInvocations: true,
+            },
+          }),
+        },
+      );
+
+      expect(response.status).toBe(200);
+      expect(capturedRequests).toHaveLength(1);
+      expect(capturedRequests[0].headers.get('content-length')).toBe(
+        String(Buffer.byteLength(capturedRequests[0].body)),
+      );
+      expect(JSON.parse(capturedRequests[0].body)).toEqual({
+        contents: [],
+        tools: [{ googleSearch: {} }],
+      });
+    });
+
+    it('preserves other toolConfig fields when removing Vertex-unsupported fields', async () => {
+      const capturedBodies: string[] = [];
+      const fetchImpl = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+        const body =
+          init?.body instanceof Uint8Array ? Buffer.from(init.body).toString('utf8') : String(init?.body ?? '');
+        capturedBodies.push(body);
+        return new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } });
+      });
+      const vertexAuth = { getAccessToken: vi.fn(async () => 'tok') };
+      const app = createServer(
+        {
+          geminiApiBase: 'https://example.test',
+          geminiApiKey: '',
+          backendFlavor: 'vertex',
+          vertex: { projectId: 'p', location: 'us-central1' },
+        },
+        { fetchImpl, vertexAuth },
+      );
+      const started = await startHttpServer(app);
+      cleanupCallbacks.push(started.close);
+
+      await fetch(`${started.baseUrl}/api/gemini/v1beta/models/gemini-3-flash-preview:generateContent`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          contents: [],
+          toolConfig: {
+            functionCallingConfig: { mode: 'AUTO' },
+            includeServerSideToolInvocations: true,
+          },
+        }),
+      });
+
+      expect(JSON.parse(capturedBodies[0])).toEqual({
+        contents: [],
+        toolConfig: {
+          functionCallingConfig: { mode: 'AUTO' },
+        },
+      });
+    });
+
+    it('removes functionResponse ids before forwarding tool responses to Vertex', async () => {
+      const capturedBodies: string[] = [];
+      const fetchImpl = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+        const body =
+          init?.body instanceof Uint8Array ? Buffer.from(init.body).toString('utf8') : String(init?.body ?? '');
+        capturedBodies.push(body);
+        return new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } });
+      });
+      const vertexAuth = { getAccessToken: vi.fn(async () => 'tok') };
+      const app = createServer(
+        {
+          geminiApiBase: 'https://example.test',
+          geminiApiKey: '',
+          backendFlavor: 'vertex',
+          vertex: { projectId: 'p', location: 'us-central1' },
+        },
+        { fetchImpl, vertexAuth },
+      );
+      const started = await startHttpServer(app);
+      cleanupCallbacks.push(started.close);
+
+      await fetch(`${started.baseUrl}/api/gemini/v1beta/models/gemini-3-flash-preview:generateContent`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                {
+                  functionResponse: {
+                    id: 'call-1',
+                    name: 'run_local_python',
+                    response: { output: '42' },
+                  },
+                },
+              ],
+            },
+          ],
+        }),
+      });
+
+      expect(JSON.parse(capturedBodies[0])).toEqual({
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              {
+                functionResponse: {
+                  name: 'run_local_python',
+                  response: { output: '42' },
+                },
+              },
+            ],
+          },
+        ],
+      });
+    });
+
     it('returns 500 when access token retrieval fails', async () => {
       const fetchImpl = vi.fn();
       const vertexAuth = {
@@ -628,6 +793,47 @@ describe('createServer', () => {
       const metaBody = (await meta.json()) as { name: string; state: string };
       expect(metaBody.name).toBe('files/test-id');
       expect(metaBody.state).toBe('ACTIVE');
+    });
+
+    it('allows initiating a 400MB video upload when the GCS limit permits it', async () => {
+      const vertexAuth = { getAccessToken: vi.fn(async () => 'tok') };
+      const storage: StorageLike = {
+        bucket: () => ({
+          file: () => ({
+            save: vi.fn(),
+            getMetadata: vi.fn(),
+            exists: vi.fn(async () => [false]),
+          }),
+        }),
+      };
+      const adapter = createGcsFilesAdapter({
+        storage,
+        config: { bucketName: 'test-bucket', objectPrefix: 'amc-files/', maxFileBytes: 2 * 1024 * 1024 * 1024 },
+        randomId: () => 'video-session',
+      });
+      const app = createServer(
+        {
+          geminiApiBase: 'https://example.test',
+          geminiApiKey: '',
+          backendFlavor: 'vertex',
+          vertex: { projectId: 'p', location: 'us-central1' },
+        },
+        { vertexAuth, gcsFilesAdapter: adapter },
+      );
+      const started = await startHttpServer(app);
+      cleanupCallbacks.push(started.close);
+
+      const response = await fetch(`${started.baseUrl}/api/gemini/upload/v1beta/files`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          file: { displayName: 'large.mp4', mimeType: 'video/mp4', sizeBytes: String(400 * 1024 * 1024) },
+        }),
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get('x-goog-upload-status')).toBe('active');
+      expect(response.headers.get('x-goog-upload-url')).toContain('/__gcs-upload-chunk__/video-session');
     });
 
     it('rewrites AI Studio file URIs in generateContent body to gs:// URIs', async () => {

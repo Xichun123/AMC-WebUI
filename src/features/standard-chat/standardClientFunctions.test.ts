@@ -55,10 +55,13 @@ describe('createStandardClientFunctions', () => {
       }),
     ).resolves.toMatchObject({
       response: {
+        status: 'completed',
+        summary: expect.stringContaining('Python execution completed successfully'),
         output: '42',
         result: '42',
         imageGenerated: true,
         generatedFiles: [],
+        nextAction: expect.stringContaining('Do not call run_local_python again'),
       },
       generatedFiles: [
         {

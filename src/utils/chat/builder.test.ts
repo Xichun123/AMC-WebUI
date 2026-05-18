@@ -113,13 +113,15 @@ describe('buildContentParts', () => {
     expect(contentParts[0]).toEqual({ inlineData: { mimeType: 'image/png', data: 'base64data' } });
   });
 
-  it('handles YouTube links without mimeType in fileData', async () => {
+  it('handles YouTube links with a Vertex-compatible video mimeType in fileData', async () => {
     const file = makeFile({
       type: 'video/youtube-link',
       fileUri: 'https://youtube.com/watch?v=abc',
     });
     const { contentParts } = await buildContentParts('Describe this', [file]);
-    expect(contentParts[0]).toEqual({ fileData: { fileUri: 'https://youtube.com/watch?v=abc' } });
+    expect(contentParts[0]).toEqual({
+      fileData: { mimeType: 'video/mp4', fileUri: 'https://youtube.com/watch?v=abc' },
+    });
   });
 
   it('preserves per-part media resolution for YouTube video parts on Gemini 3', async () => {
@@ -136,7 +138,7 @@ describe('buildContentParts', () => {
     );
 
     expect(contentParts[0]).toEqual({
-      fileData: { fileUri: 'https://youtube.com/watch?v=abc' },
+      fileData: { mimeType: 'video/mp4', fileUri: 'https://youtube.com/watch?v=abc' },
       mediaResolution: { level: 'MEDIA_RESOLUTION_HIGH' },
     });
   });

@@ -76,6 +76,10 @@ export const resolveLiveClientBaseUrl = (
     return null;
   }
 
+  if (!isAbsoluteHttpUrl(configuredBaseUrl)) {
+    return null;
+  }
+
   const normalizedConfiguredBaseUrl = normalizeGeminiApiBaseUrl(configuredBaseUrl);
   return isAbsoluteHttpUrl(normalizedConfiguredBaseUrl) ? normalizedConfiguredBaseUrl : null;
 };

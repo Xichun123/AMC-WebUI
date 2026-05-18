@@ -39,6 +39,7 @@ export default defineConfig(async ({ mode }) => {
         strategies: 'injectManifest',
         srcDir: 'src/pwa',
         filename: 'sw.ts',
+        registerType: 'autoUpdate',
         injectRegister: false,
         manifest: false,
         injectManifest: {

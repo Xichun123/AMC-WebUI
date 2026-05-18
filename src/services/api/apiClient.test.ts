@@ -76,6 +76,15 @@ describe('getClient', () => {
     );
   });
 
+  it('converts same-origin proxy baseUrl paths to absolute URLs before passing them to the SDK', async () => {
+    await getClient('key', '/api/gemini');
+    expect(GoogleGenAI).toHaveBeenCalledWith(
+      expect.objectContaining({
+        httpOptions: { baseUrl: 'http://localhost/api/gemini' },
+      }),
+    );
+  });
+
   it('merges proxy baseUrl into existing httpOptions', async () => {
     await getClient('key', 'https://proxy.example.com/', { apiVersion: 'v1alpha' });
     expect(GoogleGenAI).toHaveBeenCalledWith({

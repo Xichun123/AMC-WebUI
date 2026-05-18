@@ -29,7 +29,7 @@ const DEFAULT_PORT = 3001;
 const DEFAULT_GEMINI_API_BASE = 'https://generativelanguage.googleapis.com';
 const DEFAULT_VERTEX_LOCATION = 'us-central1';
 const DEFAULT_GCS_OBJECT_PREFIX = 'amc-files/';
-const DEFAULT_GCS_MAX_FILE_BYTES = 100 * 1024 * 1024;
+const DEFAULT_GCS_MAX_FILE_BYTES = 2 * 1024 * 1024 * 1024;
 
 function parsePort(port: string | undefined): number {
   if (!port) {

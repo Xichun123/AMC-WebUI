@@ -19,7 +19,7 @@ services:
       # The SA must hold roles/storage.objectUser on the bucket.
       GCS_BUCKET: ${GCS_BUCKET:-}
       GCS_OBJECT_PREFIX: ${GCS_OBJECT_PREFIX:-amc-files/}
-      GCS_MAX_FILE_BYTES: ${GCS_MAX_FILE_BYTES:-104857600}
+      GCS_MAX_FILE_BYTES: ${GCS_MAX_FILE_BYTES:-2147483648}
     volumes:
       - ./secrets:/run/secrets:ro
     expose:

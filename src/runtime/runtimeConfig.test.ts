@@ -98,6 +98,23 @@ describe('runtimeConfig', () => {
     expect(getBackendFlavor()).toBe('aistudio');
   });
 
+  it('forces serverManagedApi=true when backendFlavor is vertex', () => {
+    setRuntimeConfig({
+      backendFlavor: 'vertex',
+      serverManagedApi: false,
+      useCustomApiConfig: true,
+      useApiProxy: true,
+      apiProxyUrl: '/api/gemini',
+    });
+
+    expect(getRuntimeConfigAppSettingsOverrides()).toEqual({
+      serverManagedApi: true,
+      useCustomApiConfig: true,
+      useApiProxy: true,
+      apiProxyUrl: '/api/gemini',
+    });
+  });
+
   it('defaults Docker runtime config to BYOK instead of server-managed credentials', () => {
     const projectRoot = path.resolve(__dirname, '../..');
     const webEntrypointSource = fs.readFileSync(path.join(projectRoot, 'docker/web-entrypoint.sh'), 'utf8');

@@ -231,6 +231,9 @@ Notes:
 | `PORT`                          | Port used by the API service                                                                     | Server only           | `3001`                                      |
 | `GEMINI_API_BASE`               | Upstream Gemini API base URL                                                                     | Server only           | `https://generativelanguage.googleapis.com` |
 | `ALLOWED_ORIGINS`               | Comma-separated CORS allowlist for cross-origin deployments                                      | Server only           | Empty                                       |
+| `SITE_AUTH_USERS_JSON`          | Optional site login user registry; leave empty to disable the login page                         | Server only           | Empty                                       |
+| `SITE_AUTH_SECRET`              | Signing secret for site login sessions; required when site login users are configured            | Server only           | Empty                                       |
+| `SITE_AUTH_SESSION_DAYS`        | Site login session lifetime in days                                                              | Server only           | `7`                                         |
 | `RUNTIME_SERVER_MANAGED_API`    | Enables server-managed API mode by default in the frontend                                       | Public runtime config | `false`                                     |
 | `RUNTIME_USE_CUSTOM_API_CONFIG` | Enables custom API configuration by default                                                      | Public runtime config | `true`                                      |
 | `RUNTIME_USE_API_PROXY`         | Enables API proxy mode by default                                                                | Public runtime config | `true`                                      |
@@ -246,6 +249,23 @@ Docker defaults to BYOK: after you enter an API key in Settings, regular Gemini 
 If you want server-managed credentials for regular Gemini requests, set `GEMINI_API_KEY` and `RUNTIME_SERVER_MANAGED_API=true`. Live API still requires an API key available in the browser. A browser-local key is suitable for personal or trusted deployments, but it is not a server secret: scripts running in the same browser context, extensions, XSS, or device compromise may still read it.
 
 OpenAI Compatible mode currently does not read `RUNTIME_API_PROXY_URL`, `RUNTIME_USE_API_PROXY`, or `RUNTIME_SERVER_MANAGED_API`. It sends `chat/completions` requests directly to the OpenAI-compatible Base URL configured in Settings, using its separate key set. If you want that mode to pass through your own gateway, point the Base URL at that gateway directly.
+
+#### Optional Site Login
+
+Docker deployments include a lightweight login gate for controlling who can enter the website. It only controls Site Access; it does not isolate chats, files, or settings by user. Browser data still belongs to the current browser profile.
+
+```bash
+npm run auth:hash -- "your-password"
+
+SITE_AUTH_SECRET=replace-with-a-long-random-secret
+SITE_AUTH_SESSION_DAYS=7
+SITE_AUTH_USERS_JSON=[{"username":"amc","passwordHash":"scrypt:..."}]
+```
+
+- Leave `SITE_AUTH_USERS_JSON` empty to disable the login page.
+- Usernames and passwords support Unicode. Store password hashes in the environment, not plaintext passwords.
+- Successful login creates a signed `HttpOnly` cookie, valid for 7 days by default.
+- Docker Nginx protects `/` and `/api/*`; unauthenticated pages redirect to `/login?next=...`, while unauthenticated API calls return `401 {"error":"AUTH_REQUIRED"}`.
 
 ### Option 3: Cloudflare Pages + Standalone API
 

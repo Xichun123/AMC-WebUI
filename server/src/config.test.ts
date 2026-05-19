@@ -6,6 +6,7 @@ describe('loadConfig', () => {
     const config = loadConfig({});
     expect(config.backendFlavor).toBe('aistudio');
     expect(config.vertex).toBeUndefined();
+    expect(config.siteAuth.enabled).toBe(false);
   });
 
   it('keeps backendFlavor aistudio for unrecognized GEMINI_BACKEND values', () => {
@@ -87,5 +88,28 @@ describe('loadConfig', () => {
   it('ignores GCS_BUCKET in aistudio mode', () => {
     const config = loadConfig({ GCS_BUCKET: 'should-be-ignored' });
     expect(config.gcs).toBeUndefined();
+  });
+
+  it('reads site auth users from SITE_AUTH_USERS_JSON', () => {
+    const config = loadConfig({
+      SITE_AUTH_USERS_JSON: JSON.stringify([{ username: '烘培女王', passwordHash: 'scrypt:hash' }]),
+      SITE_AUTH_SECRET: 'secret',
+      SITE_AUTH_SESSION_DAYS: '3',
+    });
+
+    expect(config.siteAuth).toEqual({
+      enabled: true,
+      users: [{ username: '烘培女王', passwordHash: 'scrypt:hash' }],
+      secret: 'secret',
+      sessionDays: 3,
+    });
+  });
+
+  it('requires SITE_AUTH_SECRET when site auth users are configured', () => {
+    expect(() =>
+      loadConfig({
+        SITE_AUTH_USERS_JSON: JSON.stringify([{ username: 'amc', passwordHash: 'scrypt:hash' }]),
+      }),
+    ).toThrow(/SITE_AUTH_SECRET is required/);
   });
 });

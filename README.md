@@ -264,6 +264,9 @@ docker compose up -d --build
 | `GCS_OBJECT_PREFIX`              | 上传文件写入 GCS 的对象前缀                                            | 仅服务端           | `amc-files/`                                |
 | `GCS_MAX_FILE_BYTES`             | 单文件上传上限；建议按部署需求显式设置                                 | 仅服务端           | `2147483648`                                |
 | `ALLOWED_ORIGINS`                | 逗号分隔 CORS 白名单（跨域部署时使用）                                 | 仅服务端           | 空                                          |
+| `SITE_AUTH_USERS_JSON`           | 可选站点登录用户表；为空则不启用登录页                                 | **仅服务端**       | 空                                          |
+| `SITE_AUTH_SECRET`               | 站点登录会话签名密钥；启用站点登录时必填                               | **仅服务端**       | 空                                          |
+| `SITE_AUTH_SESSION_DAYS`         | 站点登录会话有效天数                                                   | 仅服务端           | `7`                                         |
 | `RUNTIME_SERVER_MANAGED_API`     | 前端默认启用服务端托管 API                                             | **公开运行时配置** | `false`                                     |
 | `RUNTIME_USE_CUSTOM_API_CONFIG`  | 前端默认启用“自定义 API 配置”                                          | 公开运行时配置     | `true`                                      |
 | `RUNTIME_USE_API_PROXY`          | 前端默认启用 API 代理                                                  | 公开运行时配置     | `true`                                      |
@@ -284,6 +287,29 @@ docker compose up -d --build
 - OpenAI 兼容模式当前不读取 `RUNTIME_API_PROXY_URL`、`RUNTIME_USE_API_PROXY` 或 `RUNTIME_SERVER_MANAGED_API`；它会直接使用设置里的 OpenAI 兼容 Base URL 和独立 Key 发起 `chat/completions` 请求。如需走你自己的网关，请直接把该网关地址填为 OpenAI 兼容 Base URL。
 - 浏览器本地 key 适合自用/可信部署。它不会因为“保存在本地”而变成服务器密钥，同一浏览器上下文中的脚本、扩展、XSS 或设备风险仍可能读取它。
 - 前端在部署时默认只依赖后端端点：`/api/gemini/*`；Live API 从浏览器直连官方 Live 服务。
+
+### 可选：站点登录保护
+
+Docker 部署支持一个非常轻量的站点登录页，用于控制谁能进入网站。它只控制 **Site Access**，不做用户级聊天数据隔离；聊天记录、文件和设置仍归当前浏览器本地 Profile 所有。
+
+启用方式：
+
+```bash
+# 先生成每个用户的密码哈希
+npm run auth:hash -- "your-password"
+
+# .env 示例
+SITE_AUTH_SECRET=replace-with-a-long-random-secret
+SITE_AUTH_SESSION_DAYS=7
+SITE_AUTH_USERS_JSON=[{"username":"amc","passwordHash":"scrypt:..."}]
+```
+
+说明：
+
+- `SITE_AUTH_USERS_JSON` 为空时不会启用登录页，方便本地开发和私有网络自用。
+- `username` 和密码都支持中文；环境变量里保存的是 `passwordHash`，不要保存明文密码。
+- 登录成功后服务端写入 `HttpOnly` 签名 Cookie，默认有效期 7 天。
+- Docker 内置 Nginx 会保护 `/` 和 `/api/*`；未登录访问页面会跳到 `/login?next=...`，未登录调用 API 会返回 `401 {"error":"AUTH_REQUIRED"}`。
 
 ### Vertex AI + GCS 自托管部署
 

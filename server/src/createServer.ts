@@ -7,6 +7,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { ApiServerConfig } from './config.js';
 import type { GcsFilesAdapter } from './gcsFilesAdapter.js';
+import { handleSiteAuthRequest } from './siteAuth.js';
 import type { VertexAccessTokenProvider } from './vertexAuth.js';
 import { rewriteToVertex } from './vertexPathRewriter.js';
 
@@ -73,11 +74,12 @@ type ExecFileAsync = (
 ) => Promise<{ stdout: string; stderr: string }>;
 
 type CreateServerConfig = Pick<ApiServerConfig, 'geminiApiBase' | 'geminiApiKey'> &
-  Partial<Pick<ApiServerConfig, 'allowedOrigins' | 'backendFlavor' | 'vertex' | 'gcs'>>;
+  Partial<Pick<ApiServerConfig, 'allowedOrigins' | 'backendFlavor' | 'vertex' | 'gcs' | 'siteAuth'>>;
 
 interface ResolvedServerConfig extends CreateServerConfig {
   allowedOrigins: string[];
   backendFlavor: NonNullable<ApiServerConfig['backendFlavor']>;
+  siteAuth: ApiServerConfig['siteAuth'];
 }
 
 function getCorsHeaders(request: IncomingMessage, allowedOrigins: string[]): Record<string, string> {
@@ -879,6 +881,7 @@ export function createServer(config: CreateServerConfig, dependencies: CreateSer
     ...config,
     allowedOrigins: config.allowedOrigins ?? [],
     backendFlavor: config.backendFlavor ?? 'aistudio',
+    siteAuth: config.siteAuth ?? { enabled: false, users: [], sessionDays: 7 },
   };
 
   const fetchImpl = dependencies.fetchImpl ?? fetch;
@@ -892,6 +895,11 @@ export function createServer(config: CreateServerConfig, dependencies: CreateSer
       const requestUrl = new URL(request.url || '/', 'http://localhost');
       const path = requestUrl.pathname;
       const method = request.method || 'GET';
+
+      const handledAuth = await handleSiteAuthRequest(request, response, resolvedConfig.siteAuth);
+      if (handledAuth) {
+        return;
+      }
 
       if (method === 'OPTIONS') {
         response.writeHead(204, {

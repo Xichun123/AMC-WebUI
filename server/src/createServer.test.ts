@@ -129,6 +129,93 @@ describe('createServer', () => {
     expect(body).toEqual({ error: 'Not found' });
   });
 
+  it('allows Nginx auth checks when site auth is disabled', async () => {
+    const app = createServer({
+      geminiApiBase: 'https://generativelanguage.googleapis.com',
+      geminiApiKey: 'server-key',
+    });
+    const started = await startHttpServer(app);
+    cleanupCallbacks.push(started.close);
+
+    const response = await fetch(`${started.baseUrl}/api/auth/check`);
+
+    expect(response.status).toBe(204);
+  });
+
+  it('creates a signed HttpOnly session cookie for valid Unicode site credentials', async () => {
+    const app = createServer({
+      geminiApiBase: 'https://generativelanguage.googleapis.com',
+      geminiApiKey: 'server-key',
+      siteAuth: {
+        enabled: true,
+        users: [
+          {
+            username: '慧慧',
+            passwordHash:
+              'scrypt:16384:8:1:MTIzNDU2Nzg5MGFiY2RlZg:h_ic4pcaUFg3JgmnKJiC2SSVD8neGU1N9akiIuiOgajCqineFdTcYi8Jw_BAHTav1pnBYFyq-QlhH-NG_rnmtA',
+          },
+        ],
+        secret: 'test-secret',
+        sessionDays: 7,
+      },
+    });
+    const started = await startHttpServer(app);
+    cleanupCallbacks.push(started.close);
+
+    const loginResponse = await fetch(`${started.baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ username: '慧慧', password: '棒棒棒' }),
+    });
+    const loginBody = (await loginResponse.json()) as Record<string, unknown>;
+    const cookie = loginResponse.headers.get('set-cookie');
+
+    expect(loginResponse.status).toBe(200);
+    expect(loginBody).toEqual({ enabled: true, authenticated: true, username: '慧慧', sessionDays: 7 });
+    expect(cookie).toContain('amc_site_session=');
+    expect(cookie).toContain('HttpOnly');
+    expect(cookie).toContain('SameSite=Lax');
+
+    const checkResponse = await fetch(`${started.baseUrl}/api/auth/check`, { headers: { cookie: cookie ?? '' } });
+    const sessionResponse = await fetch(`${started.baseUrl}/api/auth/session`, { headers: { cookie: cookie ?? '' } });
+    const sessionBody = (await sessionResponse.json()) as Record<string, unknown>;
+
+    expect(checkResponse.status).toBe(204);
+    expect(sessionBody).toMatchObject({ enabled: true, authenticated: true, username: '慧慧' });
+  });
+
+  it('rejects invalid site credentials without setting a session cookie', async () => {
+    const app = createServer({
+      geminiApiBase: 'https://generativelanguage.googleapis.com',
+      geminiApiKey: 'server-key',
+      siteAuth: {
+        enabled: true,
+        users: [
+          {
+            username: 'amc',
+            passwordHash:
+              'scrypt:16384:8:1:MTIzNDU2Nzg5MGFiY2RlZg:LzZ3EClQHEFDhBxqzSupMkVXSEduprZmI7_139ButtFSI53MujICti6-yymDn8IXJdEjzDvUOYZk0fUnkXxI_g',
+          },
+        ],
+        secret: 'test-secret',
+        sessionDays: 7,
+      },
+    });
+    const started = await startHttpServer(app);
+    cleanupCallbacks.push(started.close);
+
+    const response = await fetch(`${started.baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ username: 'amc', password: 'wrong' }),
+    });
+    const body = (await response.json()) as Record<string, unknown>;
+
+    expect(response.status).toBe(401);
+    expect(body).toEqual({ error: 'INVALID_CREDENTIALS' });
+    expect(response.headers.get('set-cookie')).toBeNull();
+  });
+
   it('proxies /api/gemini/* preserving method/path/query/body and streaming response', async () => {
     const upstreamRequests: Array<{
       method: string;

@@ -70,6 +70,19 @@ describe('project documentation structure', () => {
     expect(nginxConfig).toMatch(/location\s+\/\s*\{[\s\S]*Cache-Control "no-cache"/);
   });
 
+  it('protects the Docker app shell and same-origin API with the site auth check', () => {
+    const nginxConfig = readProjectFile('docker/nginx.conf');
+
+    expect(nginxConfig).toMatch(/absolute_redirect\s+off;/);
+    expect(nginxConfig).toMatch(/location\s+=\s+\/api\/auth\/check\s*\{[\s\S]*internal;/);
+    expect(nginxConfig).toMatch(/location\s+\/api\/\s*\{[\s\S]*auth_request\s+\/api\/auth\/check;/);
+    expect(nginxConfig).toMatch(/location\s+\/\s*\{[\s\S]*auth_request\s+\/api\/auth\/check;/);
+    expect(nginxConfig).toMatch(/location\s+=\s+\/login\s*\{[\s\S]*try_files\s+\/index\.html\s+=404;/);
+    expect(nginxConfig).toMatch(/location\s+~\s+\^\/\([^}]*sidebar-logo\\\.png[^}]*\)\$/);
+    expect(nginxConfig).toContain('return 302 /login?next=$request_uri;');
+    expect(nginxConfig).toContain('{"error":"AUTH_REQUIRED"}');
+  });
+
   it('describes local Python package loading precisely', () => {
     const zhReadme = readProjectFile('README.md');
     const enReadme = readProjectFile('README.en.md');

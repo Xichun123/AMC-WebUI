@@ -11,6 +11,7 @@
     "build": "vite build",
     "build:analyze": "vite build --mode analyze",
     "build:api": "tsc -p server/tsconfig.json",
+    "auth:hash": "npm run build:api --silent && node scripts/hash-site-password.mjs",
     "preview": "vite preview",
     "clean": "rm -rf dist coverage playwright-report test-results tmp-live-artifact-demo .playwright-visible-demo-profile .codex-dev-server.*",
     "lint": "eslint . --ext .ts,.tsx,.js,.mjs --max-warnings=0",

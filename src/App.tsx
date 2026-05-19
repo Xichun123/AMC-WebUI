@@ -7,6 +7,8 @@ import { MainContent } from './components/layout/MainContent';
 import { PiPPlaceholder } from './components/layout/PiPPlaceholder';
 import { ErrorBoundary } from './components/shared/ErrorBoundary';
 import { PwaUpdateBanner } from './components/pwa/PwaUpdateBanner';
+import { LoginPage } from './components/auth/LoginPage';
+import { SiteSessionGate } from './components/auth/SiteSessionGate';
 
 const App: React.FC = () => {
   return (
@@ -19,6 +21,16 @@ const App: React.FC = () => {
 };
 
 const AppContent: React.FC = () => {
+  return window.location.pathname === '/login' ? (
+    <LoginPage />
+  ) : (
+    <SiteSessionGate>
+      <AuthenticatedApp />
+    </SiteSessionGate>
+  );
+};
+
+const AuthenticatedApp: React.FC = () => {
   const app = useApp();
   const { currentTheme, eventsState, pipState, uiState } = app;
 

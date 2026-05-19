@@ -20,6 +20,10 @@ services:
       GCS_BUCKET: ${GCS_BUCKET:-}
       GCS_OBJECT_PREFIX: ${GCS_OBJECT_PREFIX:-amc-files/}
       GCS_MAX_FILE_BYTES: ${GCS_MAX_FILE_BYTES:-2147483648}
+      # Optional site gate. Leave SITE_AUTH_USERS_JSON empty to disable the login page.
+      SITE_AUTH_USERS_JSON: ${SITE_AUTH_USERS_JSON:-}
+      SITE_AUTH_SECRET: ${SITE_AUTH_SECRET:-}
+      SITE_AUTH_SESSION_DAYS: ${SITE_AUTH_SESSION_DAYS:-7}
     volumes:
       - ./secrets:/run/secrets:ro
     expose:

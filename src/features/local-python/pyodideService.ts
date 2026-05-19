@@ -4,6 +4,8 @@ import { type UploadedFile } from '@/types';
 import { getPyodideBaseUrl } from '@/runtime/runtimeConfig';
 import { PYODIDE_WORKER_CODE_TEMPLATE } from './pyodideWorkerTemplate';
 
+export const DEFAULT_PYODIDE_BASE_URL = 'https://cdn.jsdelivr.net/pyodide/v0.25.1/full/';
+
 export interface PyodideFile {
   name: string;
   data: string; // Base64
@@ -57,11 +59,7 @@ const getBrowserPyodideBaseUri = () => {
     return { baseUri: runtimePyodideBaseUrl, baseUriIsPyodideBaseUrl: true };
   }
 
-  const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost';
-  return {
-    baseUri: new URL('pyodide/', new URL(import.meta.env.BASE_URL || '/', origin)).toString(),
-    baseUriIsPyodideBaseUrl: true,
-  };
+  return { baseUri: DEFAULT_PYODIDE_BASE_URL, baseUriIsPyodideBaseUrl: true };
 };
 
 export class PyodideService {

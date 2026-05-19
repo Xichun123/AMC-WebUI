@@ -13,7 +13,7 @@ async function loadPyodideAndPackages() {
       indexURL: PYODIDE_BASE_URL,
     });
     // Pre-load common data packages for speed
-    await pyodide.loadPackage(['micropip', 'pandas', 'numpy', 'matplotlib']);
+    await pyodide.loadPackage(['micropip', 'pandas', 'numpy', 'matplotlib', 'pillow']);
   }
   return pyodide;
 }

@@ -6,7 +6,12 @@ vi.mock('./logService', async () => {
   return createLogServiceMockModule();
 });
 
-import { buildPyodideWorkerScript, PyodideService, type ExecutionResult } from './pyodideService';
+import {
+  buildPyodideWorkerScript,
+  DEFAULT_PYODIDE_BASE_URL,
+  PyodideService,
+  type ExecutionResult,
+} from './pyodideService';
 import { createUploadedFile } from '@/test/factories';
 
 type PyodideServiceInternals = {
@@ -121,6 +126,12 @@ describe('buildPyodideWorkerScript', () => {
     expect(workerCode).toContain("pbm: 'image/x-portable-bitmap'");
     expect(workerCode).toContain("pnm: 'image/x-portable-anymap'");
   });
+
+  it('preloads Pillow for image annotation tools', () => {
+    const { workerCode } = buildPyodideWorkerScript('https://example.com/app/');
+
+    expect(workerCode).toContain("'pillow'");
+  });
 });
 
 describe('PyodideService', () => {
@@ -129,7 +140,7 @@ describe('PyodideService', () => {
     vi.useRealTimers();
   });
 
-  it('loads Pyodide from the same-origin copied assets by default', async () => {
+  it('loads Pyodide from the package-capable CDN assets by default', async () => {
     const originalUrl = window.location.href;
     const capturedBlobs: Blob[] = [];
     const createObjectUrl = vi.fn((blob: Blob) => {
@@ -148,7 +159,7 @@ describe('PyodideService', () => {
 
       expect(createObjectUrl).toHaveBeenCalledTimes(1);
       await expect(capturedBlobs[0]?.text()).resolves.toContain(
-        'const PYODIDE_BASE_URL = "http://localhost/pyodide/";',
+        `const PYODIDE_BASE_URL = "${DEFAULT_PYODIDE_BASE_URL}";`,
       );
 
       worker.emit({

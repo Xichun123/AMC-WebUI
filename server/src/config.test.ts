@@ -92,14 +92,14 @@ describe('loadConfig', () => {
 
   it('reads site auth users from SITE_AUTH_USERS_JSON', () => {
     const config = loadConfig({
-      SITE_AUTH_USERS_JSON: JSON.stringify([{ username: '烘培女王', passwordHash: 'scrypt:hash' }]),
+      SITE_AUTH_USERS_JSON: JSON.stringify([{ username: '烘焙女王', passwordHash: 'scrypt:hash' }]),
       SITE_AUTH_SECRET: 'secret',
       SITE_AUTH_SESSION_DAYS: '3',
     });
 
     expect(config.siteAuth).toEqual({
       enabled: true,
-      users: [{ username: '烘培女王', passwordHash: 'scrypt:hash' }],
+      users: [{ username: '烘焙女王', passwordHash: 'scrypt:hash' }],
       secret: 'secret',
       sessionDays: 3,
     });

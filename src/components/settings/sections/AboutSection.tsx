@@ -6,6 +6,10 @@ import { useResponsiveValue } from '@/hooks/useDevice';
 import { useSettingsStore } from '@/stores/settingsStore';
 import packageJson from '../../../../package.json';
 
+const GITHUB_REPOSITORY = 'Xichun123/AMC-WebUI';
+const GITHUB_REPOSITORY_URL = `https://github.com/${GITHUB_REPOSITORY}`;
+const GITHUB_API_REPOSITORY_URL = `https://api.github.com/repos/${GITHUB_REPOSITORY}`;
+
 const compareVersions = (v1: string, v2: string) => {
   const parts1 = v1.replace(/^v/, '').split('.').map(Number);
   const parts2 = v2.replace(/^v/, '').split('.').map(Number);
@@ -36,8 +40,8 @@ export const AboutSection: React.FC = () => {
     const fetchData = async () => {
       try {
         const [repoRes, releaseRes] = await Promise.allSettled([
-          fetch('https://api.github.com/repos/yeahhe365/AMC-WebUI'),
-          fetch('https://api.github.com/repos/yeahhe365/AMC-WebUI/releases/latest'),
+          fetch(GITHUB_API_REPOSITORY_URL),
+          fetch(`${GITHUB_API_REPOSITORY_URL}/releases/latest`),
         ]);
 
         if (isCancelled) {
@@ -129,7 +133,7 @@ export const AboutSection: React.FC = () => {
       >
         <div className="flex flex-wrap items-center justify-center gap-2">
           <a
-            href="https://github.com/yeahhe365/AMC-WebUI/releases"
+            href={`${GITHUB_REPOSITORY_URL}/releases`}
             target="_blank"
             rel="noopener noreferrer"
             className="group relative inline-flex items-center justify-center overflow-hidden rounded-full p-[1px] transition-transform duration-200 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[var(--theme-border-focus)] focus:ring-offset-2 focus:ring-offset-[var(--theme-bg-primary)]"
@@ -192,7 +196,7 @@ export const AboutSection: React.FC = () => {
         className={`flex w-full flex-col items-stretch justify-center gap-2.5 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center ${isCompactViewport ? 'mt-3.5' : 'mt-4 sm:mt-5'}`}
       >
         <a
-          href="https://github.com/yeahhe365/AMC-WebUI"
+          href={GITHUB_REPOSITORY_URL}
           target="_blank"
           rel="noopener noreferrer"
           className={`inline-flex w-full items-center justify-center gap-2.5 rounded-xl bg-[#24292F] text-sm font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-[#24292F]/90 hover:shadow-xl active:translate-y-0 dark:bg-white dark:text-black dark:hover:bg-gray-200 sm:min-w-[10.5rem] sm:w-auto ${isCompactViewport ? 'px-4 py-2' : 'px-5 py-2.5'}`}
@@ -202,7 +206,7 @@ export const AboutSection: React.FC = () => {
         </a>
 
         <a
-          href="https://github.com/yeahhe365/AMC-WebUI/stargazers"
+          href={`${GITHUB_REPOSITORY_URL}/stargazers`}
           target="_blank"
           rel="noopener noreferrer"
           className={`group inline-flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--theme-border-secondary)] bg-[var(--theme-bg-input)] text-sm font-medium text-[var(--theme-text-primary)] shadow-sm transition-all hover:-translate-y-0.5 hover:border-[var(--theme-border-focus)] hover:bg-[var(--theme-bg-tertiary)] hover:shadow-md active:translate-y-0 sm:min-w-[10.5rem] sm:w-auto ${isCompactViewport ? 'px-4 py-2' : 'px-5 py-2.5'}`}

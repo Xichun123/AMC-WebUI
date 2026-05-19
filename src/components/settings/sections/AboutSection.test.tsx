@@ -11,6 +11,7 @@ describe('AboutSection', () => {
   const renderer = setupTestRenderer();
   setupStoreStateReset();
   const fetchMock = vi.fn();
+  const repositoryUrl = 'https://github.com/Xichun123/AMC-WebUI';
   const packageVersion = JSON.parse(readFileSync(path.resolve(process.cwd(), 'package.json'), 'utf8'))
     .version as string;
   const nextPatchVersion = (() => {
@@ -99,12 +100,22 @@ describe('AboutSection', () => {
 
     await renderAboutSection();
 
-    const releaseLink = renderer.container.querySelector('a[href="https://github.com/yeahhe365/AMC-WebUI/releases"]');
+    const releaseLink = renderer.container.querySelector(`a[href="${repositoryUrl}/releases"]`);
 
     expect(renderer.container.textContent).toContain(`v${packageVersion}`);
     expect(renderer.container.textContent).toContain('测试版');
     expect(renderer.container.textContent).toContain('星标');
     expect(releaseLink?.getAttribute('title')).toBeNull();
+  });
+
+  it('points public GitHub links and metadata requests at this fork', async () => {
+    await renderAboutSection();
+
+    expect(fetchMock).toHaveBeenNthCalledWith(1, 'https://api.github.com/repos/Xichun123/AMC-WebUI');
+    expect(fetchMock).toHaveBeenNthCalledWith(2, 'https://api.github.com/repos/Xichun123/AMC-WebUI/releases/latest');
+    expect(renderer.container.querySelector(`a[href="${repositoryUrl}"]`)).not.toBeNull();
+    expect(renderer.container.querySelector(`a[href="${repositoryUrl}/releases"]`)).not.toBeNull();
+    expect(renderer.container.querySelector(`a[href="${repositoryUrl}/stargazers"]`)).not.toBeNull();
   });
 
   it('uses a localized update tooltip when a newer release exists', async () => {
@@ -120,7 +131,7 @@ describe('AboutSection', () => {
 
     await renderAboutSection();
 
-    const releaseLink = renderer.container.querySelector('a[href="https://github.com/yeahhe365/AMC-WebUI/releases"]');
+    const releaseLink = renderer.container.querySelector(`a[href="${repositoryUrl}/releases"]`);
 
     expect(releaseLink?.getAttribute('title')).toBe(`有新版本：${nextPatchVersion}`);
   });

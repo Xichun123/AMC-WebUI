@@ -15,6 +15,7 @@ interface ApiProxySettingsProps {
   setUseApiProxy: (value: boolean) => void;
   apiProxyUrl: string | null;
   setApiProxyUrl: (value: string | null) => void;
+  readOnly?: boolean;
 }
 
 export const ApiProxySettings: React.FC<ApiProxySettingsProps> = ({
@@ -22,6 +23,7 @@ export const ApiProxySettings: React.FC<ApiProxySettingsProps> = ({
   setUseApiProxy,
   apiProxyUrl,
   setApiProxyUrl,
+  readOnly = false,
 }) => {
   const { t } = useI18n();
   const inputBaseClasses =
@@ -42,9 +44,9 @@ export const ApiProxySettings: React.FC<ApiProxySettingsProps> = ({
             htmlFor="use-api-proxy-toggle"
             className="text-xs font-semibold uppercase tracking-wider text-[var(--theme-text-tertiary)] cursor-pointer"
           >
-            {t('settingsApiProxyLabel')}
+            {readOnly ? t('settingsApiProxyManagedLabel') : t('settingsApiProxyLabel')}
           </label>
-          {useApiProxy && (
+          {useApiProxy && !readOnly && (
             <button
               type="button"
               onClick={handleResetProxy}
@@ -56,13 +58,15 @@ export const ApiProxySettings: React.FC<ApiProxySettingsProps> = ({
             </button>
           )}
         </div>
-        <Toggle
-          id="use-api-proxy-toggle"
-          checked={useApiProxy}
-          onChange={(val) => {
-            setUseApiProxy(val);
-          }}
-        />
+        {!readOnly && (
+          <Toggle
+            id="use-api-proxy-toggle"
+            checked={useApiProxy}
+            onChange={(val) => {
+              setUseApiProxy(val);
+            }}
+          />
+        )}
       </div>
 
       {useApiProxy && (
@@ -72,10 +76,16 @@ export const ApiProxySettings: React.FC<ApiProxySettingsProps> = ({
             type="text"
             value={apiProxyUrl || ''}
             onChange={(e) => setApiProxyUrl(e.target.value)}
-            className={`${inputBaseClasses} ${SETTINGS_INPUT_CLASS}`}
+            className={`${inputBaseClasses} ${SETTINGS_INPUT_CLASS} ${readOnly ? 'cursor-not-allowed opacity-80' : ''}`}
             placeholder={`e.g., ${DEFAULT_GEMINI_PROXY_URL}`}
             aria-label={t('settingsApiProxyUrlAria')}
+            readOnly={readOnly}
           />
+          {readOnly && (
+            <p className="mt-2 text-xs leading-relaxed text-[var(--theme-text-tertiary)]">
+              {t('settingsApiProxyManagedHelp')}
+            </p>
+          )}
 
           <div className="mt-3 p-3 rounded-lg bg-[var(--theme-bg-tertiary)]/30 border border-[var(--theme-border-secondary)]">
             <div className="flex gap-2 text-xs text-[var(--theme-text-tertiary)] mb-1.5">

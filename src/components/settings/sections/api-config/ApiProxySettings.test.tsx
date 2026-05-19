@@ -40,4 +40,28 @@ describe('ApiProxySettings', () => {
     expect(document.body).not.toHaveTextContent('Request URL Preview');
     expect(renderer.container.querySelector('#api-proxy-url-input')).toBeNull();
   });
+
+  it('renders a managed proxy endpoint as read-only without toggle or reset controls', () => {
+    act(() => {
+      renderer.root.render(
+        <ApiProxySettings
+          useApiProxy
+          setUseApiProxy={vi.fn()}
+          apiProxyUrl="/api/gemini"
+          setApiProxyUrl={vi.fn()}
+          readOnly
+        />,
+      );
+    });
+
+    const input = renderer.container.querySelector<HTMLInputElement>('#api-proxy-url-input');
+
+    expect(document.body).toHaveTextContent('Proxy Endpoint');
+    expect(document.body).toHaveTextContent('cannot be edited here');
+    expect(document.body).not.toHaveTextContent('Reset');
+    expect(renderer.container.querySelector('#use-api-proxy-toggle')).toBeNull();
+    expect(input).not.toBeNull();
+    expect(input?.readOnly).toBe(true);
+    expect(input?.value).toBe('/api/gemini');
+  });
 });

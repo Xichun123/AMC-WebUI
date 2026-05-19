@@ -802,7 +802,7 @@ describe('createServer', () => {
           file: () => ({
             save: vi.fn(),
             getMetadata: vi.fn(),
-            exists: vi.fn(async () => [false]),
+            exists: vi.fn(async (): Promise<[boolean]> => [false]),
           }),
         }),
       };

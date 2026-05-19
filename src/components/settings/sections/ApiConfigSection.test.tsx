@@ -79,6 +79,7 @@ describe('ApiConfigSection', () => {
   });
 
   afterEach(() => {
+    delete window.__AMC_RUNTIME_CONFIG__;
     vi.restoreAllMocks();
   });
 
@@ -121,8 +122,8 @@ describe('ApiConfigSection', () => {
     expect(renderer.container.textContent).not.toContain('API & Connections');
     expect(renderer.container.textContent).toContain('Test Connection');
     expect(renderer.container.textContent).toContain('File Transfer Method');
-    expect(renderer.container.textContent).toContain('API Provider');
-    expect(renderer.container.textContent).toContain('Gemini Official API');
+    expect(renderer.container.textContent).toContain('API Format');
+    expect(renderer.container.textContent).toContain('Gemini API');
     expect(renderer.container.textContent).toContain('OpenAI-Compatible API');
 
     act(() => {
@@ -132,8 +133,8 @@ describe('ApiConfigSection', () => {
     expect(renderer.container.textContent).not.toContain('API 与连接');
     expect(renderer.container.textContent).toContain('测试连通性');
     expect(renderer.container.textContent).toContain('文件传输方式');
-    expect(renderer.container.textContent).toContain('API 提供方');
-    expect(renderer.container.textContent).toContain('Gemini 官方接口');
+    expect(renderer.container.textContent).toContain('API 格式');
+    expect(renderer.container.textContent).toContain('Gemini 接口');
     expect(renderer.container.textContent).toContain('OpenAI 兼容接口');
   });
 
@@ -142,7 +143,7 @@ describe('ApiConfigSection', () => {
 
     await renderApiConfigSection({ onUpdate });
 
-    const providerSelector = renderer.container.querySelector('[role="group"][aria-label="API Provider"]');
+    const providerSelector = renderer.container.querySelector('[role="group"][aria-label="API Format"]');
     const openaiProviderButton = Array.from(renderer.container.querySelectorAll('button')).find(
       (button) => button.textContent?.trim() === 'OpenAI-Compatible API',
     );
@@ -173,7 +174,7 @@ describe('ApiConfigSection', () => {
     });
 
     const geminiProviderButton = Array.from(renderer.container.querySelectorAll('button')).find(
-      (button) => button.textContent?.trim() === 'Gemini Official API',
+      (button) => button.textContent?.trim() === 'Gemini API',
     );
 
     expect(renderer.container.querySelector('#openai-compatible-api-enabled-toggle')).toBeNull();
@@ -287,5 +288,79 @@ describe('ApiConfigSection', () => {
     expect(renderer.container.textContent).not.toContain('/api/live-token');
     expect(renderer.container.textContent).not.toContain('Advanced Live Settings');
     expect(renderer.container.querySelector('#live-token-endpoint-input')).toBeNull();
+  });
+
+  it('shows Vertex deployment state as read-only and hides browser Gemini key controls', async () => {
+    window.__AMC_RUNTIME_CONFIG__ = {
+      backendFlavor: 'vertex',
+      serverManagedApi: true,
+      useCustomApiConfig: true,
+      useApiProxy: true,
+      apiProxyUrl: '/api/gemini',
+    };
+
+    await renderApiConfigSection({
+      useCustomApiConfig: true,
+      useApiProxy: true,
+      apiProxyUrl: '/api/gemini',
+      serverManagedApi: true,
+    });
+
+    expect(renderer.container.textContent).toContain('Current Configuration');
+    expect(renderer.container.textContent).toContain('Gemini Backend');
+    expect(renderer.container.textContent).toContain('Vertex AI');
+    expect(renderer.container.textContent).toContain('Server Service Account');
+    expect(renderer.container.textContent).toContain('Managed by the server and shown here as read-only.');
+    expect(renderer.container.textContent).not.toContain('Gemini API Keys');
+    expect(renderer.container.textContent).not.toContain('Use Custom API Settings');
+    expect(renderer.container.textContent).not.toContain('Live connects from this browser');
+
+    const proxyInput = renderer.container.querySelector<HTMLInputElement>('#api-proxy-url-input');
+    expect(proxyInput).not.toBeNull();
+    expect(proxyInput?.readOnly).toBe(true);
+    expect(proxyInput?.value).toBe('/api/gemini');
+    expect(renderer.container.querySelector('#use-api-proxy-toggle')).toBeNull();
+  });
+
+  it('hides Gemini API key controls for server-managed AI Studio deployments', async () => {
+    window.__AMC_RUNTIME_CONFIG__ = {
+      backendFlavor: 'aistudio',
+    };
+
+    await renderApiConfigSection({
+      useCustomApiConfig: true,
+      useApiProxy: true,
+      apiProxyUrl: '/api/gemini',
+      serverManagedApi: true,
+    });
+
+    expect(renderer.container.textContent).toContain('Google AI Studio');
+    expect(renderer.container.textContent).toContain('Server API Key');
+    expect(renderer.container.textContent).not.toContain('Gemini API Keys');
+    expect(renderer.container.textContent).not.toContain('Use Custom API Settings');
+    expect(renderer.container.querySelector<HTMLInputElement>('#api-proxy-url-input')?.readOnly).toBe(true);
+  });
+
+  it('keeps OpenAI-compatible configuration editable and identifies it as browser-key auth', async () => {
+    await renderApiConfigSection({
+      settings: {
+        ...settingsFixture,
+        isOpenAICompatibleApiEnabled: true,
+        apiMode: 'openai-compatible',
+        openaiCompatibleApiKey: 'openai-key',
+        openaiCompatibleBaseUrl: 'https://openai-compatible.example/v1',
+      },
+    });
+
+    expect(renderer.container.textContent).toContain('Current Configuration');
+    expect(renderer.container.textContent).toContain('OpenAI-Compatible API');
+    expect(renderer.container.textContent).toContain('Not used in this API format');
+    expect(renderer.container.textContent).toContain('Browser API Key');
+    expect(renderer.container.textContent).toContain('https://openai-compatible.example/v1');
+    expect(renderer.container.textContent).toContain('Base URL and API keys are configured in this browser.');
+    expect(renderer.container.querySelector<HTMLTextAreaElement>('#api-key-input')?.readOnly).toBe(false);
+    expect(renderer.container.querySelector<HTMLInputElement>('#openai-compatible-base-url-input')?.readOnly).toBe(
+      false,
+    );
   });
 });

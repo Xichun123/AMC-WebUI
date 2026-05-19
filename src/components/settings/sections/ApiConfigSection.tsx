@@ -8,6 +8,7 @@ import { getClient } from '@/services/api/apiClient';
 import { sendOpenAICompatibleMessageNonStream } from '@/services/api/openaiCompatibleApi';
 import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '@/utils/apiProxyUrl';
 import { isServerManagedApiEnabledForProxyRequests, parseApiKeys, SERVER_MANAGED_API_KEY } from '@/utils/apiUtils';
+import { getBackendFlavor } from '@/runtime/runtimeConfig';
 import { ApiConfigToggle } from './api-config/ApiConfigToggle';
 import { ApiKeyInput } from './api-config/ApiKeyInput';
 import { ApiProxySettings } from './api-config/ApiProxySettings';
@@ -61,6 +62,53 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = ({
   });
   const isOpenAICompatibleMode = isOpenAICompatibleApiActive(settings);
   const openaiCompatibleApiKey = settings.openaiCompatibleApiKey;
+  const backendFlavor = getBackendFlavor();
+  const isVertexBackend = backendFlavor === 'vertex';
+  const isGeminiServerManaged = !isOpenAICompatibleMode && (isVertexBackend || canUseServerManagedTestKey);
+  const effectiveGeminiProxyUrl = apiProxyUrl?.trim() || (isGeminiServerManaged ? '/api/gemini' : null);
+  const canUseServerManagedGeminiTestKey = isGeminiServerManaged && !!effectiveGeminiProxyUrl;
+  const shouldShowGeminiApiKeyInput = !isGeminiServerManaged;
+  const shouldShowGeminiCustomApiToggle = !isGeminiServerManaged;
+  const shouldShowGeminiConfigDetails = useCustomApiConfig || isGeminiServerManaged;
+  const apiStatusItems = isOpenAICompatibleMode
+    ? [
+        { label: t('settingsApiStatusFormat'), value: t('settingsApiModeOpenAICompatible') },
+        { label: t('settingsApiStatusGeminiBackend'), value: t('settingsApiStatusNoGeminiBackend') },
+        { label: t('settingsApiStatusAuthentication'), value: t('settingsApiStatusBrowserApiKey') },
+        {
+          label: t('settingsApiStatusOpenAIEndpoint'),
+          value: settings.openaiCompatibleBaseUrl?.trim() || DEFAULT_OPENAI_COMPATIBLE_BASE_URL,
+          code: true,
+        },
+      ]
+    : [
+        { label: t('settingsApiStatusFormat'), value: t('settingsApiModeGeminiNative') },
+        {
+          label: t('settingsApiStatusGeminiBackend'),
+          value: isVertexBackend ? t('settingsApiStatusVertexBackend') : t('settingsApiStatusAiStudioBackend'),
+        },
+        {
+          label: t('settingsApiStatusAuthentication'),
+          value: isVertexBackend
+            ? t('settingsApiStatusServerServiceAccount')
+            : isGeminiServerManaged
+              ? t('settingsApiStatusServerApiKey')
+              : t('settingsApiStatusBrowserApiKey'),
+        },
+        {
+          label: t('settingsApiStatusEndpoint'),
+          value:
+            useApiProxy || isGeminiServerManaged
+              ? effectiveGeminiProxyUrl || '/api/gemini'
+              : 'https://generativelanguage.googleapis.com',
+          code: true,
+        },
+      ];
+  const apiStatusHelp = isOpenAICompatibleMode
+    ? t('settingsApiStatusOpenAIEditable')
+    : isGeminiServerManaged
+      ? t('settingsApiStatusManagedReadOnly')
+      : null;
 
   useEffect(() => {
     return () => {
@@ -105,17 +153,17 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = ({
       if (isOpenAICompatibleMode) {
         return resolveOpenAICompatibleKey();
       }
+      if (canUseServerManagedGeminiTestKey) return SERVER_MANAGED_API_KEY;
       if (apiKey) return apiKey;
       if (!useCustomApiConfig && hasEnvKey) {
         return viteEnv?.VITE_GEMINI_API_KEY || null;
       }
-      if (canUseServerManagedTestKey) return SERVER_MANAGED_API_KEY;
       return null;
     };
 
     const keyToTest = resolveKeyToTest();
 
-    if (!isOpenAICompatibleMode && !keyToTest && useCustomApiConfig && !canUseServerManagedTestKey) {
+    if (!isOpenAICompatibleMode && !keyToTest && useCustomApiConfig && !canUseServerManagedGeminiTestKey) {
       setTestStatus('error');
       setTestMessage(t('apiConfig_noKeyProvided'));
       return;
@@ -136,7 +184,11 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = ({
       return;
     }
 
-    const effectiveUrl = useCustomApiConfig && useApiProxy && apiProxyUrl ? apiProxyUrl : null;
+    const effectiveUrl = isGeminiServerManaged
+      ? effectiveGeminiProxyUrl
+      : useCustomApiConfig && useApiProxy && apiProxyUrl
+        ? apiProxyUrl
+        : null;
 
     setTestStatus('testing');
     setTestMessage(null);
@@ -190,6 +242,31 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = ({
         : 'text-[var(--theme-text-tertiary)] hover:bg-[var(--theme-bg-tertiary)]/60 hover:text-[var(--theme-text-primary)]'
     }`;
 
+  const renderApiStatus = () => (
+    <div className="rounded-lg border border-[var(--theme-border-secondary)] bg-[var(--theme-bg-tertiary)]/20 p-3">
+      <div className="mb-3 text-xs font-semibold uppercase text-[var(--theme-text-tertiary)]">
+        {t('settingsApiStatusTitle')}
+      </div>
+      <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {apiStatusItems.map((item) => (
+          <div key={item.label} className="min-w-0">
+            <dt className="text-[11px] font-medium text-[var(--theme-text-tertiary)]">{item.label}</dt>
+            <dd
+              className={`mt-0.5 break-words text-sm font-medium text-[var(--theme-text-primary)] ${
+                item.code ? 'font-mono text-[13px]' : ''
+              }`}
+            >
+              {item.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      {apiStatusHelp && (
+        <p className="mt-3 text-xs leading-relaxed text-[var(--theme-text-tertiary)]">{apiStatusHelp}</p>
+      )}
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <div>
@@ -221,6 +298,7 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = ({
               </button>
             </div>
           </div>
+          {renderApiStatus()}
           {isOpenAICompatibleMode && (
             <div className="space-y-4">
               <ApiKeyInput
@@ -267,68 +345,75 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = ({
 
         {!isOpenAICompatibleMode && (
           <>
-            <ApiConfigToggle
-              useCustomApiConfig={useCustomApiConfig}
-              setUseCustomApiConfig={handleUseCustomApiConfigChange}
-              hasEnvKey={hasEnvKey}
-            />
+            {shouldShowGeminiCustomApiToggle && (
+              <ApiConfigToggle
+                useCustomApiConfig={useCustomApiConfig}
+                setUseCustomApiConfig={handleUseCustomApiConfigChange}
+                hasEnvKey={hasEnvKey}
+              />
+            )}
 
             <div
-              className={`transition-all duration-300 ease-in-out ${useCustomApiConfig ? 'opacity-100 max-h-[1000px] pt-4' : 'opacity-50 max-h-0'} ${allowOverflow ? 'overflow-visible' : 'overflow-hidden'}`}
+              className={`transition-all duration-300 ease-in-out ${shouldShowGeminiConfigDetails ? 'opacity-100 max-h-[1000px] pt-4' : 'opacity-50 max-h-0'} ${allowOverflow ? 'overflow-visible' : 'overflow-hidden'}`}
             >
               <div className="space-y-5">
-                <ApiKeyInput
-                  apiKey={apiKey}
-                  setApiKey={(val) => {
-                    setApiKey(val);
-                    setTestStatus('idle');
-                  }}
-                />
+                {shouldShowGeminiApiKeyInput && (
+                  <ApiKeyInput
+                    apiKey={apiKey}
+                    setApiKey={(val) => {
+                      setApiKey(val);
+                      setTestStatus('idle');
+                    }}
+                  />
+                )}
 
                 <ApiProxySettings
-                  useApiProxy={useApiProxy}
+                  useApiProxy={isGeminiServerManaged ? true : useApiProxy}
                   setUseApiProxy={(val) => {
                     setUseApiProxy(val);
                     setTestStatus('idle');
                   }}
-                  apiProxyUrl={apiProxyUrl}
+                  apiProxyUrl={isGeminiServerManaged ? effectiveGeminiProxyUrl : apiProxyUrl}
                   setApiProxyUrl={(val) => {
                     setApiProxyUrl(val);
                     setTestStatus('idle');
                   }}
+                  readOnly={isGeminiServerManaged}
                 />
 
-                <div className="space-y-3 pt-2">
-                  <div className="rounded-lg border border-[var(--theme-border-secondary)] bg-[var(--theme-bg-tertiary)]/20 p-3">
-                    <div className="flex items-start gap-3">
-                      <RadioTower
-                        size={16}
-                        className="mt-0.5 flex-shrink-0 text-[var(--theme-text-link)]"
-                        strokeWidth={1.5}
-                      />
-                      <div className="min-w-0 flex-1 space-y-1.5">
-                        <p className="text-sm font-medium text-[var(--theme-text-primary)]">
-                          {t('settingsLiveAutomaticTitle')}
-                        </p>
-                        <p className="text-xs leading-relaxed text-[var(--theme-text-tertiary)]">
-                          {t('settingsLiveAutomaticHelp')}
-                        </p>
-                        {useApiProxy && (
-                          <p className="text-xs leading-relaxed text-[var(--theme-text-tertiary)]">
-                            {t('settingsLiveProxyCompatibilityHelp')}
+                {shouldShowGeminiApiKeyInput && (
+                  <div className="space-y-3 pt-2">
+                    <div className="rounded-lg border border-[var(--theme-border-secondary)] bg-[var(--theme-bg-tertiary)]/20 p-3">
+                      <div className="flex items-start gap-3">
+                        <RadioTower
+                          size={16}
+                          className="mt-0.5 flex-shrink-0 text-[var(--theme-text-link)]"
+                          strokeWidth={1.5}
+                        />
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <p className="text-sm font-medium text-[var(--theme-text-primary)]">
+                            {t('settingsLiveAutomaticTitle')}
                           </p>
-                        )}
+                          <p className="text-xs leading-relaxed text-[var(--theme-text-tertiary)]">
+                            {t('settingsLiveAutomaticHelp')}
+                          </p>
+                          {useApiProxy && (
+                            <p className="text-xs leading-relaxed text-[var(--theme-text-tertiary)]">
+                              {t('settingsLiveProxyCompatibilityHelp')}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 <ApiConnectionTester
                   onTest={handleTestConnection}
                   testStatus={testStatus}
                   testMessage={testMessage}
                   isTestDisabled={
-                    testStatus === 'testing' || (!apiKey && useCustomApiConfig && !canUseServerManagedTestKey)
+                    testStatus === 'testing' || (!apiKey && useCustomApiConfig && !canUseServerManagedGeminiTestKey)
                   }
                   availableModels={CONNECTION_TEST_MODELS}
                   testModelId={testModelId}

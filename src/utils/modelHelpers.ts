@@ -259,15 +259,12 @@ export const normalizeImageSizeForModel = (modelId: string, imageSize?: string):
   return supportedImageSizes[0];
 };
 
-const getDefaultThinkingLevelForModel = (
-  modelId: string,
-  fallback: ThinkingLevel = 'HIGH',
-): ThinkingLevel => {
+const getDefaultThinkingLevelForModel = (modelId: string, fallback: ThinkingLevel = 'HIGH'): ThinkingLevel => {
   if (isGemini31FlashLiveModel(modelId) || isGemini31FlashImageModel(modelId)) {
     return 'MINIMAL';
   }
 
-  return normalizeThinkingLevelForModel(modelId, fallback);
+  return normalizeThinkingLevelForModel(modelId, fallback) ?? fallback;
 };
 
 export const normalizeThinkingLevelForModel = (
@@ -336,11 +333,10 @@ export const resolveModelSwitchSettings = ({
   const cached = getCachedModelSettings(targetModelId);
   const mediaResolution =
     cached?.mediaResolution ?? sourceSettings.mediaResolution ?? MediaResolution.MEDIA_RESOLUTION_UNSPECIFIED;
-  const thinkingLevel =
-    normalizeThinkingLevelForModel(
-      targetModelId,
-      cached?.thinkingLevel ?? getDefaultThinkingLevelForModel(targetModelId, sourceSettings.thinkingLevel),
-    );
+  const thinkingLevel = normalizeThinkingLevelForModel(
+    targetModelId,
+    cached?.thinkingLevel ?? getDefaultThinkingLevelForModel(targetModelId, sourceSettings.thinkingLevel),
+  );
   const thinkingBudget = adjustThinkingBudget(targetModelId, cached?.thinkingBudget ?? sourceSettings.thinkingBudget);
 
   return {

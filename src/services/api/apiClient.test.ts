@@ -3,6 +3,11 @@ import { GoogleGenAI } from '@google/genai';
 import { getClient, getConfiguredApiClient } from './apiClient';
 import { dbService } from '@/services/db/dbService';
 
+const { mockGetRuntimeConfigAppSettingsOverrides, mockGetBackendFlavor } = vi.hoisted(() => ({
+  mockGetRuntimeConfigAppSettingsOverrides: vi.fn(() => ({})),
+  mockGetBackendFlavor: vi.fn(() => 'aistudio' as 'aistudio' | 'vertex'),
+}));
+
 type MockGoogleGenAIConfig = {
   apiKey: string;
   httpOptions?: {
@@ -32,6 +37,11 @@ vi.mock('@/services/logService', async () => {
 
   return createLogServiceMockModule();
 });
+
+vi.mock('@/runtime/runtimeConfig', () => ({
+  getRuntimeConfigAppSettingsOverrides: mockGetRuntimeConfigAppSettingsOverrides,
+  getBackendFlavor: mockGetBackendFlavor,
+}));
 
 // ── getClient ──
 
@@ -109,6 +119,8 @@ describe('getClient', () => {
 describe('getConfiguredApiClient', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetRuntimeConfigAppSettingsOverrides.mockReturnValue({});
+    mockGetBackendFlavor.mockReturnValue('aistudio');
   });
 
   it('uses proxy when both useCustomApiConfig and useApiProxy are true', async () => {
@@ -140,5 +152,27 @@ describe('getConfiguredApiClient', () => {
     // baseUrl should not be in the config
     const callArgs = vi.mocked(GoogleGenAI).mock.calls[0][0] as MockGoogleGenAIConfig;
     expect(callArgs.httpOptions?.baseUrl).toBeUndefined();
+  });
+
+  it('forces the runtime Vertex proxy over stale stored AI Studio settings', async () => {
+    mockGetBackendFlavor.mockReturnValue('vertex');
+    mockGetRuntimeConfigAppSettingsOverrides.mockReturnValue({
+      serverManagedApi: true,
+      useCustomApiConfig: true,
+      useApiProxy: true,
+      apiProxyUrl: '/api/gemini',
+    });
+    vi.mocked(dbService.getAppSettings).mockResolvedValue({
+      useCustomApiConfig: false,
+      useApiProxy: false,
+      apiProxyUrl: 'https://generativelanguage.googleapis.com',
+    } as StoredAppSettings);
+
+    await getConfiguredApiClient('key');
+
+    expect(GoogleGenAI).toHaveBeenCalledWith({
+      apiKey: 'key',
+      httpOptions: { baseUrl: 'http://localhost/api/gemini' },
+    });
   });
 });

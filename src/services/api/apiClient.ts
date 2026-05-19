@@ -3,6 +3,7 @@ import type { AppSettings } from '@/types';
 import { DEFAULT_GEMINI_API_BASE_URL, normalizeGeminiApiBaseUrl } from '@/utils/apiProxyUrl';
 import { dbService } from '@/services/db/dbService';
 import { logService } from '@/services/logService';
+import { getBackendFlavor, getRuntimeConfigAppSettingsOverrides } from '@/runtime/runtimeConfig';
 
 export type ClientHttpOptions = {
   apiVersion?: 'v1alpha';
@@ -66,6 +67,39 @@ const resolveConfiguredBaseUrl = (
   return shouldUseProxy ? (appSettings.apiProxyUrl ?? null) : null;
 };
 
+const applyRuntimeApiOverrides = (
+  settings: Pick<AppSettings, 'useCustomApiConfig' | 'useApiProxy' | 'apiProxyUrl'> | null | undefined,
+): Pick<AppSettings, 'useCustomApiConfig' | 'useApiProxy' | 'apiProxyUrl'> | null => {
+  const runtimeOverrides = getRuntimeConfigAppSettingsOverrides();
+  const isVertex = getBackendFlavor() === 'vertex';
+  const vertexApiProxyUrl = runtimeOverrides.apiProxyUrl?.trim() ? runtimeOverrides.apiProxyUrl : '/api/gemini';
+  const vertexOverrides = isVertex
+    ? {
+        useCustomApiConfig: true,
+        useApiProxy: true,
+        apiProxyUrl: vertexApiProxyUrl,
+      }
+    : {};
+
+  if (!settings) {
+    return Object.keys(runtimeOverrides).length > 0 || isVertex
+      ? ({
+          useCustomApiConfig: false,
+          useApiProxy: false,
+          apiProxyUrl: null,
+          ...runtimeOverrides,
+          ...vertexOverrides,
+        } as Pick<AppSettings, 'useCustomApiConfig' | 'useApiProxy' | 'apiProxyUrl'>)
+      : null;
+  }
+
+  return {
+    ...settings,
+    ...runtimeOverrides,
+    ...vertexOverrides,
+  };
+};
+
 const isAbsoluteHttpUrl = (url: string): boolean => /^https?:\/\//i.test(url.trim());
 
 export const resolveLiveClientBaseUrl = (
@@ -85,7 +119,7 @@ export const resolveLiveClientBaseUrl = (
 };
 
 export const getConfiguredApiClient = async (apiKey: string, httpOptions?: ClientHttpOptions): Promise<GoogleGenAI> => {
-  const settings = await dbService.getAppSettings();
+  const settings = applyRuntimeApiOverrides(await dbService.getAppSettings());
 
   const shouldUseProxy = !!(settings?.useCustomApiConfig && settings?.useApiProxy);
   const apiProxyUrl = shouldUseProxy ? settings?.apiProxyUrl : null;

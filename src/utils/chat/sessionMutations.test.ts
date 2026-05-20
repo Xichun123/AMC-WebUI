@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { SavedChatSession } from '@/types';
-import { MediaResolution } from '@/types';
+import { MediaResolution, type SavedChatSession } from '@/types';
 import { createChatSettings, createUploadedFile } from '@/test/factories';
 import { insertMessageAfter, updateFileInMessage, updateMessageInSession, updateSessionById } from './sessionMutations';
 

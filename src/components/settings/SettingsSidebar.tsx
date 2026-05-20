@@ -18,6 +18,7 @@ interface SettingsSidebarProps {
   activeTab: SettingsTab;
   setActiveTab: (tab: SettingsTab) => void;
   onClose: () => void;
+  activeTabRef?: React.Ref<HTMLButtonElement>;
 }
 
 const SIDEBAR_GROUPS: Array<{ id: string; tabIds: SettingsTab[] }> = [
@@ -35,7 +36,13 @@ const SIDEBAR_GROUPS: Array<{ id: string; tabIds: SettingsTab[] }> = [
   },
 ];
 
-export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ tabs, activeTab, setActiveTab, onClose }) => {
+export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
+  tabs,
+  activeTab,
+  setActiveTab,
+  onClose,
+  activeTabRef,
+}) => {
   const { t } = useI18n();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const tabsById = new Map(tabs.map((tab) => [tab.id, tab]));
@@ -51,6 +58,7 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ tabs, activeTa
     return (
       <button
         key={tab.id}
+        ref={isActive ? activeTabRef : undefined}
         onClick={() => setActiveTab(tab.id)}
         className={`flex-shrink-0 flex items-center gap-3 px-3 py-2.5 md:px-4 md:py-3 text-sm font-medium rounded-lg transition-all outline-none select-none w-auto md:w-full text-left
                       ${

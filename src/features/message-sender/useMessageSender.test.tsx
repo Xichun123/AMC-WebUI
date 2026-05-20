@@ -35,29 +35,29 @@ const {
   mockUploadFileApi: vi.fn(),
 }));
 
-vi.mock('@/features/message-sender/useChatStreamHandler', () => ({
+vi.mock('./useChatStreamHandler', () => ({
   useChatStreamHandler: () => ({
     getStreamHandlers: vi.fn(),
   }),
 }));
 
-vi.mock('@/features/message-sender/standardChatStrategy', () => ({
+vi.mock('./standardChatStrategy', () => ({
   sendStandardMessage: mockSendStandardMessage,
 }));
 
-vi.mock('@/features/message-sender/ttsImagenStrategy', () => ({
+vi.mock('./ttsImagenStrategy', () => ({
   sendTtsImagenMessage: mockSendTtsImagenMessage,
 }));
 
-vi.mock('@/features/message-sender/imageEditStrategy', () => ({
+vi.mock('./imageEditStrategy', () => ({
   sendImageEditMessage: mockSendImageEditMessage,
 }));
 
-vi.mock('@/features/message-sender/senderStoreActions', () => ({
+vi.mock('./senderStoreActions', () => ({
   createSenderStoreActions: () => mockSenderStoreActions,
 }));
 
-vi.mock('@/utils/modelHelpers', () => ({
+vi.mock('@/utils/modelCapabilities', () => ({
   getModelCapabilities: mockGetModelCapabilities,
 }));
 
@@ -93,6 +93,7 @@ vi.mock('@/services/api/fileApi', () => ({
 import { useMessageSender } from './useMessageSender';
 import { createMessageSenderProps, type MessageSenderPropsOverrides } from '@/test/hookFactories';
 import { createChatSettings, createUploadedFile } from '@/test/factories';
+import { CODE_EXECUTION_TEXT_FILE_LIMIT_BYTES } from '@/utils/codeExecution';
 
 describe('useMessageSender', () => {
   const renderMessageSender = (overrides: MessageSenderPropsOverrides = {}) =>
@@ -209,7 +210,7 @@ describe('useMessageSender', () => {
         createUploadedFile({
           name: 'large.csv',
           type: 'text/csv',
-          size: 2 * 1024 * 1024 + 1,
+          size: CODE_EXECUTION_TEXT_FILE_LIMIT_BYTES + 1,
         }),
       ],
       setAppFileError,

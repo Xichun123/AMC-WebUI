@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { type AppSettings, type ChatSettings, type ModelOption } from '@/types';
 import { Modal } from '@/components/shared/Modal';
@@ -141,6 +141,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const activeTabLabelKey = tabs.find((tab) => tab.id === activeTab)?.labelKey;
   const activeTabUsesScope = chatScopedTabs.has(activeTab);
   const visibleScope = activeTabUsesScope ? settingsScope : 'defaults';
+  const activeTabRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!activeTabUsesScope && settingsScope !== 'defaults') {
@@ -159,8 +160,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         enterAnimationClassName=""
         ariaLabel={t('settingsTitle')}
         contentClassName="w-full h-[100dvh] sm:h-[85vh] sm:max-h-[800px] sm:w-[90vw] max-w-6xl sm:rounded-xl overflow-hidden flex flex-col md:flex-row shadow-2xl bg-[var(--theme-bg-primary)] transition-all"
+        initialFocusRef={activeTabRef}
       >
-        <SettingsSidebar tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} onClose={onClose} />
+        <SettingsSidebar
+          tabs={tabs}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onClose={onClose}
+          activeTabRef={activeTabRef}
+        />
 
         {/* Content Area */}
         <main className="flex-1 flex flex-col min-w-0 bg-[var(--theme-bg-primary)] relative overflow-hidden">

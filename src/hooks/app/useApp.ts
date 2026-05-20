@@ -6,9 +6,15 @@ import { useAppEvents } from '@/hooks/core/useAppEvents';
 import { usePictureInPicture } from '@/hooks/core/usePictureInPicture';
 import { logService } from '@/services/logService';
 import { getTranslator } from '@/i18n/translations';
-import { applyThemeToDocument } from '@/utils/uiUtils';
+import { applyThemeToDocument } from '@/utils/themeDom';
 import { useUIStore } from '@/stores/uiStore';
-import { type AppSettings, type ChatSettings, type ModelOption, type SideViewContent } from '@/types';
+import {
+  type AppSettings,
+  type ChatSettings,
+  type ModelOption,
+  type SideViewContent,
+  type ThinkingLevel,
+} from '@/types';
 import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
 import { useDataExport } from '@/hooks/data-management/useDataExport';
 import { useDataImport } from '@/hooks/data-management/useDataImport';
@@ -17,7 +23,7 @@ import { useAppInitialization } from './useAppInitialization';
 import { useAppTitle } from './useAppTitle';
 import { focusChatInput, useAppPromptModes } from './useAppPromptModes';
 import { DEFAULT_THINKING_BUDGET } from '@/constants/modelConstants';
-import { getModelCapabilities } from '@/utils/modelHelpers';
+import { getModelCapabilities } from '@/utils/modelCapabilities';
 
 const buildProviderAwareModels = (apiModels: ModelOption[]): ModelOption[] => {
   return apiModels.map((model) => ({ ...model, apiMode: 'gemini-native' as const }));
@@ -203,7 +209,7 @@ export const useApp = () => {
   });
 
   const handleSetThinkingLevel = useCallback(
-    (level: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH') => {
+    (level: ThinkingLevel) => {
       const activeModelId = currentChatSettings.modelId || appSettings.modelId;
       const shouldUseThinkingPresets = getModelCapabilities(activeModelId).supportsThinkingLevel;
 

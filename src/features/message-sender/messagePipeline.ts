@@ -9,7 +9,7 @@ import { DEFAULT_CHAT_SETTINGS } from '@/constants/appConstants';
 import { generateUniqueId } from '@/utils/chat/ids';
 import { createMessage, generateSessionTitle, performOptimisticSessionUpdate } from '@/utils/chat/session';
 import { insertMessageAfter, updateMessageInSession } from '@/utils/chat/sessionMutations';
-import { playCompletionSound, showNotification } from '@/utils/uiUtils';
+import { emitCompletionFeedback, type CompletionFeedback } from './completionFeedback';
 import { createLoadingModelMessage } from './useMessageLifecycle';
 import type { SessionsUpdater } from './types';
 
@@ -59,16 +59,6 @@ type MessageLifecycleRunner = <T>(params: {
   execute: () => Promise<T>;
   onError?: (error: unknown) => void;
 }) => Promise<T | undefined>;
-
-interface CompletionNotification {
-  title: string;
-  body: string;
-}
-
-interface CompletionFeedback {
-  sound?: boolean;
-  notification?: CompletionNotification;
-}
 
 interface OptimisticPipelineResult {
   patch?: CompleteModelMessageParams['patch'];
@@ -172,25 +162,6 @@ const startOptimisticMessageTurn = ({
     modelMessage,
     generationStartTime,
   };
-};
-
-const emitCompletionFeedback = async (appSettings: AppSettings, feedback: CompletionFeedback = {}) => {
-  if (feedback.sound !== false && appSettings.isCompletionSoundEnabled) {
-    playCompletionSound();
-  }
-
-  if (
-    feedback.notification &&
-    appSettings.isCompletionNotificationEnabled &&
-    typeof document !== 'undefined' &&
-    document.hidden
-  ) {
-    const { APP_LOGO_SVG_DATA_URI } = await import('@/constants/assets');
-    showNotification(feedback.notification.title, {
-      body: feedback.notification.body,
-      icon: APP_LOGO_SVG_DATA_URI,
-    });
-  }
 };
 
 export const runOptimisticMessagePipeline = async ({

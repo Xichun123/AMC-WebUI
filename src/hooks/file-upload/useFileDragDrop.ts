@@ -3,7 +3,7 @@ import { type DragEvent, useState, useCallback } from 'react';
 import { type UploadedFile } from '@/types';
 import { generateUniqueId } from '@/utils/chat/ids';
 import { useI18n } from '@/contexts/I18nContext';
-import { createProcessingPlaceholderFile } from './fileUploadPolicy';
+import { createProcessingPlaceholderFile } from '@/utils/file-upload/fileUploadPolicy';
 
 interface UseFileDragDropProps {
   onFilesDropped: (files: FileList | File[]) => Promise<void>;

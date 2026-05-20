@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { type UploadedFile } from '@/types';
 import { useI18n } from '@/contexts/I18nContext';
 import { LazyMarkdownRenderer } from '@/components/message/LazyMarkdownRenderer';
+import { LARGE_FILE_PREVIEW_LENGTH_THRESHOLD, shouldDeferMarkdownPreview } from './markdownPreviewPolicy';
 
 interface TextFileViewerProps {
   file: UploadedFile;
@@ -17,22 +18,6 @@ interface TextFileViewerProps {
 
 const ROW_HEIGHT = 21; // 14px font size * 1.5 line height
 const PADDING_Y = 96; // 24 * 4 = 96px (pt-24 equivalent)
-const LARGE_TEXT_FILE_THRESHOLD = 50000;
-const LARGE_MARKDOWN_LINE_THRESHOLD = 1200;
-const LARGE_MARKDOWN_FENCE_THRESHOLD = 12;
-
-const shouldDeferMarkdownPreview = (content: string): boolean => {
-  if (!content) return false;
-
-  const lineCount = (content.match(/\n/g)?.length ?? 0) + 1;
-  const fenceCount = content.match(/```/g)?.length ?? 0;
-
-  return (
-    content.length > LARGE_TEXT_FILE_THRESHOLD ||
-    lineCount > LARGE_MARKDOWN_LINE_THRESHOLD ||
-    fenceCount >= LARGE_MARKDOWN_FENCE_THRESHOLD
-  );
-};
 
 const VirtualTextViewer: React.FC<{ content: string }> = ({ content }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -142,7 +127,7 @@ export const TextFileViewer: React.FC<TextFileViewerProps> = ({
   const markdownPreviewKey = `${file.id}:${file.name}:${renderMode}:${displayContent ?? ''}`;
   const shouldForceMarkdownRender = forcedMarkdownPreviewKey === markdownPreviewKey;
   // Use virtualization for files larger than ~50KB to prevent freezing
-  const isLargeFile = (displayContent?.length || 0) > LARGE_TEXT_FILE_THRESHOLD;
+  const isLargeFile = (displayContent?.length || 0) > LARGE_FILE_PREVIEW_LENGTH_THRESHOLD;
   const shouldShowLoading = hasProvidedContent ? false : isLoading;
   const shouldRenderMarkdown = !isEditable && renderMode === 'markdown' && !shouldShowLoading;
   const shouldDeferMarkdown =

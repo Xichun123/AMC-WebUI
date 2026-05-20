@@ -1,6 +1,6 @@
 import React from 'react';
 import { PhoneOff, AudioWaveform, Mic, MicOff, MonitorUp, Video, VideoOff } from 'lucide-react';
-import { CHAT_INPUT_BUTTON_CLASS } from '@/constants/appConstants';
+import { CHAT_INPUT_BUTTON_CLASS } from '@/constants/styleClasses';
 import { useChatInputActionsContext } from '@/components/chat/input/ChatInputContext';
 import { useI18n } from '@/contexts/I18nContext';
 

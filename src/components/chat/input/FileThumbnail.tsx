@@ -1,8 +1,7 @@
-import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ElementType, type FC, type ReactNode } from 'react';
 import type { UploadedFile } from '@/types';
 import { SUPPORTED_IMAGE_MIME_TYPES } from '@/constants/fileConstants';
-import { getFileTypeCategory } from '@/utils/uiUtils';
-import { isTextFile } from '@/utils/fileTypeUtils';
+import { getFileTypeCategory, isTextFile } from '@/utils/fileTypeUtils';
 
 const LazyPdfFileThumbnail = lazy(() =>
   import('./PdfFileThumbnail').then((module) => ({ default: module.PdfFileThumbnail })),
@@ -10,7 +9,7 @@ const LazyPdfFileThumbnail = lazy(() =>
 
 interface FileThumbnailProps {
   file: UploadedFile;
-  Icon: React.ElementType;
+  Icon: ElementType;
   colorClass: string;
   bgClass: string;
 }
@@ -136,7 +135,7 @@ const TextThumbnail = ({ file }: { file: UploadedFile }) => {
   );
 };
 
-const PdfThumbnail = ({ file, fallback }: { file: UploadedFile; fallback: React.ReactNode }) => {
+const PdfThumbnail = ({ file, fallback }: { file: UploadedFile; fallback: ReactNode }) => {
   const shouldLoadPreview = !!file.dataUrl;
   const { containerRef, isVisible } = useVisibleThumbnailGate(shouldLoadPreview);
 
@@ -153,7 +152,7 @@ const PdfThumbnail = ({ file, fallback }: { file: UploadedFile; fallback: React.
   );
 };
 
-const VideoThumbnail = ({ file, fallback }: { file: UploadedFile; fallback: React.ReactNode }) => {
+const VideoThumbnail = ({ file, fallback }: { file: UploadedFile; fallback: ReactNode }) => {
   if (!file.dataUrl) {
     return (
       <div data-thumbnail-kind="video" className="h-full w-full">
@@ -244,7 +243,7 @@ const CoverThumbnail = ({ file, Icon, colorClass, bgClass }: FileThumbnailProps)
   );
 };
 
-export const FileThumbnail: React.FC<FileThumbnailProps> = (props) => {
+export const FileThumbnail: FC<FileThumbnailProps> = (props) => {
   const { file } = props;
   const category = getFileTypeCategory(file.type, file.error);
   const fallback = <CoverThumbnail {...props} />;

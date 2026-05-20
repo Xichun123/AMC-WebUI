@@ -42,5 +42,5 @@ tmp-live-artifact-demo/
 # Local worktrees
 .worktrees/
 
-# Local dev server state
-.codex-dev-server.*
+# Local Codex desktop state
+.codex-dev-*

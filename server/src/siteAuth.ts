@@ -10,12 +10,12 @@ const SCRYPT_N = 16384;
 const SCRYPT_R = 8;
 const SCRYPT_P = 1;
 
-export interface SiteAuthUser {
+interface SiteAuthUser {
   username: string;
   passwordHash: string;
 }
 
-export interface SiteAuthConfig {
+interface SiteAuthConfig {
   enabled: boolean;
   users: SiteAuthUser[];
   secret?: string;
@@ -148,9 +148,7 @@ export async function createSitePasswordHash(password: string, salt = randomByte
     p: SCRYPT_P,
   });
 
-  return `scrypt:${SCRYPT_N}:${SCRYPT_R}:${SCRYPT_P}:${salt.toString('base64url')}:${derivedKey.toString(
-    'base64url',
-  )}`;
+  return `scrypt:${SCRYPT_N}:${SCRYPT_R}:${SCRYPT_P}:${salt.toString('base64url')}:${derivedKey.toString('base64url')}`;
 }
 
 async function verifySitePassword(password: string, encodedHash: string): Promise<boolean> {
@@ -211,7 +209,7 @@ function readCookie(request: IncomingMessage, name: string): string | undefined 
   return undefined;
 }
 
-export function readSiteSession(request: IncomingMessage, config: SiteAuthConfig, now = Date.now()): SiteSession | null {
+function readSiteSession(request: IncomingMessage, config: SiteAuthConfig, now = Date.now()): SiteSession | null {
   if (!config.enabled) {
     return null;
   }

@@ -5,7 +5,7 @@ import {
   toCountTokensConfig,
 } from './generationConfig';
 import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
-import { MediaResolution } from '@/types/settings';
+import { MediaResolution, type ThinkingLevel } from '@/types';
 
 vi.mock('@/services/logService', async () => {
   const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
@@ -13,8 +13,8 @@ vi.mock('@/services/logService', async () => {
   return createLogServiceMockModule();
 });
 
-vi.mock('@/utils/modelHelpers', async () => {
-  const actual = await vi.importActual<typeof import('@/utils/modelHelpers')>('@/utils/modelHelpers');
+vi.mock('@/utils/modelCapabilities', async () => {
+  const actual = await vi.importActual<typeof import('@/utils/modelCapabilities')>('@/utils/modelCapabilities');
 
   return {
     ...actual,
@@ -39,7 +39,7 @@ type LegacyGenerationConfigTestOptions = {
   isGoogleSearchEnabled?: boolean;
   isCodeExecutionEnabled?: boolean;
   isUrlContextEnabled?: boolean;
-  thinkingLevel?: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH';
+  thinkingLevel?: ThinkingLevel;
   aspectRatio?: string;
   isDeepSearchEnabled?: boolean;
   imageSize?: string;
@@ -62,7 +62,7 @@ const buildGenerationConfig = (
   isGoogleSearchEnabled?: boolean,
   isCodeExecutionEnabled?: boolean,
   isUrlContextEnabled?: boolean,
-  thinkingLevel?: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH',
+  thinkingLevel?: ThinkingLevel,
   aspectRatio?: string,
   isDeepSearchEnabled?: boolean,
   imageSize?: string,
@@ -352,7 +352,7 @@ describe('buildGenerationConfig', () => {
         isGoogleSearchEnabled?: boolean,
         isCodeExecutionEnabled?: boolean,
         isUrlContextEnabled?: boolean,
-        thinkingLevel?: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH',
+        thinkingLevel?: ThinkingLevel,
         aspectRatio?: string,
         isDeepSearchEnabled?: boolean,
         imageSize?: string,
@@ -418,7 +418,7 @@ describe('buildGenerationConfig', () => {
         isGoogleSearchEnabled?: boolean,
         isCodeExecutionEnabled?: boolean,
         isUrlContextEnabled?: boolean,
-        thinkingLevel?: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH',
+        thinkingLevel?: ThinkingLevel,
         aspectRatio?: string,
         isDeepSearchEnabled?: boolean,
         imageSize?: string,

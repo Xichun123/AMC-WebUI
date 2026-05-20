@@ -1,19 +1,6 @@
 import { act } from 'react';
-import { createTestRenderer, type TestRenderer } from '@/test/testUtils';
+import { createTestRenderer } from '@/test/testUtils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-
-vi.mock('@/components/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
-
-  return createLogServiceMockModule();
-});
-
-interface MountedRoot {
-  container: HTMLDivElement;
-  root: TestRenderer;
-}
-
-const mountedRoots: MountedRoot[] = [];
 
 type MockIntersectionObserverInstance = {
   observe: (target: Element) => void;
@@ -78,24 +65,15 @@ const installMockIntersectionObserver = () => {
 
 const renderIntoDom = (ui: JSX.Element) => {
   const root = createTestRenderer();
-  const { container } = root;
 
   act(() => {
     root.render(ui);
   });
 
-  const mounted = { container, root };
-  mountedRoots.push(mounted);
-  return mounted;
+  return { container: root.container };
 };
 
 afterEach(() => {
-  while (mountedRoots.length > 0) {
-    const mounted = mountedRoots.pop()!;
-    act(() => {
-      mounted.root.unmount();
-    });
-  }
   vi.resetModules();
   vi.doUnmock('./MermaidBlock');
   vi.doUnmock('./GraphvizBlock');

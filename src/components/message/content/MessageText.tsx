@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { type ChatMessage, type UploadedFile, type AppSettings, type SideViewContent } from '@/types';
 import { useI18n } from '@/contexts/I18nContext';
 import { LazyMarkdownRenderer } from '@/components/message/LazyMarkdownRenderer';
@@ -9,6 +9,7 @@ import { useSmoothStreaming } from '@/hooks/ui/useSmoothStreaming';
 import { useMessageStream } from '@/hooks/ui/useMessageStream';
 import { extractRawThinkingBlocks } from '@/utils/chat/reasoning';
 import type { LiveArtifactFollowupPayload } from '@/utils/liveArtifactFollowup';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface MessageTextProps {
   message: ChatMessage;
@@ -24,6 +25,18 @@ interface MessageTextProps {
   isGraphvizRenderingEnabled: boolean;
   onOpenSidePanel: (content: SideViewContent) => void;
 }
+
+const USER_MESSAGE_COLLAPSE_CHARACTER_THRESHOLD = 600;
+const USER_MESSAGE_COLLAPSE_LINE_THRESHOLD = 8;
+const USER_MESSAGE_COLLAPSED_LINE_HEIGHT = 1.65;
+
+const shouldCollapseUserMessageContent = (content: string): boolean => {
+  if (content.length > USER_MESSAGE_COLLAPSE_CHARACTER_THRESHOLD) return true;
+  return (content.match(/\n/g)?.length ?? 0) + 1 > USER_MESSAGE_COLLAPSE_LINE_THRESHOLD;
+};
+
+const getUserMessageCollapseKey = (messageId: string, content: string): string =>
+  `${messageId}:${content.length}:${content.slice(0, 64)}:${content.slice(-64)}`;
 
 export const MessageText: React.FC<MessageTextProps> = ({
   message,
@@ -42,6 +55,7 @@ export const MessageText: React.FC<MessageTextProps> = ({
   const { t } = useI18n();
   const { content, audioSrc, groundingMetadata, urlContextMetadata, thoughts } = message;
   const isLoading = message.isLoading ?? false;
+  const [expandedUserMessageKey, setExpandedUserMessageKey] = useState<string | null>(null);
 
   const { streamContent, streamThoughts } = useMessageStream(message.id, isLoading && message.role === 'model');
 
@@ -55,6 +69,13 @@ export const MessageText: React.FC<MessageTextProps> = ({
     () => normalizePreviewableMarkdownContent(displayedContent, { isStreaming: shouldSmooth }),
     [displayedContent, shouldSmooth],
   );
+  const shouldOfferUserMessageCollapse =
+    message.role === 'user' && !isLoading && shouldCollapseUserMessageContent(displayedContent);
+  const userMessageCollapseKey = getUserMessageCollapseKey(message.id, displayedContent);
+  const isUserMessageExpanded = expandedUserMessageKey === userMessageCollapseKey;
+  const isUserMessageCollapsed = shouldOfferUserMessageCollapse && !isUserMessageExpanded;
+  const userMessageCollapseRegionId = `${message.id}-message-text`;
+  const collapsedMaxHeight = baseFontSize * USER_MESSAGE_COLLAPSED_LINE_HEIGHT * USER_MESSAGE_COLLAPSE_LINE_THRESHOLD;
 
   const prevIsLoadingRef = useRef(isLoading);
   useEffect(() => {
@@ -117,24 +138,54 @@ export const MessageText: React.FC<MessageTextProps> = ({
           files={message.files}
         />
       ) : effectiveContent ? (
-        <div className={`markdown-body ${isLoading ? 'is-loading' : ''}`} style={{ fontSize: `${baseFontSize}px` }}>
-          <LazyMarkdownRenderer
-            messageId={message.id}
-            content={markdownContent}
-            contentPreNormalized={true}
-            isLoading={isLoading}
-            onImageClick={onImageClick}
-            onOpenHtmlPreview={onOpenHtmlPreview}
-            onLiveArtifactFollowUp={onLiveArtifactFollowUp}
-            expandCodeBlocksByDefault={expandCodeBlocksByDefault}
-            isMermaidRenderingEnabled={isMermaidRenderingEnabled}
-            isGraphvizRenderingEnabled={isGraphvizRenderingEnabled}
-            allowHtml={true}
-            themeId={themeId}
-            onOpenSidePanel={onOpenSidePanel}
-            hideThinkingInContext={appSettings.hideThinkingInContext}
-            files={message.files}
-          />
+        <div data-user-message-collapsed={shouldOfferUserMessageCollapse ? String(isUserMessageCollapsed) : undefined}>
+          <div
+            id={userMessageCollapseRegionId}
+            className={isUserMessageCollapsed ? 'overflow-hidden' : undefined}
+            style={isUserMessageCollapsed ? { maxHeight: `${collapsedMaxHeight}px` } : undefined}
+          >
+            <div className={`markdown-body ${isLoading ? 'is-loading' : ''}`} style={{ fontSize: `${baseFontSize}px` }}>
+              <LazyMarkdownRenderer
+                messageId={message.id}
+                content={markdownContent}
+                contentPreNormalized={true}
+                isLoading={isLoading}
+                onImageClick={onImageClick}
+                onOpenHtmlPreview={onOpenHtmlPreview}
+                onLiveArtifactFollowUp={onLiveArtifactFollowUp}
+                expandCodeBlocksByDefault={expandCodeBlocksByDefault}
+                isMermaidRenderingEnabled={isMermaidRenderingEnabled}
+                isGraphvizRenderingEnabled={isGraphvizRenderingEnabled}
+                allowHtml={true}
+                themeId={themeId}
+                onOpenSidePanel={onOpenSidePanel}
+                hideThinkingInContext={appSettings.hideThinkingInContext}
+                files={message.files}
+              />
+            </div>
+          </div>
+
+          {shouldOfferUserMessageCollapse && (
+            <button
+              type="button"
+              aria-controls={userMessageCollapseRegionId}
+              aria-expanded={isUserMessageExpanded}
+              aria-label={isUserMessageExpanded ? t('collapse') : t('expand')}
+              className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-current opacity-80 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/40"
+              onClick={() =>
+                setExpandedUserMessageKey((expandedKey) =>
+                  expandedKey === userMessageCollapseKey ? null : userMessageCollapseKey,
+                )
+              }
+            >
+              {isUserMessageExpanded ? t('collapse') : t('expand')}
+              {isUserMessageExpanded ? (
+                <ChevronUp size={15} strokeWidth={2} />
+              ) : (
+                <ChevronDown size={15} strokeWidth={2} />
+              )}
+            </button>
+          )}
         </div>
       ) : null}
     </>

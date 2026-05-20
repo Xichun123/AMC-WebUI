@@ -3,6 +3,8 @@ export const DEFAULT_MODEL_ID = 'gemini-3-flash-preview';
 const GEMINI_3_REQUIRED_THINKING_MODEL_IDS = [
   'gemini-3.1-pro-preview',
   'models/gemini-3.1-pro-preview',
+  'gemini-3-flash',
+  'models/gemini-3-flash',
   'gemini-3.5-flash',
   'models/gemini-3.5-flash',
   'gemini-3-flash-preview',

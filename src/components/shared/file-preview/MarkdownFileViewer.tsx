@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { type UploadedFile } from '@/types';
 import { useI18n } from '@/contexts/I18nContext';
 import { LazyMarkdownRenderer } from '@/components/message/LazyMarkdownRenderer';
+import { shouldDeferMarkdownPreview } from './markdownPreviewPolicy';
 
 interface MarkdownFileViewerProps {
   file: UploadedFile;
@@ -14,9 +15,6 @@ interface MarkdownFileViewerProps {
   onLoad?: (content: string) => void;
 }
 
-const LARGE_MARKDOWN_LENGTH_THRESHOLD = 50000;
-const LARGE_MARKDOWN_LINE_THRESHOLD = 1200;
-const LARGE_MARKDOWN_FENCE_THRESHOLD = 12;
 const MARKDOWN_VIEW_MODE_STORAGE_PREFIX = 'markdown-preview-mode:';
 
 type MarkdownViewMode = 'preview' | 'source';
@@ -27,19 +25,6 @@ const readStoredMarkdownViewMode = (storageKey: string): MarkdownViewMode => {
   } catch {
     return 'preview';
   }
-};
-
-const shouldDeferMarkdownPreview = (content: string): boolean => {
-  if (!content) return false;
-
-  const lineCount = (content.match(/\n/g)?.length ?? 0) + 1;
-  const fenceCount = content.match(/```/g)?.length ?? 0;
-
-  return (
-    content.length > LARGE_MARKDOWN_LENGTH_THRESHOLD ||
-    lineCount > LARGE_MARKDOWN_LINE_THRESHOLD ||
-    fenceCount >= LARGE_MARKDOWN_FENCE_THRESHOLD
-  );
 };
 
 export const MarkdownFileViewer: React.FC<MarkdownFileViewerProps> = ({

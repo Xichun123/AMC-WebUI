@@ -4,7 +4,7 @@ import { logService } from '@/services/logService';
 import { getGeminiKeyForRequest } from '@/utils/apiUtils';
 import { pcmBase64ToWavUrl } from '@/features/audio/audioProcessing';
 import { generateSpeechApi } from '@/services/api/generation/audioApi';
-import { DEFAULT_TTS_MODEL_ID } from '@/constants/appConstants';
+import { DEFAULT_TTS_MODEL_ID } from '@/constants/modelConstants';
 
 interface TextToSpeechHandlerProps {
   appSettings: AppSettings;

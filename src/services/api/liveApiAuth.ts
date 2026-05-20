@@ -1,6 +1,8 @@
 import type { GoogleGenAI } from '@google/genai';
 import type { AppSettings } from '@/types';
-import { getClient, resolveLiveClientBaseUrl, type ClientHttpOptions } from './apiClient';
+import { getClient } from './apiClient';
+import { resolveLiveClientBaseUrl } from './geminiApiBaseUrl';
+import type { GeminiClientHttpOptions } from './geminiApiVersion';
 
 export class LiveApiAuthConfigurationError extends Error {
   code: 'MISSING_API_KEY';
@@ -14,7 +16,7 @@ export class LiveApiAuthConfigurationError extends Error {
 
 export const getLiveApiClient = async (
   appSettings: Pick<AppSettings, 'useCustomApiConfig' | 'useApiProxy' | 'apiProxyUrl'>,
-  httpOptions?: ClientHttpOptions,
+  httpOptions?: GeminiClientHttpOptions,
   apiKeyForLiveConnection?: string | null,
 ): Promise<GoogleGenAI> => {
   const apiKey = apiKeyForLiveConnection?.trim();

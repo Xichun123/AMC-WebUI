@@ -18,8 +18,7 @@ const {
   uploadRequests,
   uploadResponseScenarios,
   getConfiguredApiClientMock,
-  getConfiguredApiBaseUrlMock,
-  getConfiguredProxyBaseUrlMock,
+  getConfiguredApiClientContextMock,
 } = vi.hoisted(() => ({
   fetchMock: vi.fn(),
   uploadRequests: {
@@ -29,14 +28,12 @@ const {
     scenarios: [] as UploadResponseScenario[],
   },
   getConfiguredApiClientMock: vi.fn(),
-  getConfiguredApiBaseUrlMock: vi.fn(),
-  getConfiguredProxyBaseUrlMock: vi.fn(),
+  getConfiguredApiClientContextMock: vi.fn(),
 }));
 
 vi.mock('./apiClient', () => ({
   getConfiguredApiClient: getConfiguredApiClientMock,
-  getConfiguredApiBaseUrl: getConfiguredApiBaseUrlMock,
-  getConfiguredProxyBaseUrl: getConfiguredProxyBaseUrlMock,
+  getConfiguredApiClientContext: getConfiguredApiClientContextMock,
 }));
 
 vi.mock('@/services/logService', async () => {
@@ -135,49 +132,54 @@ class FakeXMLHttpRequest {
   }
 }
 
+const createInternalApiClient = () => ({
+  request: async (request: {
+    path: string;
+    body?: string | Blob;
+    httpMethod: 'POST';
+    httpOptions?: {
+      apiVersion?: string;
+      baseUrl?: string;
+      headers?: Record<string, string>;
+    };
+    abortSignal?: AbortSignal;
+  }) => {
+    const baseUrl = request.httpOptions?.baseUrl ?? '';
+    const normalizedBaseUrl = baseUrl.replace(/\/+$/, '');
+    const url = request.path ? `${normalizedBaseUrl}/${request.path.replace(/^\/+/, '')}` : normalizedBaseUrl;
+    const headers = {
+      ...(request.httpOptions?.headers ?? {}),
+      'x-goog-api-key': (request.httpOptions?.headers ?? {})['x-goog-api-key'] ?? 'api-key',
+    };
+
+    const response = await fetchMock(url, {
+      method: request.httpMethod,
+      headers,
+      body: request.body as BodyInit | undefined,
+      signal: request.abortSignal,
+    });
+
+    return {
+      headers: Object.fromEntries(response.headers.entries()),
+      json: () => response.json(),
+    };
+  },
+});
+
 describe('uploadFileApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     uploadRequests.requests = [];
     uploadResponseScenarios.scenarios = [];
-    getConfiguredApiBaseUrlMock.mockResolvedValue('https://generativelanguage.googleapis.com');
-    getConfiguredProxyBaseUrlMock.mockResolvedValue(null);
     vi.stubGlobal('fetch', fetchMock);
     vi.stubGlobal('XMLHttpRequest', FakeXMLHttpRequest);
-    getConfiguredApiClientMock.mockResolvedValue({
-      apiClient: {
-        request: async (request: {
-          path: string;
-          body?: string | Blob;
-          httpMethod: 'POST';
-          httpOptions?: {
-            apiVersion?: string;
-            baseUrl?: string;
-            headers?: Record<string, string>;
-          };
-          abortSignal?: AbortSignal;
-        }) => {
-          const baseUrl = request.httpOptions?.baseUrl ?? '';
-          const normalizedBaseUrl = baseUrl.replace(/\/+$/, '');
-          const url = request.path ? `${normalizedBaseUrl}/${request.path.replace(/^\/+/, '')}` : normalizedBaseUrl;
-          const headers = {
-            ...(request.httpOptions?.headers ?? {}),
-            'x-goog-api-key': (request.httpOptions?.headers ?? {})['x-goog-api-key'] ?? 'api-key',
-          };
-
-          const response = await fetchMock(url, {
-            method: request.httpMethod,
-            headers,
-            body: request.body as BodyInit | undefined,
-            signal: request.abortSignal,
-          });
-
-          return {
-            headers: Object.fromEntries(response.headers.entries()),
-            json: () => response.json(),
-          };
-        },
-      },
+    const client = {
+      apiClient: createInternalApiClient(),
+    };
+    getConfiguredApiClientContextMock.mockResolvedValue({
+      client,
+      apiBaseUrl: 'https://generativelanguage.googleapis.com',
+      proxyBaseUrl: null,
     });
 
     fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
@@ -229,8 +231,13 @@ describe('uploadFileApi', () => {
   });
 
   it('rewrites the upload session through the configured proxy base path', async () => {
-    getConfiguredApiBaseUrlMock.mockResolvedValue('https://proxy.example.com/gemini');
-    getConfiguredProxyBaseUrlMock.mockResolvedValue('https://proxy.example.com/gemini');
+    getConfiguredApiClientContextMock.mockResolvedValue({
+      client: {
+        apiClient: createInternalApiClient(),
+      },
+      apiBaseUrl: 'https://proxy.example.com/gemini',
+      proxyBaseUrl: 'https://proxy.example.com/gemini',
+    });
 
     const file = new File(['hello'], 'sample.txt', { type: 'text/plain' });
 

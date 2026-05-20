@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import type { ApiMode, MediaResolution, ModelOption } from '@/types';
+import { type ApiMode, type MediaResolution, type ModelOption, type ThinkingLevel, THINKING_LEVELS } from '@/types';
 import {
   createPersistedStateStorage,
   readPersistentStorageItem,
@@ -15,7 +15,7 @@ const LEGACY_MODEL_SETTINGS_CACHE_KEY = 'model_settings_cache';
 export interface CachedModelSettings {
   mediaResolution?: MediaResolution;
   thinkingBudget?: number;
-  thinkingLevel?: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH';
+  thinkingLevel?: ThinkingLevel;
 }
 
 interface ModelPreferencesState {
@@ -75,8 +75,8 @@ const normalizeModelOptions = (value: unknown): ModelOption[] | null => {
   return models;
 };
 
-const isThinkingLevel = (value: unknown): value is CachedModelSettings['thinkingLevel'] =>
-  value === 'MINIMAL' || value === 'LOW' || value === 'MEDIUM' || value === 'HIGH';
+const isThinkingLevel = (value: unknown): value is ThinkingLevel =>
+  typeof value === 'string' && (THINKING_LEVELS as readonly string[]).includes(value);
 
 const normalizeModelSettingsCache = (value: unknown): Record<string, CachedModelSettings> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {

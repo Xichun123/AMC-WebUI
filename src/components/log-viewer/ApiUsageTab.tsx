@@ -1,9 +1,11 @@
 import React from 'react';
 import { KeyRound, CheckCircle } from 'lucide-react';
-import { type AppSettings, type ChatSettings } from '@/types';
-import { ObfuscatedApiKey } from './ObfuscatedApiKey';
-import { parseApiKeys } from '@/utils/apiUtils';
+
 import { useI18n } from '@/contexts/I18nContext';
+import { type AppSettings, type ChatSettings } from '@/types';
+import { parseApiKeys } from '@/utils/apiUtils';
+
+import { ObfuscatedApiKey } from './ObfuscatedApiKey';
 
 interface ApiUsageTabProps {
   apiKeyUsage: Map<string, number>;
@@ -18,10 +20,8 @@ export const ApiUsageTab: React.FC<ApiUsageTabProps> = ({ apiKeyUsage, appSettin
 
   const displayApiKeyUsage = new Map<string, number>();
 
-  // 1. Add keys from settings, checking usage logs
   allApiKeys.forEach((key) => displayApiKeyUsage.set(key, apiKeyUsage.get(key) || 0));
 
-  // 2. Add any keys found in usage logs that aren't currently in settings (historical keys)
   apiKeyUsage.forEach((count, key) => {
     if (!displayApiKeyUsage.has(key)) {
       displayApiKeyUsage.set(key, count);

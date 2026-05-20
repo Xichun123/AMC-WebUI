@@ -1,6 +1,6 @@
 import React from 'react';
 import { useI18n } from '@/contexts/I18nContext';
-import type { ImageOutputMode } from '@/types/settings';
+import type { ImageOutputMode } from '@/types';
 import { Select } from '@/components/shared/Select';
 
 interface ImageOutputModeSelectorProps {

@@ -1,5 +1,5 @@
 import { type AppSettings, type ChatSettings } from '@/types';
-import { API_KEY_LAST_USED_INDEX_KEY } from '@/constants/appConstants';
+import { API_KEY_LAST_USED_INDEX_KEY } from '@/constants/storageKeys';
 import { logService } from '@/services/logService';
 import { isOpenAICompatibleApiActive } from './openaiCompatibleMode';
 

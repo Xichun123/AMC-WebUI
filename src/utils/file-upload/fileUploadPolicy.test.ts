@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
 import type { AppSettings } from '@/types';
 import {
@@ -8,26 +8,6 @@ import {
   getFilesRequiringFileApi,
   shouldUseFileApi,
 } from './fileUploadPolicy';
-
-vi.mock('@/utils/fileHelpers', () => ({
-  isTextFile: (file: { name: string; type: string }) => {
-    const lowerName = file.name.toLowerCase();
-    return (
-      file.type.startsWith('text/') ||
-      file.type === 'application/json' ||
-      file.type === 'application/xml' ||
-      file.type === 'application/yaml' ||
-      file.type === 'text/x-python' ||
-      lowerName.endsWith('.txt') ||
-      lowerName.endsWith('.csv') ||
-      lowerName.endsWith('.py') ||
-      lowerName.endsWith('.json') ||
-      lowerName.endsWith('.xml') ||
-      lowerName.endsWith('.yaml') ||
-      lowerName.endsWith('.yml')
-    );
-  },
-}));
 
 const createFile = (name: string, type: string, size: number) => {
   const file = new File(['x'], name, { type });

@@ -3,8 +3,15 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { useMessageSender } from '@/features/message-sender/useMessageSender';
 import type { useSessionLoader } from '@/hooks/chat/history/useSessionLoader';
 import type { StandardChatProps, StreamHandlerFunctions } from '@/features/message-sender/types';
-import type { ChatGroup, ChatMessage, InputCommand, SavedChatSession, UploadedFile } from '@/types';
-import type { ImageOutputMode, ImagePersonGeneration } from '@/types/settings';
+import {
+  type ChatGroup,
+  type ChatMessage,
+  type InputCommand,
+  type SavedChatSession,
+  type UploadedFile,
+  type ImageOutputMode,
+  type ImagePersonGeneration,
+} from '@/types';
 import { createAppSettings, createChatSettings } from './factories';
 
 type MessageSenderProps = Parameters<typeof useMessageSender>[0];

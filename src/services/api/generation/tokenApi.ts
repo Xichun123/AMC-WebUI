@@ -1,5 +1,5 @@
-import { getHttpOptionsForContents } from '@/services/api/apiClient';
 import { executeConfiguredApiRequest } from '@/services/api/apiExecutor';
+import { getHttpOptionsForContents } from '@/services/api/geminiApiVersion';
 import { logService } from '@/services/logService';
 import type { ContentListUnion, CountTokensConfig, CountTokensResponse, Part } from '@google/genai';
 

@@ -11,7 +11,7 @@ const { mockRunPython } = vi.hoisted(() => ({
   })),
 }));
 
-vi.mock('@/features/local-python/pyodideService', () => ({
+vi.mock('./pyodideService', () => ({
   pyodideService: {
     runPython: mockRunPython,
   },

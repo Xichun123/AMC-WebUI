@@ -1,9 +1,9 @@
 import type { GenerateContentResponse, UsageMetadata } from '@google/genai';
 import { type ChatHistoryItem, type StreamMessageSender, type NonStreamMessageSender } from '@/types';
 import { logService } from '@/services/logService';
-import { getHttpOptionsForContents } from './apiClient';
 import { executeConfiguredApiRequest } from './apiExecutor';
 import { adaptGenAiResponse, mergeGroundingMetadata, type MetadataWithCitations } from './chatResponseAdapter';
+import { getHttpOptionsForContents } from './geminiApiVersion';
 
 const withAbortSignal = <T extends object>(
   config: T | undefined,

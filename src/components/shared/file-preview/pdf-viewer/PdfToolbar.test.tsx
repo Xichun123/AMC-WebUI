@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { act } from 'react';
+import React, { act, useEffect } from 'react';
 import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PdfToolbar } from './PdfToolbar';

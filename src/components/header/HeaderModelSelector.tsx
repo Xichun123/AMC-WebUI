@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import { useMemo, type FC } from 'react';
 import { Zap } from 'lucide-react';
-import { type ModelOption } from '@/types';
+import { type ModelOption, type ThinkingLevel } from '@/types';
 import { useI18n } from '@/contexts/I18nContext';
 import { GoogleSpinner } from '@/components/icons/GoogleSpinner';
 import { ModelPicker } from '@/components/shared/ModelPicker';
@@ -13,13 +13,13 @@ interface HeaderModelSelectorProps {
   onSelectModel: (modelId: string) => void;
   isSwitchingModel: boolean;
   isLoading: boolean;
-  thinkingLevel?: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH';
-  onSetThinkingLevel: (level: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH') => void;
+  thinkingLevel?: ThinkingLevel;
+  onSetThinkingLevel: (level: ThinkingLevel) => void;
   showThoughts?: boolean;
   onToggleGemmaReasoning: () => void;
 }
 
-export const HeaderModelSelector: React.FC<HeaderModelSelectorProps> = ({
+export const HeaderModelSelector: FC<HeaderModelSelectorProps> = ({
   currentModelName,
   availableModels,
   selectedModelId,
@@ -57,10 +57,9 @@ export const HeaderModelSelector: React.FC<HeaderModelSelectorProps> = ({
   // Gemini Robotics-ER 1.6 matches Flash here; other Gemini 3 models
   // (like Pro) typically bottom out at LOW.
   const targetFastLevel = isFlashModel || isGeminiRoboticsModel ? 'MINIMAL' : 'LOW';
-  const isGemmaReasoningEnabled = !!showThoughts;
 
   // Consider it "Fast Mode" active if the current level matches the target fast level
-  const isFastState = isGemmaModel ? !isGemmaReasoningEnabled : thinkingLevel === targetFastLevel;
+  const isFastState = isGemmaModel ? !showThoughts : thinkingLevel === targetFastLevel;
   const thinkingToggleTitle = isGemmaModel
     ? isFastState
       ? t('headerReasoningMinimalFastTitle')

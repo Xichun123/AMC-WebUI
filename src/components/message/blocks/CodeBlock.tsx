@@ -5,7 +5,7 @@ import { useCodeBlock } from '@/hooks/ui/useCodeBlock';
 import { usePyodide } from '@/features/local-python/usePyodide';
 import { CodeHeader } from './parts/CodeHeader';
 import { ArtifactFrame } from './ArtifactFrame';
-import { extractTextFromNode } from '@/utils/uiUtils';
+import { extractTextFromNode } from '@/utils/reactNodeText';
 import { isImageMimeType } from '@/utils/fileTypeUtils';
 import { FileDisplay } from '@/components/message/FileDisplay';
 import { useI18n } from '@/contexts/I18nContext';

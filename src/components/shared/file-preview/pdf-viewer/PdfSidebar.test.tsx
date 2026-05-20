@@ -1,5 +1,4 @@
-import React from 'react';
-import { act } from 'react';
+import React, { act } from 'react';
 import { setupTestRenderer } from '@/test/testUtils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PdfSidebar } from './PdfSidebar';

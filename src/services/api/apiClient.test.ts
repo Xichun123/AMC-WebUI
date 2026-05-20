@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GoogleGenAI } from '@google/genai';
-import { getClient, getConfiguredApiClient } from './apiClient';
+import { getClient, getConfiguredApiClient, getConfiguredApiClientContext } from './apiClient';
 import { dbService } from '@/services/db/dbService';
 
 const { mockGetRuntimeConfigAppSettingsOverrides, mockGetBackendFlavor } = vi.hoisted(() => ({
@@ -173,6 +173,34 @@ describe('getConfiguredApiClient', () => {
     expect(GoogleGenAI).toHaveBeenCalledWith({
       apiKey: 'key',
       httpOptions: { baseUrl: 'http://localhost/api/gemini' },
+    });
+  });
+});
+
+describe('getConfiguredApiClientContext', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetRuntimeConfigAppSettingsOverrides.mockReturnValue({});
+    mockGetBackendFlavor.mockReturnValue('aistudio');
+  });
+
+  it('builds the client and routing URLs from one settings read', async () => {
+    vi.mocked(dbService.getAppSettings).mockResolvedValue({
+      useCustomApiConfig: true,
+      useApiProxy: true,
+      apiProxyUrl: 'https://proxy.example.com/gemini/v1beta/',
+    } as StoredAppSettings);
+
+    const context = await getConfiguredApiClientContext('key');
+
+    expect(dbService.getAppSettings).toHaveBeenCalledTimes(1);
+    expect(GoogleGenAI).toHaveBeenCalledWith({
+      apiKey: 'key',
+      httpOptions: { baseUrl: 'https://proxy.example.com/gemini' },
+    });
+    expect(context).toMatchObject({
+      apiBaseUrl: 'https://proxy.example.com/gemini',
+      proxyBaseUrl: 'https://proxy.example.com/gemini',
     });
   });
 });

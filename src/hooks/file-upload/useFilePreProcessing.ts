@@ -6,7 +6,7 @@ import { isAudioMimeType, isTextFile } from '@/utils/fileTypeUtils';
 import { compressAudioToMp3 } from '@/features/audio/audioCompression';
 import { extractDocxText, isDocxFile } from '@/utils/docxPreview';
 import { useI18n } from '@/contexts/I18nContext';
-import { createProcessingPlaceholderFile } from './fileUploadPolicy';
+import { createProcessingPlaceholderFile } from '@/utils/file-upload/fileUploadPolicy';
 
 interface UseFilePreProcessingProps {
   appSettings: AppSettings;

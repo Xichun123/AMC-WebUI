@@ -1,5 +1,4 @@
-import type { InputCommand, UploadedFile } from '@/types';
-import type { ImageOutputMode, ImagePersonGeneration } from '@/types/settings';
+import { type InputCommand, type UploadedFile, type ImageOutputMode, type ImagePersonGeneration } from '@/types';
 
 type UpdaterOrValue<T> = T | ((prev: T) => T);
 type SliceSet<T> = (partial: Partial<T> | ((state: T) => Partial<T>)) => void;

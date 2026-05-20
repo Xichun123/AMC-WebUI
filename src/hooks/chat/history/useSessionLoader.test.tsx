@@ -1,8 +1,7 @@
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ChatGroup, ChatMessage, SavedChatSession } from '@/types';
-import { MediaResolution } from '@/types';
+import { MediaResolution, type ChatGroup, type ChatMessage, type SavedChatSession } from '@/types';
 
 const {
   mockCreateNewSession,
@@ -45,7 +44,7 @@ vi.mock('@/utils/fileHelpers', () => ({
   cleanupFilePreviewUrls: mockCleanupFilePreviewUrls,
 }));
 
-vi.mock('@/utils/modelHelpers', () => ({
+vi.mock('@/utils/modelSorting', () => ({
   resolveSupportedModelId: mockResolveSupportedModelId,
 }));
 

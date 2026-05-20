@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, type RefObject } from 'react';
 import { useWindowContext } from '@/contexts/WindowContext';
-import { copySelectionTextToClipboardEvent } from './selectionClipboard';
+import { copySelectionTextToClipboardEvent } from '@/utils/text-selection/selectionClipboard';
 import {
   dispatchLiveArtifactClearSelection,
   isLiveArtifactSelectionDetail,
   LIVE_ARTIFACT_SELECTION_EVENT,
-} from './liveArtifactSelection';
+} from '@/utils/text-selection/liveArtifactSelection';
 
 type ContainerRefLike = RefObject<HTMLElement> | HTMLElement | null;
 type SelectionBounds = Pick<DOMRect, 'top' | 'left' | 'width' | 'height' | 'bottom'>;

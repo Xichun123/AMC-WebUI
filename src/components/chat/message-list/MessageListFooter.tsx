@@ -12,7 +12,6 @@ const getLoadingSpacerMaxHeight = (chatInputHeight: number) =>
   `calc(${getStableSpacerHeight(chatInputHeight)}px + 24rem)`;
 
 export const MessageListFooter: React.FC<MessageListFooterProps> = React.memo(({ messages, chatInputHeight }) => {
-  // Determine if the last message is loading to increase footer space
   const lastMsg = messages[messages.length - 1];
   const isLastMessageLoading = lastMsg?.role === 'model' && lastMsg?.isLoading;
 

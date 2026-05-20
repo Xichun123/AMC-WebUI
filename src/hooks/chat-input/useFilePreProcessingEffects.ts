@@ -5,7 +5,7 @@ import { generateUniqueId } from '@/utils/chat/ids';
 import { readDirectoryHandle } from '@/utils/import-context/directoryHandleReader';
 import { captureScreenImage } from '@/utils/mediaUtils';
 import { useI18n } from '@/contexts/I18nContext';
-import { createProcessingPlaceholderFile } from '@/hooks/file-upload/fileUploadPolicy';
+import { createProcessingPlaceholderFile } from '@/utils/file-upload/fileUploadPolicy';
 
 type SetSelectedFiles = (files: UploadedFile[] | ((prevFiles: UploadedFile[]) => UploadedFile[])) => void;
 

@@ -6,7 +6,7 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { useSelectionPosition } from '@/hooks/text-selection/useSelectionPosition';
 import { useSelectionDrag } from '@/hooks/text-selection/useSelectionDrag';
 import { useSelectionAudio } from '@/hooks/text-selection/useSelectionAudio';
-import { writeSelectionTextToClipboard } from '@/hooks/text-selection/selectionClipboard';
+import { writeSelectionTextToClipboard } from '@/utils/text-selection/selectionClipboard';
 
 import { ToolbarContainer } from './text-selection/ToolbarContainer';
 import { AudioPlayerView } from './text-selection/AudioPlayerView';

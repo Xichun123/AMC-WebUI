@@ -69,6 +69,14 @@ export default tseslint.config(
     },
   },
   {
+    files: ['src/test/chatInputHarness.tsx'],
+    rules: {
+      'react-hooks/immutability': 'off',
+      'react-hooks/purity': 'off',
+      'react-hooks/refs': 'off',
+    },
+  },
+  {
     files: ['src/components/chat/input/ChatInputArea.tsx', 'src/components/chat/input/HiddenFileInputs.tsx'],
     rules: {
       'react-hooks/refs': 'off',

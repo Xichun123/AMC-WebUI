@@ -1,7 +1,7 @@
 import { logService } from '@/services/logService';
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { type ModelOption } from '@/types';
-import { sanitizeModelOptions } from '@/utils/modelHelpers';
+import { sanitizeModelOptions } from '@/utils/modelSorting';
 import { useModelPreferencesStore } from '@/stores/modelPreferencesStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { getTranslator } from '@/i18n/translations';

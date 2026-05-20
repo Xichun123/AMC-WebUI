@@ -70,6 +70,11 @@ describe('createLiveClientFunctions', () => {
       response: {
         output: '42',
         result: '42',
+        status: 'completed',
+        summary:
+          'Python execution completed successfully; stdout/stderr output was captured; a Python expression result was returned; an image artifact was generated; generated files: chart.png.',
+        nextAction:
+          'Use these execution results to answer the user. Do not call run_local_python again unless a new or corrected computation is required.',
         imageGenerated: true,
         generatedFiles: [{ name: 'chart.png', type: 'image/png' }],
       },

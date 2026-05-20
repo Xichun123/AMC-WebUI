@@ -1,26 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, type FC } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { Info, Lightbulb } from 'lucide-react';
-import { THINKING_BUDGET_RANGES, MODELS_MANDATORY_THINKING } from '@/constants/appConstants';
+import { THINKING_BUDGET_RANGES, MODELS_MANDATORY_THINKING } from '@/constants/modelConstants';
 import { Tooltip } from '@/components/shared/Tooltip';
 import { getCachedModelCapabilities } from '@/stores/modelCapabilitiesStore';
 import { ThinkingModeSelector } from './ThinkingModeSelector';
 import { ThinkingLevelSelector } from './ThinkingLevelSelector';
 import { ThinkingBudgetSlider } from './ThinkingBudgetSlider';
+import type { ThinkingLevel } from '@/types';
 
 interface ThinkingControlProps {
   modelId: string;
   thinkingBudget: number;
   setThinkingBudget: (value: number) => void;
-  thinkingLevel?: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH';
-  setThinkingLevel?: (value: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH') => void;
+  thinkingLevel?: ThinkingLevel;
+  setThinkingLevel?: (value: ThinkingLevel) => void;
   showThoughts: boolean;
   setShowThoughts: (value: boolean) => void;
 }
 
-type ThinkingLevelOption = 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH';
-
-export const ThinkingControl: React.FC<ThinkingControlProps> = ({
+export const ThinkingControl: FC<ThinkingControlProps> = ({
   modelId,
   thinkingBudget,
   setThinkingBudget,
@@ -35,13 +34,12 @@ export const ThinkingControl: React.FC<ThinkingControlProps> = ({
   const supportsThinkingLevel = capabilities.supportsThinkingLevel;
   const isFlash3 = capabilities.isGemini3FlashModel;
   const isRobotics = capabilities.isGeminiRoboticsModel;
-  const isGemini31FlashImage = capabilities.isGemini31FlashImageModel;
   const isGemini3ProImage = modelId === 'gemini-3-pro-image-preview';
-  const isImageThinkingLevelOnly = isGemini31FlashImage;
+  const isImageThinkingLevelOnly = capabilities.isGemini31FlashImageModel;
   const isGemma = capabilities.isGemmaModel;
   const isTtsModel = capabilities.isTtsModel;
   const budgetConfig = THINKING_BUDGET_RANGES[modelId];
-  const supportedThinkingLevels: ThinkingLevelOption[] = isImageThinkingLevelOnly
+  const supportedThinkingLevels: ThinkingLevel[] = isImageThinkingLevelOnly
     ? ['MINIMAL', 'HIGH']
     : supportsThinkingLevel
       ? isFlash3 || isRobotics
@@ -63,8 +61,7 @@ export const ThinkingControl: React.FC<ThinkingControlProps> = ({
   // Determine current mode
   const mode = thinkingBudget < 0 ? 'auto' : thinkingBudget === 0 ? 'off' : 'custom';
   const showThinkingControls = !isTtsModel && (!!budgetConfig || isGemini3 || isGemma);
-  const isGemmaReasoningEnabled = showThoughts;
-  const gemmaThinkingLevel: ThinkingLevelOption = isGemmaReasoningEnabled ? 'HIGH' : 'MINIMAL';
+  const gemmaThinkingLevel: ThinkingLevel = showThoughts ? 'HIGH' : 'MINIMAL';
 
   useEffect(() => {
     if (thinkingBudget > 0) {
@@ -164,7 +161,7 @@ export const ThinkingControl: React.FC<ThinkingControlProps> = ({
               />
             </div>
             <p className="mt-3 text-xs leading-relaxed text-[var(--theme-text-secondary)]">
-              {isGemmaReasoningEnabled
+              {showThoughts
                 ? t('settingsGemmaReasoningToggle_enabledDesc')
                 : t('settingsGemmaReasoningToggle_disabledDesc')}
             </p>

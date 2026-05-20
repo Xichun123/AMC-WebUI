@@ -1,23 +1,40 @@
 import { type ChatMessage, type ChatSettings } from '@/types';
 import type { UsageMetadata } from '@google/genai';
-import { calculateTokenStats } from '@/utils/modelHelpers';
 import { getTranslator } from '@/i18n/translations';
-import { appendApiPart } from '@/features/chat-streaming/messageStreamReducer';
+import { calculateTokenStats } from '@/utils/modelUsageStats';
+
+import { appendApiPart } from './messageStreamReducer';
 
 export { appendApiPart };
 
-export const finalizeMessages = (
-  messages: ChatMessage[],
-  generationStartTime: Date,
-  newModelMessageIds: Set<string>,
-  _currentChatSettings: ChatSettings,
-  language: 'en' | 'zh',
-  firstContentPartTime: Date | null,
-  usageMetadata?: UsageMetadata,
-  groundingMetadata?: unknown,
-  urlContextMetadata?: unknown,
-  isAborted?: boolean,
-): { updatedMessages: ChatMessage[]; completedMessageForNotification: ChatMessage | null } => {
+interface FinalizeMessagesOptions {
+  messages: ChatMessage[];
+  generationStartTime: Date;
+  newModelMessageIds: Set<string>;
+  currentChatSettings: ChatSettings;
+  language: 'en' | 'zh';
+  firstContentPartTime: Date | null;
+  usageMetadata?: UsageMetadata;
+  groundingMetadata?: unknown;
+  urlContextMetadata?: unknown;
+  isAborted?: boolean;
+}
+
+export const finalizeMessages = ({
+  messages,
+  generationStartTime,
+  newModelMessageIds,
+  currentChatSettings: _currentChatSettings,
+  language,
+  firstContentPartTime,
+  usageMetadata,
+  groundingMetadata,
+  urlContextMetadata,
+  isAborted,
+}: FinalizeMessagesOptions): {
+  updatedMessages: ChatMessage[];
+  completedMessageForNotification: ChatMessage | null;
+} => {
   const t = getTranslator(language);
   let cumulativeTotal =
     [...messages]
@@ -28,7 +45,6 @@ export const finalizeMessages = (
   let completedMessageForNotification: ChatMessage | null = null;
 
   let finalMessages = messages.map((m) => {
-    // Identify message by exact object match on timestamp
     if (m.generationStartTime && m.generationStartTime.getTime() === generationStartTime.getTime() && m.isLoading) {
       let thinkingTime = m.thinkingTimeMs;
       if (thinkingTime === undefined && firstContentPartTime) {
@@ -36,7 +52,6 @@ export const finalizeMessages = (
       }
       const isLastMessageOfRun = m.id === Array.from(newModelMessageIds).pop();
 
-      // Token Extraction Logic using helper
       const { promptTokens, cachedPromptTokens, completionTokens, totalTokens, thoughtTokens, toolUsePromptTokens } =
         calculateTokenStats(isLastMessageOfRun ? usageMetadata : undefined);
 

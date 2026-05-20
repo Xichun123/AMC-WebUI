@@ -1,18 +1,33 @@
-import type { GoogleGenAI, Part } from '@google/genai';
+import type { GoogleGenAI } from '@google/genai';
 import type { AppSettings } from '@/types';
-import { DEFAULT_GEMINI_API_BASE_URL, normalizeGeminiApiBaseUrl } from '@/utils/apiProxyUrl';
 import { dbService } from '@/services/db/dbService';
 import { logService } from '@/services/logService';
 import { getBackendFlavor, getRuntimeConfigAppSettingsOverrides } from '@/runtime/runtimeConfig';
-
-export type ClientHttpOptions = {
-  apiVersion?: 'v1alpha';
-  baseUrl?: string;
-};
+import {
+  getGeminiApiBaseUrlForSettings,
+  getGeminiProxyBaseUrlForSettings,
+  resolveConfiguredGeminiBaseUrl,
+} from './geminiApiBaseUrl';
+import type { GeminiClientHttpOptions } from './geminiApiVersion';
 
 type ClientConfig = {
   apiKey: string;
-  httpOptions?: ClientHttpOptions;
+  httpOptions?: GeminiClientHttpOptions;
+};
+
+type GeminiApiRoutingSettings = Pick<AppSettings, 'useCustomApiConfig' | 'apiProxyUrl'> & {
+  useApiProxy?: AppSettings['useApiProxy'];
+};
+
+type ConfiguredApiRouting = {
+  settings: GeminiApiRoutingSettings | null;
+  apiProxyUrl: string | null;
+};
+
+type ConfiguredApiClientContext = {
+  client: GoogleGenAI;
+  apiBaseUrl: string;
+  proxyBaseUrl: string | null;
 };
 
 const loadGoogleGenAI = async () => {
@@ -23,7 +38,7 @@ const loadGoogleGenAI = async () => {
 export const getClient = async (
   apiKey: string,
   baseUrl?: string | null,
-  httpOptions?: ClientHttpOptions,
+  httpOptions?: GeminiClientHttpOptions,
 ): Promise<GoogleGenAI> => {
   try {
     const sanitizedApiKey = apiKey
@@ -40,7 +55,11 @@ export const getClient = async (
     const mergedHttpOptions = httpOptions ? { ...httpOptions } : undefined;
 
     if (baseUrl && baseUrl.trim().length > 0) {
-      const sanitizedBaseUrl = normalizeGeminiApiBaseUrl(baseUrl);
+      const sanitizedBaseUrl = getGeminiApiBaseUrlForSettings({
+        useCustomApiConfig: true,
+        useApiProxy: true,
+        apiProxyUrl: baseUrl,
+      });
       if (mergedHttpOptions) {
         mergedHttpOptions.baseUrl = sanitizedBaseUrl;
       } else {
@@ -60,16 +79,9 @@ export const getClient = async (
   }
 };
 
-const resolveConfiguredBaseUrl = (
-  appSettings: Pick<AppSettings, 'useCustomApiConfig' | 'useApiProxy' | 'apiProxyUrl'>,
-): string | null => {
-  const shouldUseProxy = !!(appSettings.useCustomApiConfig && appSettings.useApiProxy);
-  return shouldUseProxy ? (appSettings.apiProxyUrl ?? null) : null;
-};
-
 const applyRuntimeApiOverrides = (
-  settings: Pick<AppSettings, 'useCustomApiConfig' | 'useApiProxy' | 'apiProxyUrl'> | null | undefined,
-): Pick<AppSettings, 'useCustomApiConfig' | 'useApiProxy' | 'apiProxyUrl'> | null => {
+  settings: GeminiApiRoutingSettings | null | undefined,
+): GeminiApiRoutingSettings | null => {
   const runtimeOverrides = getRuntimeConfigAppSettingsOverrides();
   const isVertex = getBackendFlavor() === 'vertex';
   const vertexApiProxyUrl = runtimeOverrides.apiProxyUrl?.trim() ? runtimeOverrides.apiProxyUrl : '/api/gemini';
@@ -89,7 +101,7 @@ const applyRuntimeApiOverrides = (
           apiProxyUrl: null,
           ...runtimeOverrides,
           ...vertexOverrides,
-        } as Pick<AppSettings, 'useCustomApiConfig' | 'useApiProxy' | 'apiProxyUrl'>)
+        } as GeminiApiRoutingSettings)
       : null;
   }
 
@@ -100,60 +112,36 @@ const applyRuntimeApiOverrides = (
   };
 };
 
-const isAbsoluteHttpUrl = (url: string): boolean => /^https?:\/\//i.test(url.trim());
-
-export const resolveLiveClientBaseUrl = (
-  appSettings: Pick<AppSettings, 'useCustomApiConfig' | 'useApiProxy' | 'apiProxyUrl'>,
-): string | null => {
-  const configuredBaseUrl = resolveConfiguredBaseUrl(appSettings);
-  if (!configuredBaseUrl) {
-    return null;
-  }
-
-  if (!isAbsoluteHttpUrl(configuredBaseUrl)) {
-    return null;
-  }
-
-  const normalizedConfiguredBaseUrl = normalizeGeminiApiBaseUrl(configuredBaseUrl);
-  return isAbsoluteHttpUrl(normalizedConfiguredBaseUrl) ? normalizedConfiguredBaseUrl : null;
-};
-
-export const getConfiguredApiClient = async (apiKey: string, httpOptions?: ClientHttpOptions): Promise<GoogleGenAI> => {
+const loadConfiguredApiRouting = async (): Promise<ConfiguredApiRouting> => {
   const settings = applyRuntimeApiOverrides(await dbService.getAppSettings());
 
   const shouldUseProxy = !!(settings?.useCustomApiConfig && settings?.useApiProxy);
-  const apiProxyUrl = shouldUseProxy ? settings?.apiProxyUrl : null;
+  const apiProxyUrl = settings ? resolveConfiguredGeminiBaseUrl(settings) : null;
 
   if (settings?.useCustomApiConfig && !shouldUseProxy && settings?.apiProxyUrl && !settings?.useApiProxy) {
     logService.debug("[API Config] Proxy URL present but 'Use API Proxy' toggle is OFF.");
   }
 
+  return { settings, apiProxyUrl };
+};
+
+export const getConfiguredApiClient = async (
+  apiKey: string,
+  httpOptions?: GeminiClientHttpOptions,
+): Promise<GoogleGenAI> => {
+  const { apiProxyUrl } = await loadConfiguredApiRouting();
   return getClient(apiKey, apiProxyUrl, httpOptions);
 };
 
-export const getConfiguredApiBaseUrl = async (): Promise<string> => {
-  const settings = await dbService.getAppSettings();
-  const configuredBaseUrl = settings ? resolveConfiguredBaseUrl(settings) : null;
+export const getConfiguredApiClientContext = async (
+  apiKey: string,
+  httpOptions?: GeminiClientHttpOptions,
+): Promise<ConfiguredApiClientContext> => {
+  const { settings, apiProxyUrl } = await loadConfiguredApiRouting();
 
-  return normalizeGeminiApiBaseUrl(configuredBaseUrl ?? DEFAULT_GEMINI_API_BASE_URL);
-};
-
-export const getConfiguredProxyBaseUrl = async (): Promise<string | null> => {
-  const settings = await dbService.getAppSettings();
-  const configuredBaseUrl = settings ? resolveConfiguredBaseUrl(settings) : null;
-
-  return configuredBaseUrl ? normalizeGeminiApiBaseUrl(configuredBaseUrl) : null;
-};
-
-const hasPerPartMediaResolution = (parts: Part[] = []): boolean =>
-  parts.some((part) => Boolean((part as Part & { mediaResolution?: unknown }).mediaResolution));
-
-export const getHttpOptionsForContents = (
-  contents: Array<{ parts?: Part[] }>,
-): { apiVersion: 'v1alpha' } | undefined => {
-  if (contents.some((content) => hasPerPartMediaResolution(content.parts))) {
-    return { apiVersion: 'v1alpha' };
-  }
-
-  return undefined;
+  return {
+    client: await getClient(apiKey, apiProxyUrl, httpOptions),
+    apiBaseUrl: getGeminiApiBaseUrlForSettings(settings),
+    proxyBaseUrl: getGeminiProxyBaseUrlForSettings(settings),
+  };
 };

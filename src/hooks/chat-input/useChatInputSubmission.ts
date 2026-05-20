@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, type Dispatch, type RefObject, type SetStateAction } from 'react';
-import type { UploadedFile } from '@/types';
-import type { ChatSettings } from '@/types/settings';
-import { areFilesStillProcessing, buildPendingChatInputSubmission } from './pendingSubmissionUtils';
+import { type UploadedFile, type ChatSettings } from '@/types';
+import { areFilesStillProcessing, buildPendingChatInputSubmission } from '@/utils/chat-input/pendingSubmissionUtils';
 import { useLiveModeHandler, type LiveModeApi } from './useLiveModeHandler';
 import { useMessageQueue } from './useMessageQueue';
 

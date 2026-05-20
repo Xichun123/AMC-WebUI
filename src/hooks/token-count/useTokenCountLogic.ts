@@ -2,6 +2,7 @@ import { logService } from '@/services/logService';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { type UploadedFile, type AppSettings } from '@/types';
 import { buildContentParts } from '@/utils/chat/builder';
+import { isServerCodeExecutionMode } from '@/utils/codeExecution';
 import { generateUniqueId } from '@/utils/chat/ids';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
 import { cleanupFilePreviewUrl, cleanupFilePreviewUrls } from '@/utils/fileHelpers';
@@ -100,8 +101,7 @@ export const useTokenCountLogic = ({
       }
 
       try {
-        const preferCodeExecutionFileInputs =
-          !!effectiveAppSettings.isCodeExecutionEnabled && !effectiveAppSettings.isLocalPythonEnabled;
+        const preferCodeExecutionFileInputs = isServerCodeExecutionMode(effectiveAppSettings);
         const { contentParts } = await buildContentParts(
           txt,
           fls,

@@ -87,7 +87,7 @@ export const ChatArea: React.FC = () => {
       <MessageList />
 
       <div ref={chatInputContainerRef} className="absolute bottom-0 left-0 right-0 z-30 pointer-events-none">
-        <div className={`pointer-events-auto ${isPipActive ? '' : 'mx-auto w-full max-w-[44.8rem]'}`}>
+        <div className={`pointer-events-auto ${isPipActive ? '' : 'mx-auto w-full max-w-[40.32rem]'}`}>
           <ChatInput />
         </div>
       </div>

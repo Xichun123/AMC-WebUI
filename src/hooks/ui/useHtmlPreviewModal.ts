@@ -17,7 +17,7 @@ import {
   createRelayedLiveArtifactSelectionDetail,
   dispatchLiveArtifactSelection,
   LIVE_ARTIFACT_CLEAR_SELECTION_EVENT,
-} from '@/hooks/text-selection/liveArtifactSelection';
+} from '@/utils/text-selection/liveArtifactSelection';
 
 const ZOOM_STEP = 0.1;
 const MIN_ZOOM = 0.25;

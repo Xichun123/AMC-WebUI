@@ -7,7 +7,7 @@ import { getManualInstallMessage, getPwaInstallState } from '@/pwa/install';
 import { registerPwa, type UpdateServiceWorker } from '@/pwa/register';
 import { loadRegisterSW } from '@/pwa/loadRegisterSw';
 import { getTabCycleModelIds } from '@/utils/modelCatalog';
-import { CHAT_INPUT_TEXTAREA_SELECTOR } from '@/constants/appConstants';
+import { CHAT_INPUT_TEXTAREA_SELECTOR } from '@/constants/storageKeys';
 import { FOCUS_HISTORY_SEARCH_EVENT } from '@/constants/shortcuts';
 import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
 

@@ -8,7 +8,8 @@ import {
   loadLiveArtifactsSystemPrompt,
   loadHdGuideSystemPrompt,
 } from '@/constants/promptHelpers';
-import { CHAT_INPUT_TEXTAREA_SELECTOR, DEFAULT_SYSTEM_INSTRUCTION } from '@/constants/appConstants';
+import { DEFAULT_SYSTEM_INSTRUCTION } from '@/constants/appConstants';
+import { CHAT_INPUT_TEXTAREA_SELECTOR } from '@/constants/storageKeys';
 import { getLiveArtifactsSystemPromptOverride } from '@/utils/liveArtifactsPromptSettings';
 import type { AppSettings, ChatSettings, InputCommand, SavedChatSession } from '@/types';
 

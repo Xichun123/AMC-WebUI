@@ -11,7 +11,7 @@ const { mockUploadFileItem } = vi.hoisted(() => ({
   mockUploadFileItem: vi.fn(),
 }));
 
-vi.mock('@/hooks/file-upload/uploadFileItem', () => ({
+vi.mock('@/utils/file-upload/uploadFileItem', () => ({
   uploadFileItem: mockUploadFileItem,
 }));
 

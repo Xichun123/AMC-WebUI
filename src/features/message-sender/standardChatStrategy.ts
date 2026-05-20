@@ -1,6 +1,7 @@
 import { logService } from '@/services/logService';
 import { buildContentParts } from '@/utils/chat/builder';
-import { getModelCapabilities, normalizeThinkingLevelForModel } from '@/utils/modelHelpers';
+import { isServerCodeExecutionMode } from '@/utils/codeExecution';
+import { getModelCapabilities, normalizeThinkingLevelForModel } from '@/utils/modelCapabilities';
 import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
 import type { UploadedFile } from '@/types';
 import { runOptimisticMessagePipeline } from './messagePipeline';
@@ -72,7 +73,7 @@ export const sendStandardMessage = async ({
   const successfullyProcessedFiles = filesToUse.filter(
     (file) => file.uploadState === 'active' && !file.error && !file.isProcessing,
   );
-  const preferCodeExecutionFileInputs = !!settingsForApi.isCodeExecutionEnabled && !settingsForApi.isLocalPythonEnabled;
+  const preferCodeExecutionFileInputs = isServerCodeExecutionMode(settingsForApi);
 
   const { contentParts: promptParts, enrichedFiles } = await buildContentParts(
     textToUse.trim(),

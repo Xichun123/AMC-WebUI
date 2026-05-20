@@ -1,6 +1,6 @@
 import React from 'react';
 import { useI18n } from '@/contexts/I18nContext';
-import type { ImagePersonGeneration } from '@/types/settings';
+import type { ImagePersonGeneration } from '@/types';
 import { Select } from '@/components/shared/Select';
 
 interface PersonGenerationSelectorProps {

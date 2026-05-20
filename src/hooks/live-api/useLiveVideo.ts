@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { logService } from '@/services/logService';
 
 type VideoSource = 'camera' | 'screen' | null;
+const FRAME_JPEG_QUALITY = 0.6;
 
 export const useLiveVideo = () => {
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
@@ -9,21 +10,20 @@ export const useLiveVideo = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const stopVideo = useCallback(() => {
-    if (videoStream) {
-      videoStream.getTracks().forEach((track) => track.stop());
-      setVideoStream(null);
-      setVideoSource(null);
-    }
+  const stopActiveStream = useCallback(() => {
+    videoStream?.getTracks().forEach((track) => track.stop());
   }, [videoStream]);
+
+  const stopVideo = useCallback(() => {
+    stopActiveStream();
+    setVideoStream(null);
+    setVideoSource(null);
+  }, [stopActiveStream]);
 
   const startCamera = useCallback(async (): Promise<boolean> => {
     if (videoSource === 'camera') return true;
 
-    // Stop existing stream if any (e.g. screen share)
-    if (videoStream) {
-      videoStream.getTracks().forEach((track) => track.stop());
-    }
+    stopActiveStream();
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -40,15 +40,12 @@ export const useLiveVideo = () => {
       logService.error('Failed to start camera', err);
       return false;
     }
-  }, [videoStream, videoSource]);
+  }, [stopActiveStream, videoSource]);
 
   const startScreenShare = useCallback(async (): Promise<boolean> => {
     if (videoSource === 'screen') return true;
 
-    // Stop existing stream if any (e.g. camera)
-    if (videoStream) {
-      videoStream.getTracks().forEach((track) => track.stop());
-    }
+    stopActiveStream();
 
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -56,12 +53,11 @@ export const useLiveVideo = () => {
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
-        audio: false, // Audio is handled separately by useLiveAudio
+        audio: false,
       });
       setVideoStream(stream);
       setVideoSource('screen');
 
-      // Handle user stopping screen share via browser UI
       stream.getVideoTracks()[0].onended = () => {
         setVideoStream(null);
         setVideoSource(null);
@@ -71,7 +67,7 @@ export const useLiveVideo = () => {
       logService.error('Failed to start screen share', err);
       return false;
     }
-  }, [videoStream, videoSource]);
+  }, [stopActiveStream, videoSource]);
 
   const captureFrame = useCallback((): string | null => {
     const videoEl = videoRef.current;
@@ -88,12 +84,10 @@ export const useLiveVideo = () => {
     canvas.height = videoEl.videoHeight;
     ctx.drawImage(videoEl, 0, 0);
 
-    // Convert to JPEG Base64 with moderate quality
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+    const dataUrl = canvas.toDataURL('image/jpeg', FRAME_JPEG_QUALITY);
     return dataUrl.split(',')[1];
   }, []);
 
-  // Sync video element with stream
   useEffect(() => {
     if (videoRef.current && videoStream) {
       const videoEl = videoRef.current;

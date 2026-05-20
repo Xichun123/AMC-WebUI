@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Download, Check, FileOutput } from 'lucide-react';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
 import { triggerDownload } from '@/utils/export/core';
-import { extractTextFromNode } from '@/utils/uiUtils';
-import { MESSAGE_BLOCK_BUTTON_CLASS } from '@/constants/appConstants';
+import { extractTextFromNode } from '@/utils/reactNodeText';
+import { MESSAGE_BLOCK_BUTTON_CLASS } from '@/constants/styleClasses';
 import { type UploadedFile } from '@/types';
 import { FileDisplay } from '@/components/message/FileDisplay';
 import { useI18n } from '@/contexts/I18nContext';
@@ -23,12 +23,10 @@ export const ToolResultBlock: React.FC<ToolResultBlockProps> = ({
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
 
-  // Try to find the pre element which contains the code/output
   const preElement = React.Children.toArray(children).find(
     (child) => React.isValidElement(child) && child.type === 'pre',
   );
 
-  // Extract raw text for download
   const rawCode = preElement
     ? extractTextFromNode(preElement)
     : extractTextFromNode(children)

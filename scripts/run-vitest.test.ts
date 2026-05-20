@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildVitestNodeArgs, buildVitestNodeOptions } from './runVitest.mjs';
+import { buildVitestNodeArgs, buildVitestNodeOptions } from './run-vitest.mjs';
 
 describe('buildVitestNodeArgs', () => {
   it('includes the webstorage opt-out flag when the current node supports it', () => {

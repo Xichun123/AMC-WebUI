@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
-import { extractTextFromNode } from '@/utils/uiUtils';
+import { extractTextFromNode } from '@/utils/reactNodeText';
 import { getCodeBlockPreviewType } from '@/utils/codeUtils';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
 import { triggerDownload, sanitizeFilename } from '@/utils/export/core';

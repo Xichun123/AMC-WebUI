@@ -4,7 +4,7 @@ import type { LogEntry, LogLevel, LogCategory } from '@/types/logging';
 import { LOG_LEVEL_COLORS, CATEGORY_COLORS } from './constants';
 import { LogRow } from './LogRow';
 import { useI18n } from '@/contexts/I18nContext';
-import { FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS } from '@/constants/appConstants';
+import { FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS } from '@/constants/styleClasses';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
 import { triggerDownload } from '@/utils/export/core';
 

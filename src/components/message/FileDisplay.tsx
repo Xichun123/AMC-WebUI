@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { type UploadedFile } from '@/types';
 import { Check, Copy, Download, SlidersHorizontal, Scissors } from 'lucide-react';
 import { triggerDownload } from '@/utils/export/core';
-import { CATEGORY_STYLES, getResolutionColor } from '@/utils/uiUtils';
+import { CATEGORY_STYLES, getResolutionColor } from '@/utils/fileDisplayStyles';
 import { formatFileSize } from '@/utils/fileHelpers';
 import { getFileCardMeta } from '@/utils/fileCardUtils';
 import { useI18n } from '@/contexts/I18nContext';
@@ -156,7 +156,6 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
     );
   }
 
-  // Render File Card for other types (or error states)
   const { Icon, colorClass, bgClass } = CATEGORY_STYLES[category] || CATEGORY_STYLES['code'];
 
   return (

@@ -1,7 +1,8 @@
 import { logService } from '@/services/logService';
-import { triggerDownload } from './core';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
+
 import { sanitizeDocumentStylesForPngExport } from './cssColorSanitizer';
+import { triggerDownload } from './core';
 import { createSnapshotContainer, createExportDOMHeader } from './dom';
 
 export interface PngExportMessages {
@@ -126,7 +127,6 @@ export const generateSnapshotPng = async (
     );
     cleanup = remove;
 
-    // Create header using shared helper
     const headerDiv = createExportDOMHeader(headerConfig.title, headerConfig.metaLeft, headerConfig.metaRight);
     innerContent.appendChild(headerDiv);
 
@@ -135,7 +135,6 @@ export const generateSnapshotPng = async (
     bodyDiv.appendChild(contentElement);
     innerContent.appendChild(bodyDiv);
 
-    // Wait for rendering
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     return await exportElementAsPng(container, filename, {

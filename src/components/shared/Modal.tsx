@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useWindowContext } from '@/contexts/WindowContext';
 
@@ -13,6 +13,7 @@ interface ModalProps {
   ariaLabel?: string;
   ariaLabelledBy?: string;
   noPadding?: boolean;
+  initialFocusRef?: RefObject<HTMLElement | null>;
 }
 
 type InertElement = HTMLElement & { inert?: boolean };
@@ -49,6 +50,7 @@ export const Modal: React.FC<ModalProps> = ({
   ariaLabel,
   ariaLabelledBy,
   noPadding = false,
+  initialFocusRef,
 }) => {
   const [isActuallyOpen, setIsActuallyOpen] = useState(isOpen);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -71,6 +73,11 @@ export const Modal: React.FC<ModalProps> = ({
     previouslyFocusedElementRef.current = targetDocument.activeElement as HTMLElement | null;
 
     const focusTarget = () => {
+      if (initialFocusRef?.current) {
+        initialFocusRef.current.focus();
+        return;
+      }
+
       const modalNode = modalContentRef.current;
       if (!modalNode) {
         return;
@@ -95,7 +102,7 @@ export const Modal: React.FC<ModalProps> = ({
       }
       previouslyFocusedElementRef.current = null;
     };
-  }, [isOpen, targetDocument]);
+  }, [isOpen, targetDocument, initialFocusRef]);
 
   useEffect(() => {
     const modalNode = modalContentRef.current;

@@ -7,11 +7,11 @@ import {
   type VideoMetadata,
   type AppSettings,
   type ChatSettings as IndividualChatSettings,
+  type MediaResolution,
 } from '@/types';
 import { logService } from '@/services/logService';
 import { createNewSession, createMessage } from '@/utils/chat/session';
 import { updateFileInMessage, updateMessageInSession, updateSessionById } from '@/utils/chat/sessionMutations';
-import { type MediaResolution } from '@/types/settings';
 import { DEFAULT_CHAT_SETTINGS } from '@/constants/appConstants';
 import {
   createMessageStreamState,

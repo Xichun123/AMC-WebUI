@@ -203,7 +203,6 @@ The Docker deployment contains two services:
 - `api`: Node service for `/api/gemini/*`.
 
 ```bash
-npm run build
 docker compose up -d --build
 ```
 
@@ -216,8 +215,8 @@ docker compose down
 Notes:
 
 - Docker defaults to BYOK for personal deployments. After startup, enter your Gemini API key in **Settings -> API Configuration** to use both regular chat and Live API. You do not need to set `GEMINI_API_KEY` in `.env` or `docker-compose.yml`.
-- The `web` image packages the already built local `dist/` directory.
-- After frontend changes, run `npm run build` before rebuilding the Docker services.
+- The `web` and `api` images use multi-stage builds. The Docker build stage runs both the frontend production build and API TypeScript build, so it does not depend on existing host `dist/` or `server/dist/` directories.
+- After frontend or backend code changes, rerun `docker compose up -d --build`.
 
 > Security note
 >
@@ -390,7 +389,7 @@ Placement rules:
 - `src/features/` contains domain capability boundaries such as message sending, local Python, audio processing, and the standard chat tool loop.
 - `src/hooks/` contains React orchestration; hooks that are only a React entry point for one domain should keep naming close to that domain.
 - `src/services/` contains external-system and persistence boundaries such as API clients, IndexedDB, logging, and object URL lifecycle management.
-- `src/utils/` contains pure utilities without React state or external side effects; multi-file domain utilities should use a subdirectory.
+- `src/utils/` contains small cross-domain helpers without React state. Browser-bound helpers for DOM, clipboard, media, and export flows should use explicit filenames or subdirectories.
 - `src/test/architecture/` contains structure and style guardrail tests that keep cleaned-up problems from returning.
 - Cross-directory imports inside `src` use the `@/` alias; same-directory imports keep `./`.
 
@@ -402,7 +401,7 @@ AMC-WebUI/
 │   ├── hooks/                  # App, chat, input, data management, live API, and UI hooks
 │   ├── services/               # API, IndexedDB, logging, object URL, and infrastructure services
 │   ├── stores/                 # Zustand stores for chat, settings, and UI state
-│   ├── utils/                  # Export, session, IndexedDB, Markdown, file, and media utilities
+│   ├── utils/                  # Export, session, Markdown, file, and media utilities
 │   ├── i18n/                   # Translation aggregation, coverage tests, and bilingual copy
 │   ├── pwa/                    # Service worker, PWA registration, and install state
 │   ├── runtime/                # Runtime config loading and public config mapping

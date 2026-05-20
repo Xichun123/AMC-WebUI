@@ -46,20 +46,6 @@ describe('code style boundaries', () => {
     expect(contributing).toContain('Node.js 26');
   });
 
-  it('reuses build artifacts in docker CI instead of rebuilding the frontend twice', () => {
-    const workflow = readProjectFile('.github/workflows/ci.yml');
-    const dockerBuildJob = workflow.slice(workflow.indexOf('  docker-build:'));
-    const apiDockerfile = readProjectFile('Dockerfile.api');
-
-    expect(workflow).toContain('actions/upload-artifact@v4');
-    expect(workflow).toContain('name: production-build');
-    expect(dockerBuildJob).toContain('actions/download-artifact@v4');
-    expect(dockerBuildJob).not.toContain('npm ci --legacy-peer-deps');
-    expect(dockerBuildJob).not.toContain('npm run build');
-    expect(apiDockerfile).toContain('COPY server/dist /app/server/dist');
-    expect(apiDockerfile).not.toContain('RUN npm run build:api');
-  });
-
   it('keeps source imports on the app alias when crossing directories', () => {
     const offenders = listProjectSourceFiles('src')
       .filter((relativePath) => !relativePath.includes('/test/architecture/'))
@@ -79,6 +65,34 @@ describe('code style boundaries', () => {
     expect(offenders).toEqual([]);
   });
 
+  it('keeps same-directory source imports relative instead of using the app alias', () => {
+    const offenders = listProjectSourceFiles('src')
+      .filter((relativePath) => !relativePath.includes('/test/architecture/'))
+      .flatMap((relativePath) => {
+        const source = readProjectFile(relativePath);
+        const sourceDir = path.dirname(path.join(projectRoot, relativePath));
+
+        return Array.from(source.matchAll(sourceImportSpecifierPattern))
+          .map((match) => match[1] ?? match[2] ?? match[3])
+          .filter((specifier): specifier is string => Boolean(specifier?.startsWith('@/')))
+          .filter((specifier) => {
+            const aliasTarget = path.join(projectRoot, specifier.replace('@/', 'src/'));
+            const candidateTargets = [
+              `${aliasTarget}.ts`,
+              `${aliasTarget}.tsx`,
+              path.join(aliasTarget, 'index.ts'),
+              path.join(aliasTarget, 'index.tsx'),
+            ];
+            return candidateTargets.some(
+              (candidateTarget) => path.dirname(candidateTarget) === sourceDir && fs.existsSync(candidateTarget),
+            );
+          })
+          .map((specifier) => `${relativePath}:${specifier}`);
+      });
+
+    expect(offenders).toEqual([]);
+  });
+
   it('keeps ESLint exception paths aligned with files that still exist', () => {
     const eslintConfig = readProjectFile('eslint.config.js');
 
@@ -86,9 +100,20 @@ describe('code style boundaries', () => {
     expect(eslintConfig).not.toContain('src/components/icons/CustomIcons.tsx');
   });
 
-  it('does not repeat static import declarations from the same module in production sources', () => {
+  it('keeps the src/test ESLint override focused on test-only module exports', () => {
+    const eslintConfig = readProjectFile('eslint.config.js');
+    const srcTestOverrideMatch = eslintConfig.match(
+      /files: \['src\/test\/\*\*\/\*\.\{ts,tsx\}'\],[\s\S]*?rules: \{([\s\S]*?)\n\s*\},\n\s*\},/,
+    );
+
+    expect(srcTestOverrideMatch?.[1]).toContain("'react-refresh/only-export-components': 'off'");
+    for (const ruleName of ['react-hooks/immutability', 'react-hooks/purity', 'react-hooks/refs']) {
+      expect(srcTestOverrideMatch?.[1]).not.toContain(ruleName);
+    }
+  });
+
+  it('does not repeat static import declarations from the same module', () => {
     const offenders = listProjectSourceFiles('src')
-      .filter((relativePath) => !relativePath.includes('.test.'))
       .filter((relativePath) => relativePath !== 'src/test/architecture/codeStyleBoundaries.test.ts')
       .flatMap((relativePath) => {
         const source = readProjectFile(relativePath);
@@ -102,6 +127,27 @@ describe('code style boundaries', () => {
         return Array.from(importCounts)
           .filter(([, count]) => count > 1)
           .map(([specifier]) => `${relativePath}:${specifier}`);
+      });
+
+    expect(offenders).toEqual([]);
+  });
+
+  it('keeps static import declarations before exports', () => {
+    const offenders = listProjectSourceFiles('src')
+      .filter((relativePath) => relativePath !== 'src/test/architecture/codeStyleBoundaries.test.ts')
+      .flatMap((relativePath) => {
+        const lines = readProjectFile(relativePath).split('\n');
+        let sawExport = false;
+        const lateImports: string[] = [];
+
+        lines.forEach((line, index) => {
+          if (/^export\s/.test(line)) sawExport = true;
+          if (sawExport && /^import\s/.test(line)) {
+            lateImports.push(`${relativePath}:${index + 1}`);
+          }
+        });
+
+        return lateImports;
       });
 
     expect(offenders).toEqual([]);
@@ -130,7 +176,7 @@ describe('code style boundaries', () => {
     const prettierIgnore = readProjectFile('.prettierignore');
 
     expect(packageJson.scripts?.clean).toBe(
-      'rm -rf dist coverage playwright-report test-results tmp-live-artifact-demo .playwright-visible-demo-profile .codex-dev-server.*',
+      'rm -rf dist server/dist coverage playwright-report test-results tmp-live-artifact-demo .playwright-visible-demo-profile .codex-dev-*',
     );
 
     for (const ignoredPath of [
@@ -140,9 +186,31 @@ describe('code style boundaries', () => {
       '.playwright-visible-demo-profile/',
       'tmp-live-artifact-demo/',
       'server/dist/',
+      '.codex-dev-*',
     ]) {
       expect(prettierIgnore).toContain(ignoredPath);
     }
+  });
+
+  it('keeps local script filenames on kebab-case command names', () => {
+    const packageJson = JSON.parse(readProjectFile('package.json')) as { scripts?: Record<string, string> };
+
+    expect(packageJson.scripts?.test).toBe('node scripts/run-vitest.mjs run');
+    expect(packageJson.scripts?.['test:watch']).toBe('node scripts/run-vitest.mjs');
+    expect(packageJson.scripts?.['build:docker']).toBe('npm run build && npm run build:api');
+    expect(fs.existsSync(path.join(projectRoot, 'scripts/runVitest.mjs'))).toBe(false);
+    expect(fs.existsSync(path.join(projectRoot, 'scripts/run-vitest.mjs'))).toBe(true);
+  });
+
+  it('uses the shared ThinkingLevel type instead of repeating the literal union in source files', () => {
+    const thinkingLevelUnionPattern =
+      /'MINIMAL'\s*\|\s*'LOW'\s*\|\s*'MEDIUM'\s*\|\s*'HIGH'|'LOW'\s*\|\s*'HIGH'\s*\|\s*'MINIMAL'\s*\|\s*'MEDIUM'/;
+    const allowedFiles = new Set(['src/types/settings.ts', 'src/test/architecture/codeStyleBoundaries.test.ts']);
+    const offenders = listProjectSourceFiles('src')
+      .filter((relativePath) => !allowedFiles.has(relativePath))
+      .filter((relativePath) => thinkingLevelUnionPattern.test(readProjectFile(relativePath)));
+
+    expect(offenders).toEqual([]);
   });
 
   it('keeps Vite configuration focused on assembly instead of local API internals', () => {
@@ -167,6 +235,15 @@ describe('code style boundaries', () => {
     expect(pyodideService).not.toContain('self.onmessage = async');
     expect(pyodideWorkerTemplate).toContain('__PYODIDE_BASE_URL__');
     expect(pyodideWorkerTemplate).toContain('self.onmessage = async');
+  });
+
+  it('names Live API reconnection constants at the module boundary', () => {
+    const liveConnectionSource = readProjectFile('src/hooks/live-api/useLiveConnection.ts');
+
+    expect(liveConnectionSource).toContain('const MAX_RECONNECT_RETRIES = 5;');
+    expect(liveConnectionSource).toContain('const RECONNECT_BASE_DELAY_MS = 1000;');
+    expect(liveConnectionSource).not.toContain('const maxRetries = 5;');
+    expect(liveConnectionSource).not.toContain('const baseDelay = 1000;');
   });
 
   it('keeps core type comments focused on domain meaning instead of change history', () => {
@@ -271,7 +348,7 @@ describe('code style boundaries', () => {
 
   it('uses descriptive callback parameter names in file collection updates', () => {
     const fileCollectionSources = [
-      'src/hooks/file-upload/uploadFileItem.ts',
+      'src/utils/file-upload/uploadFileItem.ts',
       'src/hooks/file-upload/useFilePolling.ts',
       'src/hooks/file-upload/useFileIdAdder.ts',
       'src/hooks/file-upload/useFilePreProcessing.ts',

@@ -1,6 +1,7 @@
 import type { GoogleGenAI } from '@google/genai';
 import { logService } from '@/services/logService';
-import { getConfiguredApiClient, type ClientHttpOptions } from './apiClient';
+import { getConfiguredApiClient } from './apiClient';
+import type { GeminiClientHttpOptions } from './geminiApiVersion';
 
 type ApiExecutorContext = {
   client: GoogleGenAI;
@@ -11,7 +12,7 @@ interface ExecuteConfiguredApiRequestOptions<T> {
   label: string;
   errorLabel?: string;
   abortSignal?: AbortSignal;
-  httpOptions?: ClientHttpOptions;
+  httpOptions?: GeminiClientHttpOptions;
   run: (context: ApiExecutorContext) => Promise<T>;
 }
 

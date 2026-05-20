@@ -7,7 +7,7 @@ import { TableBlock } from './blocks/TableBlock';
 import { ToolResultBlock } from './blocks/ToolResultBlock';
 import { DeferredDiagramBlock } from './blocks/DeferredDiagramBlock';
 import { type UploadedFile, type SideViewContent } from '@/types';
-import { extractTextFromNode } from '@/utils/uiUtils';
+import { extractTextFromNode } from '@/utils/reactNodeText';
 import { InlineCode } from './code-block/InlineCode';
 import { splitMarkdownSegments } from '@/utils/markdownUtils';
 import { stripGemmaThoughtMarkup, wrapReasoningMarkup } from '@/utils/chat/reasoning';

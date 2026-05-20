@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { getModelCapabilities } from '@/utils/modelHelpers';
+import { getModelCapabilities } from '@/utils/modelCapabilities';
 
 export type ModelCapabilities = ReturnType<typeof getModelCapabilities>;
 

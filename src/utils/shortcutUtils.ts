@@ -3,28 +3,31 @@ import { DEFAULT_SHORTCUTS } from '@/constants/shortcuts';
 
 const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 
+const KEY_DISPLAY_MAP: Record<string, string> = {
+  mod: isMac ? '⌘' : 'Ctrl',
+  alt: isMac ? 'Opt' : 'Alt',
+  shift: 'Shift',
+  ctrl: 'Ctrl',
+  meta: isMac ? 'Cmd' : 'Win',
+  enter: 'Enter',
+  escape: 'Esc',
+  delete: 'Del',
+  backspace: 'Back',
+  tab: 'Tab',
+  arrowup: '↑',
+  arrowdown: '↓',
+  arrowleft: '←',
+  arrowright: '→',
+  ' ': 'Space',
+};
+
 export const formatShortcut = (shortcut: string): string[] => {
   if (!shortcut) return [];
 
   const parts = shortcut.split('+');
   return parts.map((part) => {
     const lower = part.trim().toLowerCase();
-    if (lower === 'mod') return isMac ? '⌘' : 'Ctrl';
-    if (lower === 'alt') return isMac ? 'Opt' : 'Alt';
-    if (lower === 'shift') return 'Shift';
-    if (lower === 'ctrl') return 'Ctrl';
-    if (lower === 'meta') return isMac ? 'Cmd' : 'Win';
-    if (lower === 'enter') return 'Enter';
-    if (lower === 'escape') return 'Esc';
-    if (lower === 'delete') return 'Del';
-    if (lower === 'backspace') return 'Back';
-    if (lower === 'tab') return 'Tab';
-    if (lower === 'arrowup') return '↑';
-    if (lower === 'arrowdown') return '↓';
-    if (lower === 'arrowleft') return '←';
-    if (lower === 'arrowright') return '→';
-    if (lower === ' ') return 'Space';
-    return part.toUpperCase();
+    return KEY_DISPLAY_MAP[lower] ?? part.toUpperCase();
   });
 };
 
@@ -51,8 +54,7 @@ const getEventKeyCombo = (e: React.KeyboardEvent | KeyboardEvent): string | null
   if (key === 'Delete') key = 'delete';
   if (key === 'Backspace') key = 'backspace';
 
-  if (key.length === 1) key = key.toLowerCase();
-  else key = key.toLowerCase();
+  key = key.toLowerCase();
 
   parts.push(key);
 

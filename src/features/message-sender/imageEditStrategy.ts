@@ -1,11 +1,17 @@
 import type { Part } from '@google/genai';
-import type { AppSettings, ChatMessage, ChatSettings as IndividualChatSettings, UploadedFile } from '@/types';
-import type { ImageOutputMode, ImagePersonGeneration } from '@/types/settings';
+import {
+  type AppSettings,
+  type ChatMessage,
+  type ChatSettings as IndividualChatSettings,
+  type UploadedFile,
+  type ImageOutputMode,
+  type ImagePersonGeneration,
+} from '@/types';
 import { editImageApi } from '@/services/api/generation/imageEditApi';
 import { logService } from '@/services/logService';
 import { buildContentParts, createChatHistoryForApi } from '@/utils/chat/builder';
 import { createUploadedFileFromBase64 } from '@/utils/chat/parsing';
-import { shouldStripThinkingFromContext } from '@/utils/modelHelpers';
+import { shouldStripThinkingFromContext } from '@/utils/modelCapabilities';
 import { isImageMimeType } from '@/utils/fileTypeUtils';
 import { appendApiPart } from '@/features/chat-streaming/processors';
 import { formatMessageSenderText } from './i18nFormat';

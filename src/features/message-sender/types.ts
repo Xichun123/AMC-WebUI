@@ -5,9 +5,10 @@ import {
   type ChatSettings as IndividualChatSettings,
   type SavedChatSession,
   type UploadedFile,
+  type ImageOutputMode,
+  type ImagePersonGeneration,
 } from '@/types';
 import type { Part, UsageMetadata } from '@google/genai';
-import type { ImageOutputMode, ImagePersonGeneration } from '@/types/settings';
 import type { getTranslator } from '@/i18n/translations';
 
 export type SessionsUpdater = (

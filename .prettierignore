@@ -7,4 +7,5 @@ test-results/
 .playwright-visible-demo-profile/
 tmp-live-artifact-demo/
 .worktrees/
+.codex-dev-*
 *.min.js

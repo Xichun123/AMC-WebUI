@@ -117,6 +117,13 @@ describe('project structure boundaries', () => {
     expect(openAiSpellingOffenders).toEqual([]);
   });
 
+  it('keeps IndexedDB migration comments complete across schema versions', () => {
+    const dbServiceSource = readProjectFile('src/services/db/dbService.ts');
+
+    expect(dbServiceSource).toContain('const DB_VERSION = 5;');
+    for (const version of [1, 2, 3, 4, 5]) expect(dbServiceSource).toContain(`Version ${version}:`);
+  });
+
   it('keeps Live API hook names on the same Api casing as the rest of the codebase', () => {
     const sourceFiles = listProjectSourceFiles('src').filter(
       (relativePath) => relativePath !== 'src/test/architecture/projectStructureBoundaries.test.ts',
@@ -158,5 +165,54 @@ describe('project structure boundaries', () => {
 
     expect(turndownGfmDeclaration).toContain('TurndownService');
     expect(turndownGfmDeclaration).not.toMatch(/\bany\b/);
+  });
+
+  it('keeps migrated pure helper modules in utils without hooks compatibility wrappers', () => {
+    const migratedHelperModules = [
+      ['src/hooks/chat-input/chatInputAvailability.ts', 'src/utils/chat-input/chatInputAvailability.ts'],
+      ['src/hooks/chat-input/chatInputStateMachine.ts', 'src/utils/chat-input/chatInputStateMachine.ts'],
+      ['src/hooks/chat-input/chatInputUtils.ts', 'src/utils/chat-input/chatInputUtils.ts'],
+      ['src/hooks/chat-input/pendingSubmissionUtils.ts', 'src/utils/chat-input/pendingSubmissionUtils.ts'],
+      ['src/hooks/chat-input/textFileToInput.ts', 'src/utils/chat-input/textFileToInput.ts'],
+      ['src/hooks/file-upload/fileUploadPolicy.ts', 'src/utils/file-upload/fileUploadPolicy.ts'],
+      ['src/hooks/file-upload/uploadFileItem.ts', 'src/utils/file-upload/uploadFileItem.ts'],
+      ['src/hooks/file-upload/uploadQueue.ts', 'src/utils/file-upload/uploadQueue.ts'],
+      ['src/hooks/live-api/liveClientFunctions.ts', 'src/utils/live-api/liveClientFunctions.ts'],
+      ['src/hooks/live-api/liveErrorState.ts', 'src/utils/live-api/liveErrorState.ts'],
+      ['src/hooks/text-selection/liveArtifactSelection.ts', 'src/utils/text-selection/liveArtifactSelection.ts'],
+      ['src/hooks/text-selection/selectionClipboard.ts', 'src/utils/text-selection/selectionClipboard.ts'],
+    ];
+    const sourceFiles = listProjectSourceFiles('src').filter(
+      (relativePath) => relativePath !== 'src/test/architecture/projectStructureBoundaries.test.ts',
+    );
+
+    const colocatedTestModules = new Set([
+      'src/utils/chat-input/chatInputStateMachine.ts',
+      'src/utils/chat-input/chatInputUtils.ts',
+      'src/utils/chat-input/pendingSubmissionUtils.ts',
+      'src/utils/chat-input/textFileToInput.ts',
+      'src/utils/file-upload/fileUploadPolicy.ts',
+      'src/utils/file-upload/uploadFileItem.ts',
+      'src/utils/file-upload/uploadQueue.ts',
+      'src/utils/live-api/liveClientFunctions.ts',
+      'src/utils/live-api/liveErrorState.ts',
+    ]);
+
+    for (const [legacyPath, utilityPath] of migratedHelperModules) {
+      expect(fs.existsSync(path.join(projectRoot, legacyPath)), legacyPath).toBe(false);
+      expect(fs.existsSync(path.join(projectRoot, utilityPath)), utilityPath).toBe(true);
+      if (colocatedTestModules.has(utilityPath)) {
+        expect(fs.existsSync(path.join(projectRoot, legacyPath.replace(/\.ts$/, '.test.ts'))), legacyPath).toBe(false);
+        expect(fs.existsSync(path.join(projectRoot, utilityPath.replace(/\.ts$/, '.test.ts'))), utilityPath).toBe(true);
+      }
+    }
+
+    for (const relativePath of sourceFiles) {
+      const source = readProjectFile(relativePath);
+      for (const [legacyPath] of migratedHelperModules) {
+        const legacyImportPath = `@/${legacyPath.replace(/^src\//, '').replace(/\.ts$/, '')}`;
+        expect(source, `${relativePath}:${legacyImportPath}`).not.toContain(legacyImportPath);
+      }
+    }
   });
 });

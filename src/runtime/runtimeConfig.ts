@@ -1,4 +1,4 @@
-import type { AppSettings } from '@/types/settings';
+import type { AppSettings } from '@/types';
 
 type BackendFlavor = 'aistudio' | 'vertex';
 

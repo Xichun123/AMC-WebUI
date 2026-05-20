@@ -97,6 +97,8 @@ const getDb = (): Promise<IDBDatabase> => {
           }
         }
 
+        // Version 3: Reserved by an earlier migration without retained schema changes
+        // Version 4: Add persisted session files store
         if (oldVersion < 4) {
           if (!db.objectStoreNames.contains(FILES_STORE)) {
             const fileStore = db.createObjectStore(FILES_STORE, { keyPath: 'id' });
@@ -104,6 +106,7 @@ const getDb = (): Promise<IDBDatabase> => {
           }
         }
 
+        // Version 5: Add API usage store
         if (oldVersion < 5) {
           if (!db.objectStoreNames.contains(API_USAGE_STORE)) {
             const usageStore = db.createObjectStore(API_USAGE_STORE, { keyPath: 'id', autoIncrement: true });

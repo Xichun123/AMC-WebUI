@@ -31,7 +31,7 @@ const DEFAULT_GEMINI_API_BASE = 'https://generativelanguage.googleapis.com';
 const DEFAULT_VERTEX_LOCATION = 'us-central1';
 const DEFAULT_GCS_OBJECT_PREFIX = 'amc-files/';
 const DEFAULT_GCS_MAX_FILE_BYTES = 2 * 1024 * 1024 * 1024;
-export const DEFAULT_SITE_AUTH_SESSION_DAYS = 7;
+const DEFAULT_SITE_AUTH_SESSION_DAYS = 7;
 
 export interface SiteAuthUserConfig {
   username: string;

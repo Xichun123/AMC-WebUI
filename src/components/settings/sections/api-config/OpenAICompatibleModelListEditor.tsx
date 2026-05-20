@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { CheckCircle2, Loader2, Minus, Plus, RefreshCw, XCircle } from 'lucide-react';
 import type { ModelOption } from '@/types';
 import { useI18n } from '@/contexts/I18nContext';
-import { SMALL_ICON_DANGER_BUTTON_CLASS } from '@/constants/appConstants';
+import { SMALL_ICON_DANGER_BUTTON_CLASS } from '@/constants/styleClasses';
 
 interface OpenAICompatibleModelListEditorProps {
   models: ModelOption[];

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Check, Info } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
-import { SETTINGS_INPUT_CLASS } from '@/constants/appConstants';
+import { SETTINGS_INPUT_CLASS } from '@/constants/styleClasses';
 
 interface ApiKeyInputProps {
   apiKey: string | null;

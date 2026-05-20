@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { type UploadedFile, type SavedChatSession, type ChatSettings } from '@/types';
 import { logService } from '@/services/logService';
 import { cleanupFilePreviewUrls } from '@/utils/fileHelpers';
-import { getModelCapabilities, normalizeAspectRatioForModel, normalizeImageSizeForModel } from '@/utils/modelHelpers';
+import {
+  getModelCapabilities,
+  normalizeAspectRatioForModel,
+  normalizeImageSizeForModel,
+} from '@/utils/modelCapabilities';
 import { getTranslator } from '@/i18n/translations';
 
 interface UseChatEffectsProps {

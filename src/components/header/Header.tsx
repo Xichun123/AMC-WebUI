@@ -1,10 +1,12 @@
 import React from 'react';
 import { Wand2, PictureInPicture, PictureInPicture2 } from 'lucide-react';
-import { type ModelOption } from '@/types';
-import { useI18n } from '@/contexts/I18nContext';
+
 import { IconNewChat, IconSidebarToggle, IconScenarios } from '@/components/icons';
-import { HeaderModelSelector } from './HeaderModelSelector';
+import { useI18n } from '@/contexts/I18nContext';
 import { getCachedModelCapabilities } from '@/stores/modelCapabilitiesStore';
+import { type ModelOption, type ThinkingLevel } from '@/types';
+
+import { HeaderModelSelector } from './HeaderModelSelector';
 
 interface HeaderProps {
   onNewChat: () => void;
@@ -24,8 +26,8 @@ interface HeaderProps {
   isPipActive: boolean;
   onTogglePip: () => void;
   themeId: string;
-  thinkingLevel?: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH';
-  onSetThinkingLevel: (level: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH') => void;
+  thinkingLevel?: ThinkingLevel;
+  onSetThinkingLevel: (level: ThinkingLevel) => void;
   showThoughts: boolean;
   onToggleGemmaReasoning: () => void;
   newChatShortcut: string;
@@ -84,7 +86,6 @@ export const Header: React.FC<HeaderProps> = ({
     <header
       className={`${themeId === 'pearl' ? 'bg-[var(--theme-bg-primary)]' : 'bg-[var(--theme-bg-secondary)]'} px-2 py-[0.32rem] sm:px-3 sm:py-[0.48rem] flex items-center justify-between gap-2 sm:gap-3 flex-shrink-0 relative z-20`}
     >
-      {/* Left Section: Navigation & Model Selector */}
       <div className="flex items-center gap-2 min-w-0">
         <button
           onClick={onToggleHistorySidebar}
@@ -109,9 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
         />
       </div>
 
-      {/* Right Section: Action Buttons (Redesigned) */}
       <div className="flex items-center gap-1 sm:gap-2.5 justify-end flex-shrink-0">
-        {/* 1. Live Artifacts helper button */}
         {showTextTools && (
           <button
             onClick={onLoadLiveArtifactsPrompt}
@@ -124,7 +123,6 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        {/* 2. Scenarios Button (Cards/Book) */}
         <button
           onClick={onOpenScenariosModal}
           className={`${headerButtonBase} ${headerButtonInactive}`}
@@ -134,7 +132,6 @@ export const Header: React.FC<HeaderProps> = ({
           <IconScenarios size={iconSize} strokeWidth={strokeWidth} />
         </button>
 
-        {/* 3. PiP Button (Expand) */}
         {isPipSupported && (
           <button
             onClick={onTogglePip}
@@ -150,7 +147,6 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        {/* 4. New Chat Button (formerly Settings) */}
         <a
           href="/"
           onClick={(e) => {

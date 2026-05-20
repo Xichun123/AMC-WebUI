@@ -1,5 +1,4 @@
-import type { AppSettings, ChatSettings as IndividualChatSettings } from '@/types';
-import type { ImagePersonGeneration } from '@/types/settings';
+import { type AppSettings, type ChatSettings as IndividualChatSettings, type ImagePersonGeneration } from '@/types';
 import { generateSpeechApi } from '@/services/api/generation/audioApi';
 import { generateImagesApi } from '@/services/api/generation/imageApi';
 import { pcmBase64ToWavUrl } from '@/features/audio/audioProcessing';

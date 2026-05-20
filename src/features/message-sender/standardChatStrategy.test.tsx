@@ -2,7 +2,7 @@ import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sendStandardMessage } from './standardChatStrategy';
 import { createStandardChatProps, type StandardChatPropsOverrides } from '@/test/hookFactories';
-import { MediaResolution } from '@/types';
+import { MediaResolution, type ThinkingLevel } from '@/types';
 import type { PreparedModelRequest } from './useModelRequestRunner';
 
 const {
@@ -67,11 +67,11 @@ vi.mock('@/utils/chat/session', () => ({
   })),
 }));
 
-vi.mock('@/utils/modelHelpers', () => ({
+vi.mock('@/utils/modelCapabilities', () => ({
   isGemini3Model: vi.fn((id: string) => id.includes('gemini-3')),
   isImageModel: vi.fn((id: string) => id.includes('image')),
   shouldStripThinkingFromContext: vi.fn(() => false),
-  normalizeThinkingLevelForModel: vi.fn((_id: string, level?: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH') => level),
+  normalizeThinkingLevelForModel: vi.fn((_id: string, level?: ThinkingLevel) => level),
   getModelCapabilities: mockModelCapabilities,
 }));
 

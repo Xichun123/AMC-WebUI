@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calculator } from 'lucide-react';
-import { SETTINGS_INPUT_CLASS } from '@/constants/appConstants';
+import { SETTINGS_INPUT_CLASS } from '@/constants/styleClasses';
 import { useI18n } from '@/contexts/I18nContext';
 
 interface ThinkingBudgetSliderProps {

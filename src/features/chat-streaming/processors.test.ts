@@ -5,7 +5,7 @@ vi.mock('@/utils/chat/ids', () => ({
   generateUniqueId: () => 'generated-id',
 }));
 
-vi.mock('@/utils/modelHelpers', () => ({
+vi.mock('@/utils/modelUsageStats', () => ({
   calculateTokenStats: () => ({
     promptTokens: 0,
     cachedPromptTokens: 0,
@@ -74,8 +74,8 @@ describe('finalizeMessages', () => {
       uploadState: 'active' as const,
     };
 
-    const { updatedMessages } = finalizeMessages(
-      [
+    const { updatedMessages } = finalizeMessages({
+      messages: [
         {
           id: 'model-message',
           role: 'model',
@@ -87,19 +87,19 @@ describe('finalizeMessages', () => {
         },
       ],
       generationStartTime,
-      new Set(['model-message']),
-      createChatSettings(),
-      'zh',
-      generationStartTime,
-    );
+      newModelMessageIds: new Set(['model-message']),
+      currentChatSettings: createChatSettings(),
+      language: 'zh',
+      firstContentPartTime: generationStartTime,
+    });
 
     expect(updatedMessages[0]?.files).toEqual([existingFile]);
   });
 
   it('preserves empty internal tool model messages because their api parts rebuild context', () => {
     const generationStartTime = new Date('2026-04-25T01:00:00.000Z');
-    const { updatedMessages } = finalizeMessages(
-      [
+    const { updatedMessages } = finalizeMessages({
+      messages: [
         {
           id: 'user-message',
           role: 'user',
@@ -142,11 +142,11 @@ describe('finalizeMessages', () => {
         },
       ],
       generationStartTime,
-      new Set(['model-message']),
-      createChatSettings(),
-      'zh',
-      generationStartTime,
-    );
+      newModelMessageIds: new Set(['model-message']),
+      currentChatSettings: createChatSettings(),
+      language: 'zh',
+      firstContentPartTime: generationStartTime,
+    });
 
     expect(updatedMessages.map((message) => message.id)).toEqual([
       'user-message',

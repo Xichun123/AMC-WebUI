@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Modal } from '@/components/shared/Modal';
-import { type UploadedFile, type VideoMetadata } from '@/types';
-import { type MediaResolution } from '@/types/settings';
+import { type UploadedFile, type VideoMetadata, type MediaResolution } from '@/types';
 import { FileConfigHeader } from './file-config/FileConfigHeader';
 import { ResolutionConfig } from './file-config/ResolutionConfig';
 import { VideoConfig } from './file-config/VideoConfig';

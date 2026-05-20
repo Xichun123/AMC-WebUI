@@ -1,5 +1,4 @@
-import { act } from 'react';
-import type { MutableRefObject } from 'react';
+import { act, type MutableRefObject } from 'react';
 import { setupTestRenderer } from '@/test/testUtils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useCodeBlock } from './useCodeBlock';

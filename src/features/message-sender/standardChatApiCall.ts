@@ -1,6 +1,7 @@
 import { createChatHistoryForApi } from '@/utils/chat/builder';
 import { createMessage } from '@/utils/chat/session';
-import { isGemini3Model, isImageModel, shouldStripThinkingFromContext } from '@/utils/modelHelpers';
+import { isServerCodeExecutionMode } from '@/utils/codeExecution';
+import { isGemini3Model, isImageModel, shouldStripThinkingFromContext } from '@/utils/modelCapabilities';
 import { appendFunctionDeclarationsToTools, buildGenerationConfig } from '@/services/api/generationConfig';
 import {
   generateContentTurnApi,
@@ -131,7 +132,7 @@ export const performStandardChatApiCall = async ({
     baseMessagesForApi,
     shouldStripThinking,
     apiModelId,
-    !!sessionToUpdate.isCodeExecutionEnabled && !sessionToUpdate.isLocalPythonEnabled,
+    isServerCodeExecutionMode(sessionToUpdate),
   );
 
   const { streamOnError, streamOnComplete, streamOnPart, onThoughtChunk } = getStreamHandlers(

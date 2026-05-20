@@ -1,7 +1,7 @@
 import React from 'react';
 import { Globe } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
-import { CHAT_INPUT_BUTTON_CLASS } from '@/constants/appConstants';
+import { CHAT_INPUT_BUTTON_CLASS } from '@/constants/styleClasses';
 
 interface WebSearchToggleProps {
   isGoogleSearchEnabled: boolean;

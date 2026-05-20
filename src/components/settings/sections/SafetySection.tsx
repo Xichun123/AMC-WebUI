@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
-import { type SafetySetting, HarmCategory, HarmBlockThreshold } from '@/types/settings';
+import { type SafetySetting, HarmCategory, HarmBlockThreshold } from '@/types';
 import { Shield, Info } from 'lucide-react';
 import { DEFAULT_SAFETY_SETTINGS } from '@/constants/appConstants';
 

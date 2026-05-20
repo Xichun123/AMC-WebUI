@@ -87,10 +87,7 @@ export const useMessageListScroll = ({
   const lastRestoredSessionIdRef = useRef<string | null>(null);
   const activeSessionIdRef = useRef(activeSessionId);
 
-  // Track the last index we programmatically scrolled to
   const lastScrollTarget = useRef<number | null>(null);
-
-  // Track state for the anchoring effect specifically
   const prevMsgCount = useRef(messages.length);
   const prevSessionIdForAnchor = useRef(activeSessionId);
 
@@ -112,7 +109,6 @@ export const useMessageListScroll = ({
     }
   }, []);
 
-  // Range tracking for navigation
   const onRangeChanged = useCallback(({ startIndex, endIndex }: { startIndex: number; endIndex: number }) => {
     visibleRangeRef.current = { startIndex, endIndex };
     setVisibleStartIndex(startIndex);
@@ -128,16 +124,12 @@ export const useMessageListScroll = ({
     [setScrollContainerRef],
   );
 
-  // Handle New Turn Anchoring: When a message is sent, scroll the model's message to the top.
   useEffect(() => {
     const sessionChanged = prevSessionIdForAnchor.current !== activeSessionId;
     const restorationPending = lastRestoredSessionIdRef.current !== activeSessionId;
 
-    // GUARD: If session changed OR we are waiting for scroll restoration to complete,
-    // we must NOT auto-scroll to bottom. This prevents the "jump to bottom" glitch
-    // when loading a history session that has many messages.
+    // Let history restoration settle before applying new-turn anchoring.
     if (sessionChanged || restorationPending) {
-      // Update trackers to current state so we don't trigger "new message" logic on the next render
       prevSessionIdForAnchor.current = activeSessionId;
       prevMsgCount.current = messages.length;
       return;
@@ -145,7 +137,6 @@ export const useMessageListScroll = ({
 
     if (messages.length > prevMsgCount.current) {
       let targetIndex = -1;
-      // Search backwards starting from the end of the previous message count
       for (let i = messages.length - 1; i >= Math.max(0, prevMsgCount.current - 1); i--) {
         if (messages[i].role === 'model') {
           targetIndex = i;
@@ -156,8 +147,6 @@ export const useMessageListScroll = ({
       if (targetIndex !== -1) {
         const sessionIdForScroll = activeSessionId;
         clearAnchorTimeout();
-        // Anchor view to the top of the model message (start of response)
-        // Timeout ensures render cycle is complete including footer height adjustment
         anchorTimeoutRef.current = window.setTimeout(() => {
           anchorTimeoutRef.current = null;
           if (activeSessionIdRef.current !== sessionIdForScroll) return;
@@ -179,7 +168,6 @@ export const useMessageListScroll = ({
     const currentStartIndex = visibleRangeRef.current.startIndex;
     let targetIndex = -1;
 
-    // Search backwards from currentStartIndex - 1 to find the start of the previous user message
     for (let i = Math.max(0, currentStartIndex - 1); i >= 0; i--) {
       if (messages[i].role === 'user') {
         targetIndex = i;
@@ -287,7 +275,6 @@ export const useMessageListScroll = ({
     if (container) {
       const { scrollTop } = container;
 
-      // Save scroll position for active session
       if (activeSessionId && lastRestoredSessionIdRef.current === activeSessionId && messages.length > 0) {
         const snapshot = createScrollSnapshot(container) ?? { scrollTop: Math.max(0, Math.round(scrollTop)) };
         if (scrollSaveTimeoutRef.current) {
@@ -310,19 +297,15 @@ export const useMessageListScroll = ({
     };
   }, [clearAnchorTimeout, clearRestoreTimeout]);
 
-  // Restore scroll position on session change
   useEffect(() => {
     if (!activeSessionId) return;
 
-    // Reset restoration state if we changed sessions
     if (lastRestoredSessionIdRef.current !== activeSessionId) {
-      // If we have content, perform restoration
       if (messages.length > 0) {
         const savedSnapshot = parseStoredScrollSnapshot(localStorage.getItem(getScrollStorageKey(activeSessionId)));
         const sessionIdForRestore = activeSessionId;
         clearRestoreTimeout();
 
-        // Use setTimeout to allow Virtuoso to layout the items first
         restoreTimeoutRef.current = window.setTimeout(() => {
           restoreTimeoutRef.current = null;
           if (activeSessionIdRef.current !== sessionIdForRestore) return;
@@ -343,7 +326,6 @@ export const useMessageListScroll = ({
           } else {
             virtuosoRef.current?.scrollToIndex({ index: 'LAST', align: 'end' });
           }
-          // Mark restoration as complete for this session ID
           lastRestoredSessionIdRef.current = sessionIdForRestore;
         }, 50);
       }

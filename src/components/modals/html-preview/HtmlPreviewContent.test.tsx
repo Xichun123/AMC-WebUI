@@ -1,7 +1,6 @@
-import { act } from 'react';
+import React, { act } from 'react';
 import { setupTestRenderer } from '@/test/testUtils';
 import { describe, expect, it } from 'vitest';
-import React from 'react';
 import { HtmlPreviewContent } from './HtmlPreviewContent';
 
 describe('HtmlPreviewContent', () => {

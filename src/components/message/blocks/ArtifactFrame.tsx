@@ -16,7 +16,7 @@ import {
   createRelayedLiveArtifactSelectionDetail,
   dispatchLiveArtifactSelection,
   LIVE_ARTIFACT_CLEAR_SELECTION_EVENT,
-} from '@/hooks/text-selection/liveArtifactSelection';
+} from '@/utils/text-selection/liveArtifactSelection';
 
 interface ArtifactFrameProps {
   html: string;

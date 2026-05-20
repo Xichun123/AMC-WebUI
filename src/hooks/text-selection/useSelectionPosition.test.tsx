@@ -1,5 +1,4 @@
-import type React from 'react';
-import { act } from 'react';
+import { act, type RefObject } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useSelectionPosition } from './useSelectionPosition';
 import { renderHook } from '@/test/testUtils';
@@ -20,7 +19,7 @@ const createRect = (overrides: Partial<DOMRect> = {}): DOMRect =>
   }) as DOMRect;
 
 const createToolbarRef = () => {
-  const toolbarRef = { current: document.createElement('div') } as React.RefObject<HTMLDivElement>;
+  const toolbarRef = { current: document.createElement('div') } as RefObject<HTMLDivElement>;
   toolbarRef.current!.getBoundingClientRect = () => createRect({ width: 100 });
   return toolbarRef;
 };
@@ -86,7 +85,7 @@ describe('useSelectionPosition', () => {
 
     const toolbarRef = {
       current: targetDocument.createElement('div'),
-    } as React.RefObject<HTMLDivElement>;
+    } as RefObject<HTMLDivElement>;
     toolbarRef.current!.getBoundingClientRect = () => createRect({ width: 100 });
 
     const { result, unmount } = renderHookWithProviders(
@@ -564,7 +563,7 @@ describe('useSelectionPosition', () => {
       useSelectionPosition({
         containerRef: host,
         isAudioActive: false,
-        toolbarRef: toolbarRef as React.RefObject<HTMLDivElement>,
+        toolbarRef: toolbarRef as RefObject<HTMLDivElement>,
       }),
     );
 
@@ -597,7 +596,7 @@ describe('useSelectionPosition', () => {
       useSelectionPosition({
         containerRef: host,
         isAudioActive: false,
-        toolbarRef: toolbarRef as React.RefObject<HTMLDivElement>,
+        toolbarRef: toolbarRef as RefObject<HTMLDivElement>,
       }),
     );
 

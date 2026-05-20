@@ -1,13 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock BroadcastChannel
 globalThis.BroadcastChannel = vi.fn(() => ({
   postMessage: vi.fn(),
   onmessage: null as BroadcastChannel['onmessage'],
   close: vi.fn(),
 })) as unknown as typeof BroadcastChannel;
 
-// Mock sessionStorage
 const sessionStore: Record<string, string> = {};
 const mockSessionStorage = {
   getItem: vi.fn((key: string) => sessionStore[key] ?? null),
@@ -20,7 +18,6 @@ const mockSessionStorage = {
 };
 Object.defineProperty(window, 'sessionStorage', { value: mockSessionStorage });
 
-// Mock history
 window.history.replaceState = vi.fn();
 window.history.pushState = vi.fn();
 Object.defineProperty(window, 'location', {
@@ -49,11 +46,11 @@ vi.mock('@/i18n/translations', () => ({
   getTranslator: vi.fn(),
 }));
 
-vi.mock('@/utils/uiUtils', () => ({
+vi.mock('@/utils/themeDom', () => ({
   applyThemeToDocument: vi.fn(),
 }));
 
-vi.mock('@/utils/modelHelpers', () => ({
+vi.mock('@/utils/modelSorting', () => ({
   resolveSupportedModelId: vi.fn((modelId: string | null | undefined, fallback: string) => modelId || fallback),
 }));
 

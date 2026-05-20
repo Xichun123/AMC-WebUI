@@ -1,7 +1,7 @@
 import { AudioWaveform, Banana, Box, Image as ImageIcon, Layers3, ScanEye, Sparkles, Speech } from 'lucide-react';
 
 import { getCachedModelCapabilities } from '@/stores/modelCapabilitiesStore';
-import { isGeminiRoboticsModel } from '@/utils/modelHelpers';
+import { isGeminiRoboticsModel } from '@/utils/modelCapabilities';
 import { type ModelOption } from '@/types';
 
 const MODEL_ICON_SIZE = 18;

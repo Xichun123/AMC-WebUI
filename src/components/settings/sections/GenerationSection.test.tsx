@@ -3,7 +3,7 @@ import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerT
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { setupStoreStateReset } from '@/test/storeTestUtils';
-import { MediaResolution } from '@/types/settings';
+import { MediaResolution } from '@/types';
 import { GenerationSection } from './GenerationSection';
 
 vi.mock('@/components/settings/controls/thinking/ThinkingControl', () => ({

@@ -21,7 +21,7 @@ export const useChatInputAreaLayout = ({
 
   const innerContainerClass = isFullscreen
     ? 'w-full max-w-6xl mx-auto flex flex-col h-full'
-    : `mx-auto w-full ${!isPipActive ? 'max-w-[44.8rem]' : ''} px-2 sm:px-3 pt-0 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]`;
+    : `mx-auto w-full ${!isPipActive ? 'max-w-[40.32rem]' : ''} px-2 sm:px-3 pt-0 pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]`;
 
   const formClass = isFullscreen
     ? 'flex-grow flex flex-col relative min-h-0'

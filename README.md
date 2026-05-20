@@ -497,7 +497,7 @@ Live API 默认由浏览器使用本地 API Key 直连官方 Live 服务。
 - `src/features/` 放领域能力的实现边界，例如消息发送、本地 Python、音频处理、标准聊天工具循环。
 - `src/hooks/` 放 React 编排层；如果 hook 只是某个领域能力的 React 入口，优先靠近对应领域目录命名。
 - `src/services/` 放外部系统与持久化边界，例如 API client、IndexedDB、日志和对象 URL 生命周期。
-- `src/utils/` 放无 React 状态、无外部副作用的纯工具；领域工具超过一个文件时使用子目录。
+- `src/utils/` 放无 React 状态的小型跨域工具；涉及 DOM、剪贴板、媒体、导出等浏览器边界时优先使用明确的文件名或子目录。
 - `src/test/architecture/` 放结构和风格护栏测试，用来防止历史清理问题回流。
 - `src` 内跨目录引用统一使用 `@/` alias，同目录引用保留 `./`。
 
@@ -509,7 +509,7 @@ AMC-WebUI/
 │   ├── hooks/                  # 业务 hooks（app / chat / chat-input / data-management / live-api / ui）
 │   ├── services/               # API、IndexedDB、日志、对象 URL 等基础设施
 │   ├── stores/                 # Zustand 状态（chat / settings / ui）
-│   ├── utils/                  # 导出、会话、IndexedDB、Markdown、文件处理等工具
+│   ├── utils/                  # 导出、会话、Markdown、文件处理、媒体等工具
 │   ├── i18n/                   # 翻译聚合、覆盖率测试与中英文文案
 │   ├── pwa/                    # Service Worker、PWA 注册与安装状态
 │   ├── runtime/                # 运行时配置读取与公开配置映射

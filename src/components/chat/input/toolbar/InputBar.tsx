@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Loader2, Plus, X } from 'lucide-react';
-import { ICON_BUTTON_CLASS, FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS } from '@/constants/appConstants';
+import { ICON_BUTTON_CLASS, FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS } from '@/constants/styleClasses';
 import { useI18n } from '@/contexts/I18nContext';
 
 interface InputBarProps {

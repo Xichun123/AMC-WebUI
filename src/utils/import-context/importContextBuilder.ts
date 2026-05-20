@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 
 import { fileToString } from '@/utils/fileHelpers';
+import { attachRelativePath, getFilePath } from './filePath';
 import { buildRootGitignoreMatchers, isIgnoredByGitignore, type IgnoreMatcher } from './ignoreMatcher';
 import { generateRepomixPlainOutput } from './repomixPlainOutput';
 import { scanSensitiveContent } from './securityScan';
@@ -38,10 +39,6 @@ interface ZipExtractionResult {
 function getLanguage(fileName: string): string {
   const extension = fileName.split('.').pop()?.toLowerCase() || '';
   return LANG_MAP[extension] || 'plaintext';
-}
-
-function getFilePath(file: File): string {
-  return (file.webkitRelativePath || file.name).replace(/\\/g, '/');
 }
 
 function shouldExpandZipFile(file: File): boolean {
@@ -148,10 +145,8 @@ async function filterDirectoryPaths(
     directoryPaths.map(async (path) => {
       const defaultIgnored = path.split('/').some((part) => IGNORED_DIRS.has(part));
       const gitignored = isIgnoredByGitignore(path, rootGitignoreMatchers, true);
-      const includeMismatch = false;
-      const ignoreMatched = false;
 
-      return !defaultIgnored && !gitignored && !includeMismatch && !ignoreMatched ? path : null;
+      return !defaultIgnored && !gitignored ? path : null;
     }),
   );
 
@@ -179,12 +174,7 @@ async function processZipFile(zipFile: File): Promise<ZipExtractionResult> {
       lastModified: entry.date.getTime(),
     });
 
-    Object.defineProperty(file, 'webkitRelativePath', {
-      configurable: true,
-      value: `${zipRoot}/${entry.name}`,
-      writable: true,
-    });
-    files.push(file);
+    files.push(attachRelativePath(file, `${zipRoot}/${entry.name}`));
   });
 
   await Promise.all(promises);
@@ -225,10 +215,8 @@ async function processImportFiles(
       const path = getFilePath(file);
       const defaultIgnored = path.split('/').some((part) => IGNORED_DIRS.has(part));
       const gitignored = isIgnoredByGitignore(path, rootGitignoreMatchers);
-      const includeMismatch = false;
-      const ignoreMatched = false;
 
-      return path && !defaultIgnored && !gitignored && !includeMismatch && !ignoreMatched ? file : null;
+      return path && !defaultIgnored && !gitignored ? file : null;
     }),
   );
 
@@ -332,11 +320,7 @@ function toInputFileArray(inputs: File[] | FileList | PathFileInput[]): File[] {
   return items.map((item) => {
     if ('file' in item && 'path' in item) {
       const { file, path } = item;
-      Object.defineProperty(file, 'webkitRelativePath', {
-        configurable: true,
-        value: path,
-      });
-      return file;
+      return attachRelativePath(file, path);
     }
 
     return item as File;

@@ -1,13 +1,17 @@
 import { z } from 'zod';
 import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
-import type { AppSettings, FilesApiConfig, LiveArtifactsSystemPrompts, ModelOption, SafetySetting } from '@/types';
 import {
+  type AppSettings,
+  type FilesApiConfig,
+  type LiveArtifactsSystemPrompts,
+  type ModelOption,
+  type SafetySetting,
   HarmBlockThreshold,
   HarmCategory,
   MediaResolution,
   type ApiMode,
   type TranslationTargetLanguage,
-} from '@/types/settings';
+} from '@/types';
 import { createEmptyLiveArtifactsSystemPrompts } from '@/utils/liveArtifactsPromptSettings';
 
 const THEME_IDS = ['system', 'onyx', 'pearl'] as const;

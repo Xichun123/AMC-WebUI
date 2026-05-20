@@ -1,6 +1,5 @@
-import { act } from 'react';
+import { act, type PropsWithChildren, type RefObject } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { PropsWithChildren, RefObject } from 'react';
 import { logService } from '@/services/logService';
 import { WindowProvider } from '@/contexts/WindowContext';
 import { useHtmlPreviewModal } from './useHtmlPreviewModal';

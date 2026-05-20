@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertCircle, ArrowRight, RotateCcw } from 'lucide-react';
 import { Toggle } from '@/components/shared/Toggle';
-import { SETTINGS_INPUT_CLASS } from '@/constants/appConstants';
+import { SETTINGS_INPUT_CLASS } from '@/constants/styleClasses';
 import { DEFAULT_MODEL_ID } from '@/constants/modelConstants';
 import { useI18n } from '@/contexts/I18nContext';
 import {

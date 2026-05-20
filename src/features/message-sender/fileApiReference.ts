@@ -1,7 +1,7 @@
 import type { File as GeminiFile } from '@google/genai';
 import type { UploadedFile } from '@/types';
 import { getFileMetadataApi, uploadFileApi } from '@/services/api/fileApi';
-import { getUploadLifecycleForGeminiState } from '@/hooks/file-upload/fileUploadPolicy';
+import { getUploadLifecycleForGeminiState } from '@/utils/file-upload/fileUploadPolicy';
 import { logService } from '@/services/logService';
 import { usesRemoteFileReference } from '@/utils/chat/fileTransferStrategy';
 

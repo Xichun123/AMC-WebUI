@@ -5,7 +5,7 @@ import type {
   ChatInputComposerStatusContextValue,
   ChatInputToolbarContextValue,
 } from '@/components/chat/input/ChatInputContext';
-import { getModelCapabilities } from '@/utils/modelHelpers';
+import { getModelCapabilities } from '@/utils/modelCapabilities';
 import { createChatToolToggleStates } from './chatToolFixtures';
 
 export const createChatInputActionsContextValue = (

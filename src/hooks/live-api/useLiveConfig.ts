@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { type ChatSettings, type LiveClientFunctions } from '@/types';
+import { type ChatSettings, type LiveClientFunctions, type ThinkingLevel } from '@/types';
 import type { Tool } from '@google/genai';
 import { LOCAL_PYTHON_SYSTEM_PROMPT } from '@/features/prompts/localPython';
 import { getCachedModelCapabilities } from '@/stores/modelCapabilitiesStore';
@@ -30,7 +30,7 @@ interface LiveConfig {
   mediaResolution?: ChatSettings['mediaResolution'];
   thinkingConfig?: {
     includeThoughts: boolean;
-    thinkingLevel?: 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH';
+    thinkingLevel?: ThinkingLevel;
     thinkingBudget?: number;
   };
 }

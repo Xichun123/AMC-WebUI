@@ -1,5 +1,4 @@
-import { act } from 'react';
-import type { ReactNode } from 'react';
+import { act, type ReactNode } from 'react';
 import { setupTestRenderer } from '@/test/testUtils';
 import { describe, expect, it, vi } from 'vitest';
 import { FileDisplay } from './FileDisplay';

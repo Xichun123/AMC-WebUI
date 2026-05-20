@@ -15,7 +15,7 @@ import { createManagedObjectUrl } from '@/services/objectUrlManager';
 import { cleanupFilePreviewUrl, cleanupReplacedFilePreviewUrl } from '@/utils/fileHelpers';
 import { isTextFile } from '@/utils/fileTypeUtils';
 import { useFileModalState } from '@/hooks/ui/useFileModalState';
-import { readUploadedTextFileContent } from './textFileToInput';
+import { readUploadedTextFileContent } from '@/utils/chat-input/textFileToInput';
 import { useI18n } from '@/contexts/I18nContext';
 
 interface UseChatInputFileUiOptions {

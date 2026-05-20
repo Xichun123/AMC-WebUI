@@ -42,7 +42,7 @@ vi.mock('@/features/audio/audioProcessing', () => ({
   pcmBase64ToWavUrl: vi.fn(() => 'blob:wav-url'),
 }));
 
-vi.mock('@/utils/uiUtils', () => ({
+vi.mock('@/utils/completionFeedback', () => ({
   showNotification: showNotificationMock,
   playCompletionSound: vi.fn(),
 }));

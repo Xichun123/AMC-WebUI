@@ -26,8 +26,18 @@ describe('codebase maintainability guardrails', () => {
 
   it('does not keep pure barrel files for split utilities and APIs', () => {
     expect(fs.existsSync(path.join(projectRoot, 'src/utils/appUtils.ts'))).toBe(false);
+    expect(fs.existsSync(path.join(projectRoot, 'src/utils/modelHelpers.ts'))).toBe(false);
+    expect(fs.existsSync(path.join(projectRoot, 'src/utils/uiUtils.ts'))).toBe(false);
     expect(fs.existsSync(path.join(projectRoot, 'src/services/api/baseApi.ts'))).toBe(false);
     expect(fs.existsSync(path.join(projectRoot, 'src/features/chat/input/index.ts'))).toBe(false);
+  });
+
+  it('keeps model utility consumers on the split module names', () => {
+    const offenders = listProjectSourceFiles('src')
+      .filter((relativePath) => relativePath !== 'src/test/architecture/codebaseMaintainability.test.ts')
+      .filter((relativePath) => readProjectFile(relativePath).includes('modelHelpers'));
+
+    expect(offenders).toEqual([]);
   });
 
   it('does not expose test-only implementation helpers from production modules', () => {
@@ -455,20 +465,20 @@ describe('codebase maintainability guardrails', () => {
     const settingsLogicSource = readProjectFile('src/hooks/settings/useSettingsLogic.ts');
     const useModelsSource = readProjectFile('src/hooks/core/useModels.ts');
     const uiStoreSource = readProjectFile('src/stores/uiStore.ts');
-    const modelHelpersSource = readProjectFile('src/utils/modelHelpers.ts');
+    const modelSwitchSettingsSource = readProjectFile('src/utils/modelSwitchSettings.ts');
 
     expect(chatInputStateSource).toContain('useChatDraftStore');
     expect(settingsLogicSource).toContain('useSettingsUiStore');
     expect(useModelsSource).toContain('useModelPreferencesStore');
     expect(uiStoreSource).toContain('persistentStorage');
-    expect(modelHelpersSource).toContain('useModelPreferencesStore');
+    expect(modelSwitchSettingsSource).toContain('useModelPreferencesStore');
 
     for (const [relativePath, source] of [
       ['src/hooks/chat-input/useChatInputState.ts', chatInputStateSource],
       ['src/hooks/settings/useSettingsLogic.ts', settingsLogicSource],
       ['src/hooks/core/useModels.ts', useModelsSource],
       ['src/stores/uiStore.ts', uiStoreSource],
-      ['src/utils/modelHelpers.ts', modelHelpersSource],
+      ['src/utils/modelSwitchSettings.ts', modelSwitchSettingsSource],
     ] as const) {
       expect(source, relativePath).not.toContain('localStorage.');
       expect(source, relativePath).not.toContain("addEventListener('storage'");

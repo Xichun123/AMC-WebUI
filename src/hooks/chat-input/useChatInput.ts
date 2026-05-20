@@ -8,7 +8,7 @@ import { useChatInputSubmission } from './useChatInputSubmission';
 import { useChatInputClipboard } from './useChatInputClipboard';
 import { useChatInputKeyboard } from './useChatInputKeyboard';
 import { useChatInputTranslation } from './useChatInputTranslation';
-import { getChatInputAvailability, getCurrentChatInputMode } from './chatInputAvailability';
+import { getChatInputAvailability, getCurrentChatInputMode } from '@/utils/chat-input/chatInputAvailability';
 
 export const useChatInput = () => {
   const { t, chatInput, inputState, fileRefs, targetDocument, insertText, capabilities, liveApi } = useChatInputCore();

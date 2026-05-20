@@ -3,7 +3,6 @@ import { Language, Outcome } from '@google/genai';
 import { buildContentParts, createChatHistoryForApi } from './builder';
 import { type UploadedFile, type ChatMessage, MediaResolution } from '@/types';
 
-// Mock fileHelpers to avoid real file I/O
 vi.mock('@/utils/fileHelpers', () => ({
   blobToBase64: vi.fn().mockResolvedValue('base64data'),
   fileToString: vi.fn().mockResolvedValue('file text content'),
@@ -25,8 +24,7 @@ vi.mock('@/services/logService', async () => {
   return createLogServiceMockModule();
 });
 
-// Mock modelHelpers
-vi.mock('@/utils/modelHelpers', () => ({
+vi.mock('@/utils/modelCapabilities', () => ({
   isGemini3Model: vi.fn((id: string) => id?.includes('gemini-3')),
 }));
 

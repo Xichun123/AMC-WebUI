@@ -2,7 +2,8 @@ import type { GenerateContentConfig, Part, ThinkingConfig, ThinkingLevel, UsageM
 import { executeConfiguredApiRequest } from '@/services/api/apiExecutor';
 import { logService } from '@/services/logService';
 import { blobToBase64 } from '@/utils/fileHelpers';
-import { calculateTokenStats, getModelCapabilities } from '@/utils/modelHelpers';
+import { getModelCapabilities } from '@/utils/modelCapabilities';
+import { calculateTokenStats } from '@/utils/modelUsageStats';
 import { buildExactPricingFromUsageMetadata } from '@/utils/usagePricingTelemetry';
 import { AVAILABLE_TTS_VOICES } from '@/constants/voiceOptions';
 
@@ -139,7 +140,6 @@ export const generateSpeechApi = async (
 
       logService.error('TTS response did not contain expected audio data structure:', { response });
 
-      // Fallback to checking text error if any, though unlikely with AUDIO modality
       const textError = response.text;
       if (textError) {
         throw new Error(`TTS generation failed: ${textError}`);

@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { type SavedChatSession, type ChatGroup } from '@/types';
 import { useWindowContext } from '@/contexts/WindowContext';
 import { useI18n } from '@/contexts/I18nContext';
+import { DESKTOP_BREAKPOINT_PX } from '@/constants/layout';
 import { dbService } from '@/services/db/dbService';
 import { FOCUS_HISTORY_SEARCH_EVENT } from '@/constants/shortcuts';
 
@@ -289,7 +290,7 @@ export const useHistorySidebarLogic = ({
   const handleSessionSelect = (sessionId: string) => {
     onSelectSession(sessionId);
     // Auto-close sidebar on mobile
-    if (window.innerWidth < 768) {
+    if (window.innerWidth < DESKTOP_BREAKPOINT_PX) {
       onAutoClose();
     }
   };

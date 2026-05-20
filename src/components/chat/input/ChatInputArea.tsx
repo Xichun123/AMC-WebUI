@@ -87,7 +87,7 @@ export const ChatInputArea: React.FC = () => {
           className="fixed h-px w-px opacity-0 pointer-events-none"
         />
       )}
-      <div className="mx-auto w-full max-w-[44.8rem] px-2 sm:px-3">
+      <div className="mx-auto w-full max-w-[40.32rem] px-2 sm:px-3">
         {chatInput.showEmptyStateSuggestions && capabilities.permissions.canGenerateSuggestions && !isFullscreen && (
           <ChatSuggestions
             show={chatInput.showEmptyStateSuggestions}

@@ -1,7 +1,6 @@
 import { type TouchEvent, useCallback, useEffect, useRef } from 'react';
+import { DESKTOP_BREAKPOINT_PX } from '@/constants/layout';
 import { useUIStore } from '@/stores/uiStore';
-
-const DESKTOP_BREAKPOINT = 768;
 
 const isSidebarElement = (target: EventTarget | null) =>
   target instanceof Element && target.closest('[data-history-sidebar-root="true"]') !== null;
@@ -19,13 +18,13 @@ export const useAppUi = () => {
   const setIsLogViewerOpen = useUIStore((s) => s.setIsLogViewerOpen);
 
   const touchStartRef = useRef({ x: 0, y: 0, startedInSidebar: false });
-  const wasDesktopRef = useRef(window.innerWidth >= DESKTOP_BREAKPOINT);
+  const wasDesktopRef = useRef(window.innerWidth >= DESKTOP_BREAKPOINT_PX);
   const resizeFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     const syncSidebarForCurrentViewport = () => {
       resizeFrameRef.current = null;
-      const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
+      const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT_PX;
       if (isDesktop !== wasDesktopRef.current) {
         wasDesktopRef.current = isDesktop;
         syncHistorySidebarForViewport();
@@ -51,7 +50,7 @@ export const useAppUi = () => {
   }, [syncHistorySidebarForViewport]);
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
-    if (window.innerWidth >= DESKTOP_BREAKPOINT) {
+    if (window.innerWidth >= DESKTOP_BREAKPOINT_PX) {
       return;
     }
 
@@ -67,7 +66,7 @@ export const useAppUi = () => {
 
   const handleTouchEnd = useCallback(
     (e: TouchEvent) => {
-      if (window.innerWidth >= DESKTOP_BREAKPOINT) {
+      if (window.innerWidth >= DESKTOP_BREAKPOINT_PX) {
         return;
       }
 

@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { DESKTOP_BREAKPOINT_PX } from '@/constants/layout';
 import {
   createPersistedStateStorage,
   readPersistentStorageItem,
   registerPersistedStoreSync,
 } from './persistentStorage';
 
-const DESKTOP_BREAKPOINT = 768;
 const UI_PREFERENCES_STORAGE_KEY = 'all_model_chat_ui_preferences_v1';
 const LEGACY_HISTORY_SIDEBAR_STORAGE_KEY = 'all_model_chat_history_sidebar_v1';
 
@@ -20,7 +20,7 @@ const DEFAULT_HISTORY_SIDEBAR_PREFERENCES: HistorySidebarPreferences = {
   mobileOpen: false,
 };
 
-const isDesktopViewport = () => (typeof window !== 'undefined' ? window.innerWidth >= DESKTOP_BREAKPOINT : true);
+const isDesktopViewport = () => (typeof window !== 'undefined' ? window.innerWidth >= DESKTOP_BREAKPOINT_PX : true);
 
 const readHistorySidebarPreferences = (): HistorySidebarPreferences => {
   try {

@@ -15,7 +15,7 @@ import { useChatEffects } from './useChatEffects';
 import { useBackgroundKeepAlive } from '@/hooks/core/useBackgroundKeepAlive';
 import { useMessageActions } from './messages/useMessageActions';
 import { useTextToSpeechHandler } from './messages/useTextToSpeechHandler';
-import { createLiveClientFunctions } from '@/hooks/live-api/liveClientFunctions';
+import { createLiveClientFunctions } from '@/utils/live-api/liveClientFunctions';
 import { getPyodideService } from '@/features/local-python/loadPyodideService';
 import { useChatStore } from '@/stores/chatStore';
 

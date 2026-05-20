@@ -18,7 +18,7 @@ import {
   CHAT_INPUT_BUTTON_CLASS,
   MENU_ITEM_BUTTON_CLASS,
   MENU_ITEM_DEFAULT_STATE_CLASS,
-} from '@/constants/appConstants';
+} from '@/constants/styleClasses';
 import { usePortaledMenu } from '@/hooks/ui/usePortaledMenu';
 import { useChatInputActionsContext } from './ChatInputContext';
 

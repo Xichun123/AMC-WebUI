@@ -1,5 +1,4 @@
-import { act } from 'react';
-import type { ComponentProps } from 'react';
+import { act, type ComponentProps } from 'react';
 import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useSettingsStore } from '@/stores/settingsStore';

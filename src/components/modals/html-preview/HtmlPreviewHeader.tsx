@@ -17,7 +17,7 @@ import {
   FOCUS_VISIBLE_RING_SECONDARY_OFFSET_CLASS,
   ICON_BUTTON_CLASS,
   MODAL_CLOSE_BUTTON_DANGER_HOVER_CLASS,
-} from '@/constants/appConstants';
+} from '@/constants/styleClasses';
 
 interface HtmlPreviewHeaderProps {
   title: string;

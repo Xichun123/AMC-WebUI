@@ -1,9 +1,11 @@
-import { logService } from '@/services/logService';
-import React, { useEffect, useState } from 'react';
 import { Github, Star, ExternalLink } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
 import { useI18n } from '@/contexts/I18nContext';
 import { useResponsiveValue } from '@/hooks/useDevice';
+import { logService } from '@/services/logService';
 import { useSettingsStore } from '@/stores/settingsStore';
+
 import packageJson from '../../../../package.json';
 
 const GITHUB_REPOSITORY = 'Xichun123/AMC-WebUI';

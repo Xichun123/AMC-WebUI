@@ -1,6 +1,11 @@
 import React, { Suspense } from 'react';
-import { type UploadedFile, type AppSettings, type ModelOption, type VideoMetadata } from '@/types';
-import { type MediaResolution } from '@/types/settings';
+import {
+  type UploadedFile,
+  type AppSettings,
+  type ModelOption,
+  type VideoMetadata,
+  type MediaResolution,
+} from '@/types';
 import { isMarkdownFile } from '@/utils/fileTypeUtils';
 import { lazyNamedComponent } from '@/utils/lazyNamedComponent';
 

@@ -4,7 +4,8 @@ import { type ChatMessage, type AppSettings, type SideViewContent, type Uploaded
 import { getGeminiKeyForRequest } from '@/utils/apiUtils';
 import { parseThoughtProcess } from '@/utils/chat/parsing';
 import { translateTextApi } from '@/services/api/generation/textApi';
-import { DEFAULT_CHAT_SETTINGS, DEFAULT_THOUGHT_TRANSLATION_MODEL_ID } from '@/constants/appConstants';
+import { DEFAULT_CHAT_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_THOUGHT_TRANSLATION_MODEL_ID } from '@/constants/modelConstants';
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { ThinkingHeader } from './thoughts/ThinkingHeader';
 import { ThinkingActions } from './thoughts/ThinkingActions';

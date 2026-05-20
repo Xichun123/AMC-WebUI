@@ -1,3 +1,4 @@
+import { attachRelativePath } from './filePath';
 import { IGNORED_DIRS } from './shared';
 
 interface DirectoryReadResult {
@@ -7,14 +8,6 @@ interface DirectoryReadResult {
 
 interface ReadDirectoryHandleOptions {
   skipDefaultIgnoredDirectories?: boolean;
-}
-
-function attachRelativePath(file: File, relativePath: string): File {
-  Object.defineProperty(file, 'webkitRelativePath', {
-    configurable: true,
-    value: relativePath,
-  });
-  return file;
 }
 
 async function readDirectory(

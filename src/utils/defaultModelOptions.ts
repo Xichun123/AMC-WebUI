@@ -1,6 +1,6 @@
 import { type ModelOption } from '@/types';
 import { getModelOptionsForGroup } from '@/constants/modelRegistry';
-import { sortModels } from './modelHelpers';
+import { sortModels } from './modelSorting';
 
 export const getDefaultModelOptions = (): ModelOption[] => {
   return sortModels([

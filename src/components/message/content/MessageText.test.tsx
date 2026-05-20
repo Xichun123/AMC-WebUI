@@ -337,4 +337,81 @@ describe('MessageText', () => {
     expect(renderedContent).toContain(htmlFragment);
     expect(renderedContent).not.toContain('```css');
   });
+
+  it('collapses long user messages by default and expands them on request', () => {
+    const content = Array.from(
+      { length: 10 },
+      (_, index) => `Line ${index + 1}: Please inspect this part carefully.`,
+    ).join('\n');
+
+    act(() => {
+      renderer.render(
+        <MessageText
+          message={{
+            id: 'message-long-user',
+            role: 'user',
+            content,
+            timestamp: new Date('2026-04-21T00:00:00.000Z'),
+          }}
+          showThoughts={false}
+          appSettings={createAppSettings({ autoFullscreenHtml: false, hideThinkingInContext: false })}
+          themeId="pearl"
+          baseFontSize={16}
+          onImageClick={vi.fn()}
+          onOpenHtmlPreview={vi.fn()}
+          expandCodeBlocksByDefault={false}
+          isMermaidRenderingEnabled={true}
+          isGraphvizRenderingEnabled={true}
+          onOpenSidePanel={vi.fn()}
+        />,
+      );
+    });
+
+    const collapseRegion = renderer.container.querySelector('[data-user-message-collapsed="true"]');
+    const toggle = renderer.container.querySelector<HTMLButtonElement>('[aria-label="Expand"]');
+
+    expect(collapseRegion).toBeInTheDocument();
+    expect(toggle).toBeInTheDocument();
+    expect(toggle?.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle?.textContent).toContain('Expand');
+
+    act(() => {
+      toggle?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(renderer.container.querySelector('[data-user-message-collapsed="false"]')).toBeInTheDocument();
+    expect(renderer.container.querySelector<HTMLButtonElement>('[aria-label="Collapse"]')?.textContent).toContain(
+      'Collapse',
+    );
+  });
+
+  it('does not collapse long model messages', () => {
+    const content = Array.from({ length: 10 }, (_, index) => `Line ${index + 1}: Full assistant response.`).join('\n');
+
+    act(() => {
+      renderer.render(
+        <MessageText
+          message={{
+            id: 'message-long-model',
+            role: 'model',
+            content,
+            timestamp: new Date('2026-04-21T00:00:00.000Z'),
+          }}
+          showThoughts={false}
+          appSettings={createAppSettings({ autoFullscreenHtml: false, hideThinkingInContext: false })}
+          themeId="pearl"
+          baseFontSize={16}
+          onImageClick={vi.fn()}
+          onOpenHtmlPreview={vi.fn()}
+          expandCodeBlocksByDefault={false}
+          isMermaidRenderingEnabled={true}
+          isGraphvizRenderingEnabled={true}
+          onOpenSidePanel={vi.fn()}
+        />,
+      );
+    });
+
+    expect(renderer.container.querySelector('[data-user-message-collapsed]')).not.toBeInTheDocument();
+    expect(renderer.container.querySelector('[aria-label="Expand"]')).not.toBeInTheDocument();
+  });
 });

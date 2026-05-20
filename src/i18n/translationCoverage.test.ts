@@ -582,7 +582,7 @@ describe('translation coverage for protected UI surfaces', () => {
         snippets: ['File processing timed out.', 'Backend processing failed.'],
       },
       {
-        file: 'src/hooks/file-upload/uploadFileItem.ts',
+        file: 'src/utils/file-upload/uploadFileItem.ts',
         snippets: [
           'Unsupported file type:',
           'API key was not available for file upload.',

@@ -1,3 +1,4 @@
+import { attachRelativePath, normalizeRelativePath } from './filePath';
 import { IGNORED_DIRS } from './shared';
 
 interface DroppedItemsResult {
@@ -44,14 +45,10 @@ export async function processDroppedItems(
       return new Promise((resolve, reject) => {
         (entry as FileSystemFileEntry).file(
           (file) => {
-            if (!file.webkitRelativePath) {
-              Object.defineProperty(file, 'webkitRelativePath', {
-                configurable: true,
-                value: entry.fullPath.startsWith('/') ? entry.fullPath.slice(1) : entry.fullPath,
-                writable: true,
-              });
-            }
-            resolve({ files: [file], emptyDirectoryPaths: [] });
+            resolve({
+              files: [attachRelativePath(file, entry.fullPath, { preserveExisting: true })],
+              emptyDirectoryPaths: [],
+            });
           },
           (error) => reject(error),
         );
@@ -78,8 +75,7 @@ export async function processDroppedItems(
 
               if (batch.length === 0) {
                 if (directoryFiles.length === 0) {
-                  const dirPath = entry.fullPath.startsWith('/') ? entry.fullPath.slice(1) : entry.fullPath;
-                  directoryEmptyPaths.push(dirPath);
+                  directoryEmptyPaths.push(normalizeRelativePath(entry.fullPath));
                 }
                 resolve({ files: directoryFiles, emptyDirectoryPaths: directoryEmptyPaths });
                 return;

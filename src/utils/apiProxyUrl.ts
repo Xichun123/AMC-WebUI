@@ -16,7 +16,9 @@ const resolveRuntimeRelativeBaseUrl = (baseUrl: string): string => {
 export const normalizeGeminiApiBaseUrl = (baseUrl: string): string => {
   const rawBaseUrl = baseUrl.trim();
   const absoluteBaseUrl =
-    rawBaseUrl.startsWith('/') && typeof window !== 'undefined' ? resolveRuntimeRelativeBaseUrl(rawBaseUrl) : rawBaseUrl;
+    rawBaseUrl.startsWith('/') && typeof window !== 'undefined'
+      ? resolveRuntimeRelativeBaseUrl(rawBaseUrl)
+      : rawBaseUrl;
   const trimmedBaseUrl = absoluteBaseUrl.replace(/\/+$/, '');
   return trimmedBaseUrl.replace(GEMINI_API_VERSION_SUFFIX, '');
 };

@@ -1,7 +1,6 @@
 import { logService } from '@/services/logService';
 import { useCallback } from 'react';
-import type { UploadedFile } from '@/types';
-import type { MediaResolution } from '@/types/settings';
+import { type UploadedFile, type MediaResolution } from '@/types';
 import { buildContentParts } from '@/utils/chat/builder';
 
 type SetSelectedFiles = (files: UploadedFile[] | ((prevFiles: UploadedFile[]) => UploadedFile[])) => void;

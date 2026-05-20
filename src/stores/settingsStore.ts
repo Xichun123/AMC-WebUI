@@ -5,7 +5,7 @@ import { type Theme } from '@/types/theme';
 import { DEFAULT_FILES_API_CONFIG, getDefaultAppSettings } from '@/constants/appConstants';
 import { AVAILABLE_THEMES, DEFAULT_THEME_ID } from '@/constants/themeConstants';
 import { logService } from '@/services/logService';
-import { resolveSupportedModelId, sanitizeModelOptions } from '@/utils/modelHelpers';
+import { resolveSupportedModelId, sanitizeModelOptions } from '@/utils/modelSorting';
 import { dbService } from '@/services/db/dbService';
 import { normalizeLiveArtifactsSystemPrompts } from '@/utils/liveArtifactsPromptSettings';
 import { getBackendFlavor, getRuntimeConfigAppSettingsOverrides } from '@/runtime/runtimeConfig';

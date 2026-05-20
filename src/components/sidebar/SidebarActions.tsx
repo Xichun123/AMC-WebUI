@@ -2,6 +2,7 @@ import React, { type RefObject } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { Search, X } from 'lucide-react';
 import { IconNewChat, IconNewGroup } from '@/components/icons';
+import { DESKTOP_BREAKPOINT_PX } from '@/constants/layout';
 import { SIDEBAR_ACTION_LINK_CLASS, SIDEBAR_ACTION_ROW_CLASS } from './sidebarStyles';
 
 interface SidebarActionsProps {
@@ -14,7 +15,57 @@ interface SidebarActionsProps {
   setIsSearching: (isSearching: boolean) => void;
   setSearchQuery: (query: string) => void;
   newChatShortcut?: string;
+  searchChatsShortcut?: string;
 }
+
+const COMPACT_SHORTCUT_PARTS: Record<string, string> = {
+  Shift: '⇧',
+  Cmd: '⌘',
+  '⌘': '⌘',
+  Ctrl: 'Ctrl',
+  Alt: 'Alt',
+  Opt: '⌥',
+  Win: 'Win',
+};
+
+const COMPACT_SHORTCUT_ORDER: Record<string, number> = {
+  Ctrl: 0,
+  Alt: 1,
+  Opt: 1,
+  Shift: 2,
+  Cmd: 3,
+  '⌘': 3,
+  Win: 3,
+};
+
+const compactShortcut = (shortcut: string): string => {
+  const parts = shortcut
+    .split('+')
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const modifiers = parts
+    .filter((part) => COMPACT_SHORTCUT_ORDER[part] !== undefined)
+    .sort((a, b) => COMPACT_SHORTCUT_ORDER[a] - COMPACT_SHORTCUT_ORDER[b]);
+  const keys = parts.filter((part) => COMPACT_SHORTCUT_ORDER[part] === undefined);
+
+  return [...modifiers, ...keys].map((part) => COMPACT_SHORTCUT_PARTS[part] ?? part).join(' ');
+};
+
+const ShortcutHint = ({ shortcut }: { shortcut?: string }) => {
+  if (!shortcut) {
+    return null;
+  }
+
+  return (
+    <kbd
+      aria-hidden="true"
+      data-testid="sidebar-action-shortcut"
+      className="ml-auto shrink-0 whitespace-nowrap text-sm font-semibold leading-none tracking-normal text-[var(--theme-text-secondary)] opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100"
+    >
+      {compactShortcut(shortcut)}
+    </kbd>
+  );
+};
 
 export const SidebarActions: React.FC<SidebarActionsProps> = ({
   onNewChat,
@@ -26,6 +77,7 @@ export const SidebarActions: React.FC<SidebarActionsProps> = ({
   setIsSearching,
   setSearchQuery,
   newChatShortcut,
+  searchChatsShortcut,
 }) => {
   const { t } = useI18n();
   const closeSearch = () => {
@@ -37,7 +89,7 @@ export const SidebarActions: React.FC<SidebarActionsProps> = ({
     if (e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
       e.preventDefault();
       onNewChat();
-      if (window.innerWidth < 768) {
+      if (window.innerWidth < DESKTOP_BREAKPOINT_PX) {
         onCloseSidebar?.();
       }
     }
@@ -51,10 +103,10 @@ export const SidebarActions: React.FC<SidebarActionsProps> = ({
           onClick={handleNewChatClick}
           className={SIDEBAR_ACTION_LINK_CLASS}
           aria-label={t('headerNewChat_aria')}
-          title={t('newChat') + (newChatShortcut ? ` (${newChatShortcut})` : '')}
         >
           <IconNewChat size={18} className="text-[var(--theme-icon-history)]" strokeWidth={2} />
-          <span className="text-[var(--theme-text-primary)]">{t('newChat')}</span>
+          <span className="min-w-0 flex-1 truncate text-[var(--theme-text-primary)]">{t('newChat')}</span>
+          <ShortcutHint shortcut={newChatShortcut} />
         </a>
       </div>
       <div>
@@ -93,19 +145,17 @@ export const SidebarActions: React.FC<SidebarActionsProps> = ({
             aria-label={t('history_search_aria')}
           >
             <Search size={18} className="text-[var(--theme-icon-history)]" strokeWidth={2} />
-            <span className="text-[var(--theme-text-primary)]">{t('history_search_button')}</span>
+            <span className="min-w-0 flex-1 truncate text-[var(--theme-text-primary)]">
+              {t('history_search_button')}
+            </span>
+            <ShortcutHint shortcut={searchChatsShortcut} />
           </button>
         )}
       </div>
       <div>
-        <button
-          onClick={onAddNewGroup}
-          className={SIDEBAR_ACTION_ROW_CLASS}
-          aria-label={t('newGroup_aria')}
-          title={t('newGroup_button')}
-        >
+        <button onClick={onAddNewGroup} className={SIDEBAR_ACTION_ROW_CLASS} aria-label={t('newGroup_aria')}>
           <IconNewGroup size={18} className="text-[var(--theme-icon-history)]" strokeWidth={2} />
-          <span className="text-[var(--theme-text-primary)]">{t('newGroup_button')}</span>
+          <span className="min-w-0 flex-1 truncate text-[var(--theme-text-primary)]">{t('newGroup_button')}</span>
         </button>
       </div>
     </div>

@@ -170,7 +170,7 @@ vi.mock('@/i18n/translations', () => ({
   getTranslator: () => (key: string) => key,
 }));
 
-vi.mock('@/utils/uiUtils', () => ({
+vi.mock('@/utils/themeDom', () => ({
   applyThemeToDocument: vi.fn(),
 }));
 

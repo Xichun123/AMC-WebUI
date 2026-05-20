@@ -163,11 +163,21 @@ describe('chat input architecture guardrails', () => {
     }
   });
 
+  it('keeps full composer behavior tests on the shared chat input harness', () => {
+    const harnessPath = 'src/test/chatInputHarness.tsx';
+    const chatInputTestSource = readProjectFile('src/components/chat/input/ChatInput.test.tsx');
+
+    expect(fs.existsSync(path.join(projectRoot, harnessPath))).toBe(true);
+    expect(chatInputTestSource).toContain("from '@/test/chatInputHarness'");
+    expect(chatInputTestSource).not.toContain("vi.mock('./ChatInputArea'");
+    expect(chatInputTestSource).not.toContain('const mockChatStoreState = vi.hoisted');
+  });
+
   it('shares temporary processing file placeholders across upload flows', () => {
-    expect(fs.existsSync(path.join(projectRoot, 'src/hooks/file-upload/fileUploadPolicy.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/utils/file-upload/fileUploadPolicy.ts'))).toBe(true);
     expect(fs.existsSync(path.join(projectRoot, 'src/hooks/file-upload/utils.ts'))).toBe(false);
 
-    const helperSource = readProjectFile('src/hooks/file-upload/fileUploadPolicy.ts');
+    const helperSource = readProjectFile('src/utils/file-upload/fileUploadPolicy.ts');
     expect(helperSource).toContain('createProcessingPlaceholderFile');
 
     for (const relativePath of [
@@ -175,7 +185,7 @@ describe('chat input architecture guardrails', () => {
       'src/hooks/chat-input/useFilePreProcessingEffects.ts',
       'src/hooks/file-upload/useFileDragDrop.ts',
       'src/hooks/file-upload/useFileIdAdder.ts',
-      'src/hooks/file-upload/uploadFileItem.ts',
+      'src/utils/file-upload/uploadFileItem.ts',
     ] as const) {
       const source = readProjectFile(relativePath);
       expect(source, relativePath).toContain('createProcessingPlaceholderFile');

@@ -1,22 +1,24 @@
 import { act, type ReactNode } from 'react';
-import { createTestRenderer, type TestRenderer } from '@/test/testUtils';
 import { vi } from 'vitest';
-import { I18nProvider } from '@/contexts/I18nContext';
-import { WindowProvider } from '@/contexts/WindowContext';
+
 import {
   ChatRuntimeProvider,
   type useChatHeaderRuntime,
   type useChatInputRuntime,
   type useChatMessageListRuntime,
 } from '@/components/layout/chat-runtime/ChatRuntimeContext';
+import { AVAILABLE_THEMES } from '@/constants/themeConstants';
+import { I18nProvider } from '@/contexts/I18nContext';
+import type { AppViewModel } from '@/hooks/app/useApp';
+import { WindowProvider } from '@/contexts/WindowContext';
 import { useChatStore } from '@/stores/chatStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useUIStore } from '@/stores/uiStore';
-import { AVAILABLE_THEMES } from '@/constants/themeConstants';
-import type { AppViewModel } from '@/hooks/app/useApp';
 import type { AppSettings, ChatMessage, ChatSettings, ChatToolToggleStates, ModelOption, UploadedFile } from '@/types';
-import { createAppSettings, createChatSettings } from './factories';
+
 import { createChatToolToggleStates } from './chatToolFixtures';
+import { createAppSettings, createChatSettings } from './factories';
+import { createTestRenderer, type TestRenderer } from './testUtils';
 
 export { createAppSettings, createChatSettings } from './factories';
 

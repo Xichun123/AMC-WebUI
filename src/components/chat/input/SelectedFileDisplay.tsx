@@ -12,7 +12,7 @@ import {
   FileText,
   Ellipsis,
 } from 'lucide-react';
-import { CATEGORY_STYLES, getResolutionColor } from '@/utils/uiUtils';
+import { CATEGORY_STYLES, getResolutionColor } from '@/utils/fileDisplayStyles';
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { formatFileSize } from '@/utils/fileHelpers';
 import { isTextFile } from '@/utils/fileTypeUtils';

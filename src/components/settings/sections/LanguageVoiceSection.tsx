@@ -1,9 +1,9 @@
 import React from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { Languages } from 'lucide-react';
-import { DEFAULT_THOUGHT_TRANSLATION_MODEL_ID, TRANSLATION_TARGET_LANGUAGE_OPTIONS } from '@/constants/appConstants';
-import { type AppSettings, type ModelOption } from '@/types';
-import { type TranslationTargetLanguage } from '@/types/settings';
+import { TRANSLATION_TARGET_LANGUAGE_OPTIONS } from '@/constants/appConstants';
+import { DEFAULT_THOUGHT_TRANSLATION_MODEL_ID } from '@/constants/modelConstants';
+import { type AppSettings, type ModelOption, type TranslationTargetLanguage } from '@/types';
 import { Select } from '@/components/shared/Select';
 import { VoiceControl } from '@/components/settings/controls/VoiceControl';
 import type { SettingsUpdateHandler } from '@/components/settings/settingsTypes';

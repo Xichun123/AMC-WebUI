@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AudioLines, Image as ImageIcon, Info, SquarePen, X } from 'lucide-react';
-import { SETTINGS_INPUT_CLASS, SMALL_ICON_BUTTON_CLASS } from '@/constants/appConstants';
-import type { AppSettings } from '@/types';
-import { MediaResolution } from '@/types/settings';
+import { SETTINGS_INPUT_CLASS, SMALL_ICON_BUTTON_CLASS } from '@/constants/styleClasses';
+import { type AppSettings, MediaResolution } from '@/types';
 import { getCachedModelCapabilities } from '@/stores/modelCapabilitiesStore';
 import { useI18n } from '@/contexts/I18nContext';
 import { Tooltip } from '@/components/shared/Tooltip';

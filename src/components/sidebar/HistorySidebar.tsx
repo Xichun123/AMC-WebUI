@@ -252,6 +252,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = (props) => {
           setSearchQuery={setSearchQuery}
           searchInputRef={searchInputRef}
           newChatShortcut={newChatShortcut}
+          searchChatsShortcut={searchChatsShortcut}
         />
         <div
           className="flex-grow overflow-y-auto custom-scrollbar p-2 cursor-ew-resize"

@@ -2,7 +2,7 @@ import { logService } from '@/services/logService';
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Loader2, Repeat } from 'lucide-react';
 import { type SideViewContent, type UploadedFile } from '@/types';
-import { MESSAGE_BLOCK_BUTTON_CLASS } from '@/constants/appConstants';
+import { MESSAGE_BLOCK_BUTTON_CLASS } from '@/constants/styleClasses';
 import { DiagramWrapper } from './parts/DiagramWrapper';
 import { useI18n } from '@/contexts/I18nContext';
 

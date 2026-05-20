@@ -8,9 +8,13 @@ import {
 import { logService } from '@/services/logService';
 import { releaseManagedObjectUrl } from '@/services/objectUrlManager';
 import { getApiKeyErrorTranslationKey, getGeminiKeyForRequest } from '@/utils/apiUtils';
-import { buildFileUploadPreflight, checkBatchNeedsApiKey, getFilesRequiringFileApi } from './fileUploadPolicy';
-import { uploadFileItem } from './uploadFileItem';
-import { runWithConcurrencyLimit } from './uploadQueue';
+import {
+  buildFileUploadPreflight,
+  checkBatchNeedsApiKey,
+  getFilesRequiringFileApi,
+} from '@/utils/file-upload/fileUploadPolicy';
+import { uploadFileItem } from '@/utils/file-upload/uploadFileItem';
+import { runWithConcurrencyLimit } from '@/utils/file-upload/uploadQueue';
 import { useI18n } from '@/contexts/I18nContext';
 import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
 

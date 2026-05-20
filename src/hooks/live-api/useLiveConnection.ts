@@ -4,8 +4,11 @@ import { float32ToPCM16Base64 } from '@/features/audio/audioProcessing';
 import { getLiveApiClient, LiveApiAuthConfigurationError } from '@/services/api/liveApiAuth';
 import { logService } from '@/services/logService';
 import type { AppSettings, LiveTranscriptHandler } from '@/types';
-import type { LiveErrorState } from './liveErrorState';
+import type { LiveErrorState } from '@/utils/live-api/liveErrorState';
 import { useStateWithRef } from '@/hooks/useStateWithRef';
+
+const MAX_RECONNECT_RETRIES = 5;
+const RECONNECT_BASE_DELAY_MS = 1000;
 
 interface UseLiveConnectionProps {
   appSettings: AppSettings;
@@ -59,9 +62,6 @@ export const useLiveConnection = ({
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const connectRef = useRef<() => Promise<boolean>>(async () => false);
 
-  const maxRetries = 5;
-  const baseDelay = 1000;
-
   const resetAudioState = useCallback(() => {
     clearBufferedAudio?.();
     cleanupAudio();
@@ -100,7 +100,7 @@ export const useLiveConnection = ({
 
     resetAudioState();
 
-    if (retryCountRef.current >= maxRetries) {
+    if (retryCountRef.current >= MAX_RECONNECT_RETRIES) {
       logService.error('Max reconnection attempts reached.');
       setTranslationError('liveStatus_connection_lost_retry_failed');
       setIsReconnecting(false);
@@ -112,13 +112,15 @@ export const useLiveConnection = ({
 
     setIsReconnecting(true);
     // Exponential backoff: 1s, 2s, 4s, 8s, 16s... cap at 30s
-    const delay = Math.min(30000, baseDelay * Math.pow(2, retryCountRef.current));
+    const delay = Math.min(30000, RECONNECT_BASE_DELAY_MS * Math.pow(2, retryCountRef.current));
 
     const attempt = retryCountRef.current + 1;
-    logService.warn(`Live API disconnected. Reconnecting in ${delay}ms... (Attempt ${attempt}/${maxRetries})`);
+    logService.warn(
+      `Live API disconnected. Reconnecting in ${delay}ms... (Attempt ${attempt}/${MAX_RECONNECT_RETRIES})`,
+    );
     setTranslationError('liveStatus_reconnecting_attempt', {
       attempt,
-      maxRetries,
+      maxRetries: MAX_RECONNECT_RETRIES,
     });
 
     reconnectTimeoutRef.current = setTimeout(() => {
@@ -145,14 +147,13 @@ export const useLiveConnection = ({
   );
 
   const connect = useCallback(async (): Promise<boolean> => {
-    // Clear any pending reconnection timeout if we are manually connecting
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
 
     setErrorState(null);
-    isUserDisconnectRef.current = false; // Reset user disconnect flag
+    isUserDisconnectRef.current = false;
     isConnectingRef.current = true;
 
     isProactiveReconnectRef.current = false;
@@ -170,8 +171,6 @@ export const useLiveConnection = ({
         setupCompleteRejectRef.current = reject;
       });
 
-      // Initialize Audio (Mic & Worklet)
-      // We pass a callback that sends the encoded audio to the session
       await initializeAudio((pcmData) => {
         // IMPORTANT: If connection is closed/closing, stop sending immediately to prevent WebSocket flood errors
         if (!isConnectedRef.current) return;
@@ -198,7 +197,6 @@ export const useLiveConnection = ({
         return false;
       }
 
-      // Connect Session
       const sessionPromise = ai.live.connect({
         model: modelId,
         config: liveConfig as Parameters<typeof ai.live.connect>[0]['config'],
@@ -223,13 +221,11 @@ export const useLiveConnection = ({
 
             setIsConnected(false);
 
-            // Finalize any open transcripts
             if (onTranscript) {
               onTranscript('', 'user', true);
               onTranscript('', 'model', true);
             }
 
-            // Only trigger reconnect if NOT user initiated
             if (!isUserDisconnectRef.current) {
               if (isProactiveReconnectRef.current) {
                 isProactiveReconnectRef.current = false;
@@ -249,13 +245,11 @@ export const useLiveConnection = ({
 
             setIsConnected(false);
 
-            // Finalize any open transcripts
             if (onTranscript) {
               onTranscript('', 'user', true);
               onTranscript('', 'model', true);
             }
 
-            // Only trigger reconnect if NOT user initiated
             if (!isUserDisconnectRef.current) {
               triggerReconnect();
             } else {
@@ -399,10 +393,9 @@ export const useLiveConnection = ({
   );
 
   const disconnect = useCallback(() => {
-    isUserDisconnectRef.current = true; // Mark as user initiated
+    isUserDisconnectRef.current = true;
     isConnectingRef.current = false;
 
-    // Cancel pending reconnects
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
@@ -415,7 +408,7 @@ export const useLiveConnection = ({
     sessionRef.current = null;
 
     resetAudioState();
-    stopVideo(); // Stop video stream if active
+    stopVideo();
 
     setIsConnected(false);
     setIsReconnecting(false);
@@ -437,7 +430,6 @@ export const useLiveConnection = ({
     rejectSetupComplete,
   ]);
 
-  // Update the ref whenever connect changes so triggerReconnect calls the latest version
   useEffect(() => {
     connectRef.current = connect;
   }, [connect]);

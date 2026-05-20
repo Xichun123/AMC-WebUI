@@ -12,7 +12,7 @@ import {
   MENU_ITEM_BUTTON_CLASS,
   MENU_ITEM_COMPACT_BUTTON_CLASS,
   MENU_ITEM_DEFAULT_STATE_CLASS,
-} from '@/constants/appConstants';
+} from '@/constants/styleClasses';
 
 type HastElementLike = {
   properties?: Record<string, unknown>;

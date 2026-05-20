@@ -1,9 +1,8 @@
-import { act } from 'react';
+import { act, type Dispatch, type SetStateAction } from 'react';
 import { renderHookWithProviders } from '@/test/providerTestUtils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
 import type { UploadedFile } from '@/types';
-import type { Dispatch, SetStateAction } from 'react';
 
 const { generateUniqueIdMock, getKeyForRequestMock, getFileMetadataMock } = vi.hoisted(() => ({
   generateUniqueIdMock: vi.fn(),

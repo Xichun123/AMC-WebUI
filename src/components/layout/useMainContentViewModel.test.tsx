@@ -5,7 +5,7 @@ import type { AppSettings } from '@/types';
 import { renderHook } from '@/test/testUtils';
 import { createAppSettings, createChatSettings, createTheme } from '@/test/factories';
 import { ChatRuntimeProvider, useChatHeaderRuntime } from './chat-runtime/ChatRuntimeContext';
-import { CHAT_INPUT_TEXTAREA_SELECTOR } from '@/constants/appConstants';
+import { CHAT_INPUT_TEXTAREA_SELECTOR } from '@/constants/storageKeys';
 
 const mockStores = vi.hoisted(() => {
   const ui = {

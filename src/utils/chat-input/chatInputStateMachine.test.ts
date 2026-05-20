@@ -9,6 +9,10 @@ import {
   initialChatInputMachineState,
 } from './chatInputStateMachine';
 
+const projectRoot = path.resolve(__dirname, '../../..');
+const readChatInputHook = (filename: string) =>
+  readFileSync(path.join(projectRoot, 'src/hooks/chat-input', filename), 'utf8');
+
 describe('chatInputStateMachine', () => {
   it('starts in a non-blocking composer state', () => {
     expect(initialChatInputMachineState).toEqual({
@@ -145,7 +149,7 @@ describe('chatInputStateMachine', () => {
   });
 
   it('keeps reducer flags behind explicit chat input actions', () => {
-    const source = readFileSync(path.resolve(__dirname, './useChatInputState.ts'), 'utf8');
+    const source = readChatInputHook('useChatInputState.ts');
 
     expect(source).not.toContain('setIsTranslating');
     expect(source).not.toContain('setIsAnimatingSend');
@@ -171,7 +175,7 @@ describe('chatInputStateMachine', () => {
     ];
 
     childHookFilenames.forEach((filename) => {
-      const source = readFileSync(path.resolve(__dirname, filename), 'utf8');
+      const source = readChatInputHook(filename);
 
       expect(source).not.toContain('type { useChatInputState }');
       expect(source).not.toContain('ReturnType<typeof useChatInputState>');
@@ -183,8 +187,8 @@ describe('chatInputStateMachine', () => {
   });
 
   it('keeps narrowed child hook state wrappers out of callback dependencies', () => {
-    const submissionSource = readFileSync(path.resolve(__dirname, './useChatInputSubmission.ts'), 'utf8');
-    const keyboardSource = readFileSync(path.resolve(__dirname, './useChatInputKeyboard.ts'), 'utf8');
+    const submissionSource = readChatInputHook('useChatInputSubmission.ts');
+    const keyboardSource = readChatInputHook('useChatInputKeyboard.ts');
 
     expect(submissionSource).not.toMatch(/\[[^\]\n]*submissionState[^\]\n]*\]/);
     expect(submissionSource).not.toMatch(/submissionState,\n\s+\],/);

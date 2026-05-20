@@ -1,16 +1,15 @@
-import type React from 'react';
-import { act } from 'react';
+import { act, type TouchEvent } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAppUi } from './useAppUi';
 import { useUIStore } from '@/stores/uiStore';
 import { renderHook } from '@/test/testUtils';
 
-const createTouchEvent = (target: EventTarget, x: number, y: number): React.TouchEvent =>
+const createTouchEvent = (target: EventTarget, x: number, y: number): TouchEvent =>
   ({
     target,
     touches: [{ clientX: x, clientY: y }],
     changedTouches: [{ clientX: x, clientY: y }],
-  }) as unknown as React.TouchEvent;
+  }) as unknown as TouchEvent;
 
 const flushRafCallbacks = () => {
   act(() => {

@@ -8,7 +8,7 @@ import { TextSelectionToolbar } from './message-list/TextSelectionToolbar';
 import { useMessageListUi } from '@/hooks/useMessageListUi';
 import { useMessageListScroll } from './message-list/hooks/useMessageListScroll';
 import { MessageListFooter } from './message-list/MessageListFooter';
-import { isGemini3Model } from '@/utils/modelHelpers';
+import { isGemini3Model } from '@/utils/modelCapabilities';
 import { getVisibleChatMessages } from '@/utils/chat/visibility';
 import { isMarkdownFile } from '@/utils/fileTypeUtils';
 import { useSettingsStore } from '@/stores/settingsStore';

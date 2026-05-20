@@ -3,7 +3,7 @@ import { setupTestRenderer } from '@/test/testUtils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useChatStore } from '@/stores/chatStore';
 import { createChatInputToolbarContextValue } from '@/test/chatInputContextFixtures';
-import { getModelCapabilities } from '@/utils/modelHelpers';
+import { getModelCapabilities } from '@/utils/modelCapabilities';
 
 const personGenerationSelectorMock = vi.fn();
 const mockCapabilities = vi.hoisted(() => ({

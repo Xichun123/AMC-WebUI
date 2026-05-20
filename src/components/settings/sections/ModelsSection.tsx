@@ -5,7 +5,7 @@ import { type ApiMode, type AppSettings, type ModelOption } from '@/types';
 import { ModelSelector } from '@/components/settings/controls/ModelSelector';
 import { fetchOpenAICompatibleModels } from '@/services/api/openaiCompatibleApi';
 import { parseApiKeys } from '@/utils/apiUtils';
-import { sanitizeModelOptions } from '@/utils/modelHelpers';
+import { sanitizeModelOptions } from '@/utils/modelSorting';
 import { LiveArtifactsSection } from './LiveArtifactsSection';
 import { GenerationSection } from './GenerationSection';
 import { LanguageVoiceSection } from './LanguageVoiceSection';

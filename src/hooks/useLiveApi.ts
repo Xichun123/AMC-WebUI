@@ -7,7 +7,7 @@ import { useLiveConfig } from './live-api/useLiveConfig';
 import { useLiveMessageProcessing } from './live-api/useLiveMessageProcessing';
 import { useLiveConnection } from './live-api/useLiveConnection';
 import { useLiveFrameCapture } from './live-api/useLiveFrameCapture';
-import { resolveLiveErrorText } from './live-api/liveErrorState';
+import { resolveLiveErrorText } from '@/utils/live-api/liveErrorState';
 import { useBackgroundKeepAlive } from './core/useBackgroundKeepAlive';
 import { useI18n } from '@/contexts/I18nContext';
 import { getGeminiKeyForRequest, SERVER_MANAGED_API_KEY } from '@/utils/apiUtils';

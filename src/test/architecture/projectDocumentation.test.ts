@@ -7,11 +7,11 @@ const projectRoot = path.resolve(__dirname, '../../..');
 const readProjectFile = (relativePath: string) => fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
 
 describe('project documentation structure', () => {
-  it('keeps the shared chat input selector in tracked app constants', () => {
+  it('keeps the shared chat input selector in the focused storage constants module', () => {
     const appConstants = readProjectFile('src/constants/appConstants.ts');
     const storageKeys = readProjectFile('src/constants/storageKeys.ts');
 
-    expect(appConstants).toContain("export * from './storageKeys';");
+    expect(appConstants).not.toContain("export * from './storageKeys';");
     expect(storageKeys).toContain('export const CHAT_INPUT_TEXTAREA_SELECTOR');
     expect(fs.existsSync(path.join(projectRoot, 'src/constants/domSelectors.ts'))).toBe(false);
   });
@@ -31,6 +31,8 @@ describe('project documentation structure', () => {
 
     expect(zhReadme).not.toContain('Gemini / Pyodide / API / 日志等基础设施');
     expect(enReadme).not.toContain('Gemini, Pyodide, API, logging, and infrastructure services');
+    expect(zhReadme).not.toContain('utils/                  # 导出、会话、IndexedDB');
+    expect(enReadme).not.toContain('utils/                  # Export, session, IndexedDB');
   });
 
   it('distinguishes Docker runtime defaults from the static runtime-config template', () => {
@@ -41,6 +43,14 @@ describe('project documentation structure', () => {
     expect(zhReadme).toContain('public/runtime-config.js 模板');
     expect(enReadme).toContain('Docker default');
     expect(enReadme).toContain('public/runtime-config.js template');
+  });
+
+  it('documents Docker Compose source builds without requiring host build output', () => {
+    const zhReadme = readProjectFile('README.md');
+    const enReadme = readProjectFile('README.en.md');
+
+    expect(zhReadme).toContain('Docker build 阶段会自动执行前端生产构建和 API TypeScript 构建');
+    expect(enReadme).toContain('Docker build stage runs both the frontend production build and API TypeScript build');
   });
 
   it('serves module workers with a JavaScript MIME type in Docker', () => {
@@ -54,7 +64,7 @@ describe('project documentation structure', () => {
   it('does not serve the app shell for missing hashed asset files in Docker', () => {
     const nginxConfig = readProjectFile('docker/nginx.conf');
 
-    expect(nginxConfig).toMatch(/location\s+\/assets\/\s*\{[\s\S]*try_files\s+\$uri\s+=404;/);
+    expect(nginxConfig).toMatch(/location\s+\^~\s+\/assets\/\s*\{[\s\S]*try_files\s+\$uri\s+=404;/);
   });
 
   it('does not cap API request bodies at the Nginx layer in Docker', () => {

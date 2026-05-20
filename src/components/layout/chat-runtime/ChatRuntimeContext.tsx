@@ -4,19 +4,18 @@ import type { Part } from '@google/genai';
 import type { AppViewModel } from '@/hooks/app/useApp';
 import { useChatStore } from '@/stores/chatStore';
 import { useUIStore } from '@/stores/uiStore';
-import type {
-  ChatSettingsUpdater,
-  LiveClientFunctions,
-  ModelOption,
-  SideViewContent,
-  UploadedFile,
-  VideoMetadata,
+import {
+  type ChatSettingsUpdater,
+  type LiveClientFunctions,
+  type ModelOption,
+  type SideViewContent,
+  type ThinkingLevel,
+  type UploadedFile,
+  type VideoMetadata,
+  type MediaResolution,
 } from '@/types';
-import type { MediaResolution } from '@/types/settings';
 import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
-import { CHAT_INPUT_TEXTAREA_SELECTOR } from '@/constants/appConstants';
-
-type ThinkingLevel = 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH';
+import { CHAT_INPUT_TEXTAREA_SELECTOR } from '@/constants/storageKeys';
 
 interface ChatHeaderRuntimeValue {
   isAppDraggingOver: boolean;

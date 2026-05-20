@@ -1,5 +1,4 @@
-import { act } from 'react';
-import type React from 'react';
+import { act, type MouseEvent } from 'react';
 import { setupProviderTestRenderer } from '@/test/providerTestUtils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MessageThoughts } from './MessageThoughts';
@@ -40,7 +39,7 @@ vi.mock('./thoughts/ThinkingHeader', () => ({
 }));
 
 vi.mock('./thoughts/ThinkingActions', () => ({
-  ThinkingActions: ({ onTranslate }: { onTranslate: (event: React.MouseEvent) => void }) => (
+  ThinkingActions: ({ onTranslate }: { onTranslate: (event: MouseEvent) => void }) => (
     <button type="button" data-testid="thinking-translate" onClick={onTranslate}>
       translate
     </button>

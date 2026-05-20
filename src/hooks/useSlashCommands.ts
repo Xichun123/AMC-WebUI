@@ -1,6 +1,6 @@
 import { type Dispatch, type RefObject, type SetStateAction, useState, useMemo, useCallback } from 'react';
 import { type translations } from '@/i18n/translations';
-import { type AttachmentAction, type ModelOption } from '@/types';
+import { type AttachmentAction, type ModelOption, type ThinkingLevel } from '@/types';
 import type { SlashCommand as Command } from '@/types/slashCommands';
 import type { ChatToolToggleStates, ToggleableChatToolId } from '@/types/chatTools';
 import { getSlashCommandToolDefinitions } from '@/features/chat-tools/toolRegistry';
@@ -32,8 +32,8 @@ interface UseSlashCommandsProps {
   onTogglePip: () => void;
   setInputText: Dispatch<SetStateAction<string>>;
   currentModelId: string;
-  onSetThinkingLevel: (level: 'LOW' | 'HIGH' | 'MINIMAL' | 'MEDIUM') => void;
-  thinkingLevel?: 'LOW' | 'HIGH' | 'MINIMAL' | 'MEDIUM';
+  onSetThinkingLevel: (level: ThinkingLevel) => void;
+  thinkingLevel?: ThinkingLevel;
 }
 
 const CLOSED_SLASH_COMMAND_STATE: SlashCommandState = {

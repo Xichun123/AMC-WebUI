@@ -1,7 +1,6 @@
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { UploadedFile } from '@/types';
-import { MediaResolution } from '@/types/settings';
+import { type UploadedFile, MediaResolution } from '@/types';
 import { useLiveModeHandler } from './useLiveModeHandler';
 import { renderHook } from '@/test/testUtils';
 

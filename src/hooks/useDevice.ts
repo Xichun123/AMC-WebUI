@@ -1,18 +1,17 @@
 import { useState, useEffect } from 'react';
+import { MOBILE_BREAKPOINT_PX } from '@/constants/layout';
 import { useWindowContext } from '@/contexts/WindowContext';
-
-const MOBILE_BREAKPOINT = 640; // Matches Tailwind 'sm'
 
 export const useIsMobile = () => {
   const { window: targetWindow } = useWindowContext();
   const [isMobile, setIsMobile] = useState<boolean>(() => {
     if (typeof targetWindow === 'undefined') return false;
-    return targetWindow.innerWidth < MOBILE_BREAKPOINT;
+    return targetWindow.innerWidth < MOBILE_BREAKPOINT_PX;
   });
 
   useEffect(() => {
     if (typeof targetWindow === 'undefined') return;
-    const mediaQuery = targetWindow.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+    const mediaQuery = targetWindow.matchMedia(`(max-width: ${MOBILE_BREAKPOINT_PX}px)`);
 
     const handleChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
 
@@ -25,7 +24,11 @@ export const useIsMobile = () => {
   return isMobile;
 };
 
-export const useResponsiveValue = <T>(mobileValue: T, desktopValue: T, breakpoint: number = 640): T => {
+export const useResponsiveValue = <T>(
+  mobileValue: T,
+  desktopValue: T,
+  breakpoint: number = MOBILE_BREAKPOINT_PX,
+): T => {
   const { window: targetWindow } = useWindowContext();
   const [value, setValue] = useState<T>(() => {
     if (typeof targetWindow !== 'undefined' && targetWindow.innerWidth < breakpoint) {

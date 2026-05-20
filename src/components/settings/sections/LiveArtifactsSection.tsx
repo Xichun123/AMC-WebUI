@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { ChevronDown, RotateCcw, Wand2 } from 'lucide-react';
 import { Select } from '@/components/shared/Select';
-import { SETTINGS_INPUT_CLASS } from '@/constants/appConstants';
+import { SETTINGS_INPUT_CLASS } from '@/constants/styleClasses';
 import { loadLiveArtifactsSystemPrompt } from '@/constants/promptHelpers';
 import {
   getLiveArtifactsSystemPromptValue,

@@ -2,6 +2,7 @@ import { logService } from '@/services/logService';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { pdfjs } from 'react-pdf';
 import { type UploadedFile } from '@/types';
+import { MOBILE_BREAKPOINT_PX } from '@/constants/layout';
 import { configurePdfWorker } from '@/utils/pdfWorker';
 import { useI18n } from '@/contexts/I18nContext';
 
@@ -12,7 +13,7 @@ configurePdfWorker(pdfjs);
 const getInitialScale = () => {
   if (typeof window === 'undefined') return 1.0;
   const width = window.innerWidth;
-  if (width < 640) return 0.6;
+  if (width < MOBILE_BREAKPOINT_PX) return 0.6;
   if (width < 1024) return 0.8;
   return 1.1;
 };

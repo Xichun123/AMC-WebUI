@@ -2,13 +2,12 @@ import React from 'react';
 import { Gauge, Feather, Zap, Sparkles, Cpu } from 'lucide-react';
 import { LevelButton } from './LevelButton';
 import { useI18n } from '@/contexts/I18nContext';
-
-type ThinkingLevelOption = 'MINIMAL' | 'LOW' | 'MEDIUM' | 'HIGH';
+import type { ThinkingLevel } from '@/types';
 
 interface ThinkingLevelSelectorProps {
-  thinkingLevel: ThinkingLevelOption | undefined;
-  setThinkingLevel: (level: ThinkingLevelOption) => void;
-  supportedLevels: ThinkingLevelOption[];
+  thinkingLevel: ThinkingLevel | undefined;
+  setThinkingLevel: (level: ThinkingLevel) => void;
+  supportedLevels: ThinkingLevel[];
 }
 
 export const ThinkingLevelSelector: React.FC<ThinkingLevelSelectorProps> = ({

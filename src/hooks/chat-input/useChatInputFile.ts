@@ -1,10 +1,9 @@
 import { useCallback, type Dispatch, type MutableRefObject, type RefObject, type SetStateAction } from 'react';
-import type { UploadedFile, VideoMetadata } from '@/types';
-import type { MediaResolution } from '@/types/settings';
+import { type UploadedFile, type VideoMetadata, type MediaResolution } from '@/types';
 import { cleanupFilePreviewUrl } from '@/utils/fileHelpers';
 import { useFilePreProcessingEffects } from './useFilePreProcessingEffects';
 import { useChatInputFileUi } from './useChatInputFileUi';
-import type { ChatInputBooleanUpdate } from './chatInputStateMachine';
+import type { ChatInputBooleanUpdate } from '@/utils/chat-input/chatInputStateMachine';
 
 type SetSelectedFiles = (files: UploadedFile[] | ((prevFiles: UploadedFile[]) => UploadedFile[])) => void;
 

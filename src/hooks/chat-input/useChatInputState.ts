@@ -8,7 +8,7 @@ import {
   initialChatInputMachineState,
   type ChatInputBooleanUpdate,
   type ChatInputMachineFlag,
-} from './chatInputStateMachine';
+} from '@/utils/chat-input/chatInputStateMachine';
 
 export const INITIAL_TEXTAREA_HEIGHT_PX = 24;
 export const MAX_TEXTAREA_HEIGHT_PX = 150;

@@ -240,7 +240,14 @@ docker compose up -d --build
 - Docker 默认是 BYOK 自用模式：启动后在 **设置 -> API 配置** 填入 Gemini API Key 即可使用普通聊天与 Live API，不需要在 `.env` 或 `docker-compose.yml` 里配置 `GEMINI_API_KEY`。
 - `web` 与 `api` 镜像都是多阶段构建：Docker build 阶段会自动执行前端生产构建和 API TypeScript 构建，不依赖宿主机已有的 `dist/` 或 `server/dist/`。
 - 修改前端或后端代码后，重新执行 `docker compose up -d --build` 即可。
-- 低内存 VPS 上直接构建可能比较慢；生产部署可以在本机先构建目标架构镜像，再通过 `docker save` / `docker load` 上传到服务器，并用 compose override 指向已加载镜像。
+- 低内存 VPS 上不要直接构建。可以使用 GitHub Actions 发布到 GHCR，然后在服务器上通过 `docker-compose.ghcr.yml` 直接拉取镜像：
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.ghcr.yml pull
+docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+```
+
+默认拉取 `main` 标签；如需固定到某个镜像标签，可设置 `AMC_WEBUI_IMAGE_TAG=sha-<commit>`。
 
 > ⚠️ 安全边界说明
 > 当前 `web + api` 代理方案定位为 **受信任/自托管环境**（trusted self-hosted deployment）。

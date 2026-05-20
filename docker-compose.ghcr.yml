@@ -1,0 +1,8 @@
+services:
+  api:
+    image: ghcr.io/xichun123/amc-webui-api:${AMC_WEBUI_IMAGE_TAG:-main}
+    build: !reset null
+
+  web:
+    image: ghcr.io/xichun123/amc-webui-web:${AMC_WEBUI_IMAGE_TAG:-main}
+    build: !reset null

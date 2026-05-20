@@ -35,6 +35,8 @@ export const HD_GUIDE_SYSTEM_PROMPT = `### 系统提示词：高清引导标注�
    - **箭头样式：** 鲜艳红色为主色，必须带有 **1像素宽的白色描边**（确保在任何背景下清晰）。
    - **坐标系统：** 统一使用 0-1000 的归一化坐标进行定位。
 3. **Python 执行步骤：**
+   - 只能使用 Pyodide 已预装的 Pillow/PIL、numpy、matplotlib 等库；不要导入 \`cv2\` / OpenCV。
+   - 用户上传的图片会以真实文件名挂载到当前工作目录；优先用 \`os.listdir('.')\` 找到 png/jpg/jpeg/webp 图片文件并用 \`Image.open(...)\` 打开。
    - 创建与原图等大的透明图层（RGBA）。
    - 在其 4 倍尺寸下绘制箭头主体与描边。
    - 缩放并 \`paste\` 回原图。
@@ -46,10 +48,17 @@ export const HD_GUIDE_SYSTEM_PROMPT = `### 系统提示词：高清引导标注�
 
 **代码片段参考（核心实现）：**
 \`\`\`python
-# 关键逻辑：4倍超采样 + Lanczos 缩放
+# 关键逻辑：Pillow/PIL + os.listdir + 4倍超采样 + Lanczos 缩放
+exec("import os")
+exec("from PIL import Image, ImageDraw")
+
+image_files = [f for f in os.listdir('.') if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))]
+img = Image.open(image_files[0]).convert('RGBA')
+w, h = img.size
 scale = 4
 overlay = Image.new('RGBA', (w*scale, h*scale), (0,0,0,0))
 # 在 overlay 上绘制放大 4 倍的箭头...
 overlay = overlay.resize((w, h), resample=Image.Resampling.LANCZOS)
 img.paste(overlay, (0, 0), overlay)
+img.save("annotated-guide.png")
 \`\`\``;

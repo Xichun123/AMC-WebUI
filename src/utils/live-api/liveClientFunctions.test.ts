@@ -30,6 +30,7 @@ describe('createLiveClientFunctions', () => {
       createUploadedFile({
         id: 'file-1',
         name: 'dataset.csv',
+        type: 'text/csv',
         rawFile: new File(['a,b\n1,2\n'], 'dataset.csv', { type: 'text/csv' }),
       }),
     ];
@@ -73,6 +74,7 @@ describe('createLiveClientFunctions', () => {
         status: 'completed',
         summary:
           'Python execution completed successfully; stdout/stderr output was captured; a Python expression result was returned; an image artifact was generated; generated files: chart.png.',
+        availableInputFiles: [{ name: 'dataset.csv', type: 'text/csv' }],
         nextAction:
           'Use these execution results to answer the user. Do not call run_local_python again unless a new or corrected computation is required.',
         imageGenerated: true,

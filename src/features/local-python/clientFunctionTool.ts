@@ -7,6 +7,22 @@ import { hasGeneratedImageFile } from './executionFiles';
 type PythonRunOptions = { files?: UploadedFile[]; abortSignal?: AbortSignal };
 type PythonRunResult = Omit<ExecutionResult, 'status'>;
 
+const describeInputFile = ({ name, type }: UploadedFile) => ({ name, type });
+
+const getAvailableInputFiles = (files: UploadedFile[] = []) =>
+  files.filter((file) => !!file.rawFile).map(describeInputFile);
+
+const formatAvailableInputFiles = (files: UploadedFile[] = []) => {
+  const availableInputFiles = getAvailableInputFiles(files);
+  if (availableInputFiles.length === 0) {
+    return '';
+  }
+
+  return ` Uploaded files are mounted in the current working directory. Use these exact filenames: ${availableInputFiles
+    .map((file) => `"${file.name}" (${file.type || 'unknown type'})`)
+    .join(', ')}.`;
+};
+
 const summarizeLocalPythonResult = (result: PythonRunResult, outputFiles: PythonRunResult['files'] = []): string => {
   const details: string[] = [];
 
@@ -33,21 +49,27 @@ interface CreateLocalPythonToolHandlerOptions<RunOptions extends PythonRunOption
   runPython: (code: string, options?: RunOptions) => Promise<PythonRunResult>;
 }
 
-export const createLocalPythonToolDeclaration = (): FunctionDeclaration => ({
-  name: 'run_local_python',
-  description:
-    'Execute Python code locally in the browser with Pyodide. Use this for calculations, data analysis, CSV inspection, and lightweight plots.',
-  parameters: {
-    type: 'OBJECT' as Type,
-    properties: {
-      code: {
-        type: 'STRING' as Type,
-        description: 'The Python code to execute locally.',
+export const createLocalPythonToolDeclaration = (
+  options: { inputFiles?: UploadedFile[] } = {},
+): FunctionDeclaration => {
+  const fileContext = formatAvailableInputFiles(options.inputFiles);
+
+  return {
+    name: 'run_local_python',
+    description: `Execute Python code locally in the browser with Pyodide. Use this for calculations, data analysis, CSV inspection, image annotation, and lightweight plots.${fileContext} Use Pillow/PIL for image work; do not import cv2/OpenCV.`,
+    parameters: {
+      type: 'OBJECT' as Type,
+      properties: {
+        code: {
+          type: 'STRING' as Type,
+          description:
+            'The Python code to execute locally. Uploaded files, if any, are mounted in the current working directory using their exact filenames.',
+        },
       },
+      required: ['code'],
     },
-    required: ['code'],
-  },
-});
+  };
+};
 
 export const createLocalPythonToolHandler = <RunOptions extends PythonRunOptions>({
   getRunOptions,
@@ -60,7 +82,26 @@ export const createLocalPythonToolHandler = <RunOptions extends PythonRunOptions
       throw new Error('run_local_python requires a non-empty "code" string.');
     }
 
-    const result = await runPython(code, getRunOptions(options));
+    const runOptions = getRunOptions(options);
+    const availableInputFiles = getAvailableInputFiles(runOptions.files);
+    let result: PythonRunResult;
+
+    try {
+      result = await runPython(code, runOptions);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        response: {
+          status: 'failed',
+          error: message,
+          availableInputFiles,
+          nextAction:
+            'Do not retry the same code unchanged. If an import failed, use only the available Pyodide libraries such as PIL/Pillow, numpy, pandas, scipy, matplotlib, and sklearn. If a file was not found, use one of the exact availableInputFiles names. If the task cannot continue, explain the failure to the user.',
+        },
+        generatedFiles: [],
+      };
+    }
+
     const outputFiles = result.files || [];
     const generatedFiles = [...outputFiles].map((file) =>
       createUploadedFileFromBase64(file.data, file.type, file.name),
@@ -77,6 +118,7 @@ export const createLocalPythonToolHandler = <RunOptions extends PythonRunOptions
         output: result.output || null,
         result: result.result || null,
         imageGenerated: !!result.image,
+        availableInputFiles,
         generatedFiles: outputFiles.map(({ name, type }) => ({ name, type })),
         nextAction:
           'Use these execution results to answer the user. Do not call run_local_python again unless a new or corrected computation is required.',

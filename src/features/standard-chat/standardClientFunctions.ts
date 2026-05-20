@@ -25,7 +25,7 @@ export const createStandardClientFunctions = ({
 
   return {
     run_local_python: {
-      declaration: createLocalPythonToolDeclaration(),
+      declaration: createLocalPythonToolDeclaration({ inputFiles }),
       handler: createLocalPythonToolHandler({
         getRunOptions: (options) =>
           options?.abortSignal ? { files: inputFiles, abortSignal: options.abortSignal } : { files: inputFiles },

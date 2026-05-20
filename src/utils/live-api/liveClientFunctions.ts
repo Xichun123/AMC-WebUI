@@ -25,7 +25,7 @@ export const createLiveClientFunctions = ({
 
   return {
     run_local_python: {
-      declaration: createLocalPythonToolDeclaration(),
+      declaration: createLocalPythonToolDeclaration({ inputFiles: selectedFiles }),
       handler: createLocalPythonToolHandler({
         getRunOptions: (options) => ({
           files: selectedFiles,

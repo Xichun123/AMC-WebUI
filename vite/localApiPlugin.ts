@@ -6,6 +6,7 @@ import type { Plugin } from 'vite';
 
 const IMAGE_PROXY_PATH = '/api/image-proxy';
 const LOCAL_CLIPBOARD_IMAGE_PATH = '/api/local-clipboard-image';
+const AUTH_SESSION_PATH = '/api/auth/session';
 const MAX_IMAGE_PROXY_BYTES = 25 * 1024 * 1024;
 const MAX_LOCAL_CLIPBOARD_IMAGE_BYTES = 25 * 1024 * 1024;
 const PNG_HEX_PREFIX = '89504e470d0a1a0a';
@@ -117,6 +118,14 @@ const writeImageProxyJson = (
   response.end(JSON.stringify(body));
 };
 
+const writeLocalAuthSession = (response: DevServerResponse) => {
+  response.writeHead(200, {
+    'content-type': 'application/json; charset=utf-8',
+    'cache-control': 'no-store',
+  });
+  response.end(JSON.stringify({ enabled: false, authenticated: true, username: null, expiresAt: null }));
+};
+
 const proxyImageRequest = async (request: DevServerRequest, response: DevServerResponse) => {
   const method = request.method ?? 'GET';
   if (method !== 'GET' && method !== 'HEAD') {
@@ -201,6 +210,11 @@ const localClipboardImageRequest = async (request: { method?: string }, response
 
 const handleLocalApiRequest = (request: DevServerRequest, response: DevServerResponse, next: () => void) => {
   const requestUrl = new URL(request.url || '/', 'http://localhost');
+
+  if (requestUrl.pathname === AUTH_SESSION_PATH) {
+    writeLocalAuthSession(response);
+    return;
+  }
 
   if (requestUrl.pathname === IMAGE_PROXY_PATH) {
     void proxyImageRequest(request, response).catch((error) => {

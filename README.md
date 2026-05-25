@@ -221,6 +221,8 @@ VITE_OPENAI_API_KEY=your_openai_compatible_key_here
 
 ### 方式二：Docker Compose（自用推荐）
 
+完整中文部署说明见 [Docker 部署指南](docs/docker-deployment.zh-CN.md)。
+
 项目包含双容器部署：
 
 - `web`：Nginx 托管前端静态资源，并反向代理 `/api/*` 到 `api` 服务

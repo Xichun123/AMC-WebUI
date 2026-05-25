@@ -2,7 +2,7 @@ import { LOCAL_PYTHON_SYSTEM_PROMPT } from './localPython';
 import type { LiveArtifactsPromptMode } from '@/types';
 
 type PromptLanguage = 'en' | 'zh';
-export type LiveArtifactsPromptTheme = 'dark' | 'light';
+type LiveArtifactsPromptTheme = 'dark' | 'light';
 type LiveArtifactsPromptModule = typeof import('./liveArtifacts');
 
 const LIVE_ARTIFACTS_PROMPT_MARKERS = [

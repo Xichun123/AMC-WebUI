@@ -30,13 +30,7 @@ type CreateServerConfig = Pick<ApiServerConfig, 'geminiApiBase' | 'geminiApiKey'
   Partial<
     Pick<
       ApiServerConfig,
-      | 'allowedOrigins'
-      | 'backendFlavor'
-      | 'vertex'
-      | 'gcs'
-      | 'siteAuth'
-      | 'enableMcpStdio'
-      | 'enableMcpPrivateHttp'
+      'allowedOrigins' | 'backendFlavor' | 'vertex' | 'gcs' | 'siteAuth' | 'enableMcpStdio' | 'enableMcpPrivateHttp'
     >
   >;
 

@@ -1,103 +1,151 @@
 # AMC WebUI Docker 部署指南
 
-本文只说明 Docker 部署。低内存 VPS 建议直接拉取 GHCR 镜像，不要在服务器上构建。
+## 你需要准备什么
 
-## 部署方式
+VPS 上需要：
 
-项目提供两个容器：
+- Docker
+- Docker Compose v2，也就是可以执行 `docker compose version`
+- 一个部署目录，例如 `/opt/amc-webui`
+- 两个 compose 文件：`docker-compose.yml` 和 `docker-compose.ghcr.yml`
+- 一个 `.env`
+- 如果使用 Vertex AI，还需要 `secrets/sa.json`
 
-- `web`：Nginx 托管前端，并把 `/api/*` 反向代理到 `api`
-- `api`：Node 服务，处理 Gemini 代理、Vertex AI、GCS Files、站点登录和 MCP 路由
+不需要：
 
-本地或高配置机器可以直接构建：
+- 不需要 Node.js
+- 不需要 npm
+- 不需要 `git clone`
+- 不需要在 VPS 上构建镜像
+
+只有在你明确要在服务器本机构建镜像时，才需要 `git clone` 仓库。低内存 VPS 不建议这样做。
+
+## 1. 创建部署目录
+
+在 VPS 上执行：
 
 ```bash
-docker compose up -d --build
+sudo mkdir -p /opt/amc-webui/secrets
+sudo chown -R "$USER":"$USER" /opt/amc-webui
+cd /opt/amc-webui
 ```
 
-VPS 推荐拉取已经构建好的 GHCR 镜像：
+## 2. 放入 compose 文件
+
+VPS 推荐使用仓库里的这两个文件：
+
+- `docker-compose.yml`
+- `docker-compose.ghcr.yml`
+
+可以从本地上传到 VPS，也可以在 VPS 上直接下载。
+
+直接下载示例：
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.ghcr.yml pull
-docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+cd /opt/amc-webui
+
+curl -fsSL -o docker-compose.yml \
+  https://raw.githubusercontent.com/Xichun123/AMC-WebUI/main/docker-compose.yml
+
+curl -fsSL -o docker-compose.ghcr.yml \
+  https://raw.githubusercontent.com/Xichun123/AMC-WebUI/main/docker-compose.ghcr.yml
 ```
 
-默认镜像标签是 `main`。如果要固定到某次构建：
+如果你已经在本地有仓库，也可以把这两个文件上传到 `/opt/amc-webui/`。VPS 不需要完整仓库。
 
-```bash
-AMC_WEBUI_IMAGE_TAG=sha-<commit> docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
-```
+## 3. 编写 .env
 
-## 目录结构
+### 3.1 AI Studio / BYOK 模式
 
-推荐服务器目录：
-
-```text
-/opt/amc-webui/
-├── .env
-├── docker-compose.yml
-├── docker-compose.ghcr.yml
-└── secrets/
-    └── sa.json
-```
-
-`secrets/sa.json` 只在使用 Vertex AI 时需要。不要提交 `.env` 或 `secrets/`。
-
-## 最小 .env
-
-AI Studio / BYOK 自用模式：
+如果只是自用，并且希望在网页设置里填写 Gemini API Key，使用这个最小配置：
 
 ```env
 WEB_PORT=127.0.0.1:18080
+
 RUNTIME_USE_CUSTOM_API_CONFIG=true
 RUNTIME_USE_API_PROXY=true
 RUNTIME_API_PROXY_URL=/api/gemini
 RUNTIME_BACKEND_FLAVOR=aistudio
 ```
 
-这种模式下，用户在网页设置里填写 Gemini API Key。服务端不需要保存 `GEMINI_API_KEY`。
+写入文件：
 
-## Vertex AI + GCS
-
-如果要让服务端统一托管 API，不在浏览器暴露 key，使用 Vertex AI：
-
-```env
-WEB_PORT=127.0.0.1:18080
-
-GEMINI_BACKEND=vertex
-GCP_PROJECT_ID=your-gcp-project-id
-GCP_LOCATION=global
-GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/sa.json
-
-GCS_BUCKET=your-gcs-bucket
-GCS_OBJECT_PREFIX=amc-files/
-GCS_MAX_FILE_BYTES=2147483648
-
-RUNTIME_SERVER_MANAGED_API=true
-RUNTIME_USE_CUSTOM_API_CONFIG=true
-RUNTIME_USE_API_PROXY=true
-RUNTIME_API_PROXY_URL=/api/gemini
-RUNTIME_BACKEND_FLAVOR=vertex
+```bash
+cd /opt/amc-webui
+nano .env
 ```
 
-要求：
+这种模式下：
 
-- `./secrets/sa.json` 是 Google Cloud Service Account JSON
+- 服务端不需要 `GEMINI_API_KEY`
+- 用户进入网页后，在设置里填写 Gemini API Key
+- 普通 Gemini 请求走 `/api/gemini`
+- Live API 仍由浏览器直连官方服务
+
+### 3.2 Vertex AI + GCS 模式
+
+如果希望服务端统一使用 Vertex AI，不在浏览器保存 API Key，使用这个配置。
+
+必须修改的值：
+
+- `GCP_PROJECT_ID`
+- `GCS_BUCKET`
+- `SITE_AUTH_*`，如果你启用站点登录
+- `WEB_PORT`，如果你的反向代理不是转发到 `127.0.0.1:18080`
+
+其余值通常可以先保持示例默认值。
+
+```env
+WEB_PORT=127.0.0.1:18080 # 宿主机监听地址和端口；Caddy 示例会转发到这个地址，改端口时两边要一致
+
+GEMINI_BACKEND=vertex # 固定为 vertex，表示后端使用 Vertex AI
+GCP_PROJECT_ID=your-gcp-project-id # 必须改成你的 Google Cloud 项目 ID
+GCP_LOCATION=global # Vertex AI 区域；常用 global 或 us-central1，和你的模型/项目配置保持一致
+GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/sa.json # 容器内 Service Account JSON 路径；通常保持不变
+
+GCS_BUCKET=your-gcs-bucket # 必须改成你的 GCS Bucket 名称，用于文件/视频上传
+GCS_OBJECT_PREFIX=amc-files/ # 写入 GCS 的对象前缀；通常保持默认，也可以改成自己的目录前缀
+GCS_MAX_FILE_BYTES=2147483648 # 单文件最大字节数；这里是 2GB，可按需要调小或调大
+
+RUNTIME_SERVER_MANAGED_API=true # 固定为 true，让前端默认使用服务端托管 API
+RUNTIME_USE_CUSTOM_API_CONFIG=true # 固定为 true，让前端使用运行时 API 配置
+RUNTIME_USE_API_PROXY=true # 固定为 true，让普通 Gemini 请求走后端代理
+RUNTIME_API_PROXY_URL=/api/gemini # 固定为 /api/gemini，除非你改了反向代理路径
+RUNTIME_BACKEND_FLAVOR=vertex # 固定为 vertex，让前端按 Vertex 后端模式工作
+```
+
+然后把 Service Account JSON 放到：
+
+```text
+/opt/amc-webui/secrets/sa.json
+```
+
+权限建议：
+
+```bash
+chmod 600 /opt/amc-webui/.env
+chmod 600 /opt/amc-webui/secrets/sa.json
+```
+
+Vertex AI + GCS 要求：
+
 - Service Account 能调用 Vertex AI
 - Service Account 对 `GCS_BUCKET` 有对象读写权限
-- `GCS_BUCKET` 留空时，Gemini Files/GCS 适配器不会启用
+- `GCS_BUCKET` 留空时，文件上传的 GCS 适配器不会启用
 
 视频和大文件上传走分片上传。前端默认 8MB 分片，后端单个 chunk 上限为 50MB，单文件总大小由 `GCS_MAX_FILE_BYTES` 控制。
 
-## 站点登录
+## 4. 可选：启用站点登录
 
-如需给站点加一层登录保护：
+如果站点会暴露到公网，建议启用站点登录。
+
+密码哈希需要在有 Node.js 的机器上生成。可以在本地仓库执行：
 
 ```bash
 npm run auth:hash -- "your-password"
 ```
 
-把生成的哈希写入 `.env`：
+然后把结果写入 VPS 的 `.env`：
 
 ```env
 SITE_AUTH_SECRET=replace-with-a-long-random-secret
@@ -105,13 +153,49 @@ SITE_AUTH_SESSION_DAYS=7
 SITE_AUTH_USERS_JSON=[{"username":"amc","passwordHash":"scrypt:..."}]
 ```
 
-说明：
+要求：
 
-- `SITE_AUTH_USERS_JSON` 为空时不启用登录页
-- 不要把明文密码写入 `.env`
-- 站点登录只控制访问入口，不做多用户聊天数据隔离
+- `SITE_AUTH_SECRET` 必须是长随机字符串
+- `.env` 里保存 `passwordHash`，不要保存明文密码
+- `SITE_AUTH_USERS_JSON` 为空时不会启用登录页
 
-## 反向代理
+站点登录只控制谁能进入网站，不做多用户数据隔离。聊天记录、文件和设置仍属于当前浏览器 Profile。
+
+## 5. 拉取并启动容器
+
+在 VPS 上执行：
+
+```bash
+cd /opt/amc-webui
+
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.ghcr.yml \
+  pull
+
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.ghcr.yml \
+  up -d
+```
+
+检查容器：
+
+```bash
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.ghcr.yml \
+  ps
+```
+
+默认会启动两个服务：
+
+- `web`
+- `api`
+
+如果 `.env` 使用 `WEB_PORT=127.0.0.1:18080`，应用只监听 VPS 本机的 `18080`，需要配反向代理对外访问。
+
+## 6. 配置 Caddy 反向代理
 
 建议使用 Caddy。示例：
 
@@ -133,55 +217,139 @@ amc.example.com {
 }
 ```
 
-如果使用其他反向代理，需要确认：
+反向代理必须满足：
 
-- WebSocket 和 SSE 不被缓冲
-- `/api/gemini/*` 允许长连接和流式响应
-- 上传请求体大小足够大，或不限制
-- 对外只暴露 `web` 端口，不直接暴露 `api` 容器端口
+- 支持 WebSocket
+- 不缓冲 SSE/流式响应
+- 不限制，或足够放宽上传请求体大小
+- 对外只暴露 `web`，不要直接暴露 `api`
 
-## 更新
+如果域名经过 Cloudflare 代理，要注意 Cloudflare 套餐可能限制单次请求体大小。大视频上传更适合 DNS only，或使用支持大请求体的上层网关。
 
-VPS 使用 GHCR 镜像更新：
+## 7. 验证部署
 
-```bash
-cd /opt/amc-webui
-docker compose -f docker-compose.yml -f docker-compose.ghcr.yml pull
-docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
-docker compose -f docker-compose.yml -f docker-compose.ghcr.yml ps
-```
-
-查看日志：
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.ghcr.yml logs --tail=200 api web
-```
-
-健康检查：
+检查页面：
 
 ```bash
 curl -I http://127.0.0.1:18080/login
 ```
 
-如果启用了站点登录，未登录访问 API 返回 `401 {"error":"AUTH_REQUIRED"}` 是正常的。
-
-## 回滚
-
-使用固定镜像标签回滚：
+查看日志：
 
 ```bash
 cd /opt/amc-webui
-AMC_WEBUI_IMAGE_TAG=sha-<old-commit> docker compose -f docker-compose.yml -f docker-compose.ghcr.yml pull
-AMC_WEBUI_IMAGE_TAG=sha-<old-commit> docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.ghcr.yml \
+  logs --tail=200 api web
 ```
 
-确认没问题后，再把 `.env` 中的 `AMC_WEBUI_IMAGE_TAG` 固定为对应值，或继续使用默认 `main`。
+如果启用了站点登录，未登录访问 API 返回下面内容是正常的：
+
+```json
+{ "error": "AUTH_REQUIRED" }
+```
+
+## 8. 更新
+
+VPS 更新只拉镜像，不构建：
+
+```bash
+cd /opt/amc-webui
+
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.ghcr.yml \
+  pull
+
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.ghcr.yml \
+  up -d
+
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.ghcr.yml \
+  ps
+```
+
+更新后看日志：
+
+```bash
+docker compose \
+  -f docker-compose.yml \
+  -f docker-compose.ghcr.yml \
+  logs --tail=200 api web
+```
+
+## 9. 固定版本和回滚
+
+默认镜像标签是 `main`。如果要固定到某个 commit 对应的镜像，在 `.env` 增加：
+
+```env
+AMC_WEBUI_IMAGE_TAG=sha-<commit>
+```
+
+然后执行：
+
+```bash
+cd /opt/amc-webui
+docker compose -f docker-compose.yml -f docker-compose.ghcr.yml pull
+docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+```
+
+回滚也是同样方式，把 `AMC_WEBUI_IMAGE_TAG` 改成旧的 `sha-<commit>` 后重新 `pull` 和 `up -d`。
+
+## 10. 本机构建方式
+
+只有在机器内存和 CPU 足够时才使用本机构建。
+
+这种方式需要完整仓库：
+
+```bash
+git clone https://github.com/Xichun123/AMC-WebUI.git
+cd AMC-WebUI
+cp .env.example .env
+```
+
+编辑 `.env` 后启动：
+
+```bash
+docker compose up -d --build
+```
+
+低内存 VPS 不建议使用这一节。服务器部署优先使用前面的 GHCR 镜像方式。
 
 ## 常见问题
 
 ### VPS 内存不够
 
-不要在 VPS 执行 `docker compose up -d --build`。在 GitHub Actions 构建镜像，再在 VPS 拉取 GHCR 镜像。
+不要在 VPS 执行：
+
+```bash
+docker compose up -d --build
+```
+
+应该让 GitHub Actions 构建镜像，VPS 只执行：
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.ghcr.yml pull
+docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
+```
+
+### 不确定是否需要 git clone
+
+VPS 使用 GHCR 镜像部署时，不需要 `git clone`。
+
+需要的只有：
+
+- `docker-compose.yml`
+- `docker-compose.ghcr.yml`
+- `.env`
+- 可选的 `secrets/sa.json`
+
+只有本机构建镜像时才需要 `git clone`。
 
 ### 上传文件失败
 
@@ -200,10 +368,10 @@ docker compose -f docker-compose.yml -f docker-compose.ghcr.yml logs --tail=200 
 
 ### 修改 .env 后没有生效
 
-重新创建容器：
+重启容器：
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
 ```
 
-`RUNTIME_*` 会在 `web` 容器启动时写入前端运行时配置，因此改这些变量后必须重启 `web`。
+`RUNTIME_*` 会在 `web` 容器启动时写入前端运行时配置，因此修改这些变量后必须重启 `web`。

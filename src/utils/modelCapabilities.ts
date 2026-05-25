@@ -1,11 +1,11 @@
-import { GEMINI_3_RO_MODELS, MODELS_SUPPORTING_RAW_MODE } from '@/constants/modelConstants';
+import { REQUIRED_THINKING_MODEL_IDS, MODELS_SUPPORTING_RAW_MODE } from '@/constants/modelConfiguration';
 import type { ThinkingLevel } from '@/types';
 
 export const isGemini3Model = (modelId: string): boolean => {
   if (!modelId) return false;
   const lowerId = modelId.toLowerCase();
   return (
-    GEMINI_3_RO_MODELS.some((model) => lowerId.includes(model)) ||
+    REQUIRED_THINKING_MODEL_IDS.some((model) => lowerId.includes(model)) ||
     lowerId.includes('gemini-3-pro') ||
     lowerId.includes('gemini-3.1-flash')
   );
@@ -38,13 +38,13 @@ const isFlashImageModel = (modelId: string): boolean => modelId.toLowerCase().in
 
 const isRealImagenModel = (modelId: string): boolean => modelId.toLowerCase().includes('imagen');
 
-export const isImageModel = (modelId: string): boolean =>
+export const isImageGenerationModel = (modelId: string): boolean =>
   isRealImagenModel(modelId) ||
   isFlashImageModel(modelId) ||
   isGemini3ImageModel(modelId) ||
   (modelId.toLowerCase().includes('image') && !modelId.toLowerCase().includes('imagen'));
 
-interface ModelInteractionPermissions {
+export interface ModelInteractionPermissions {
   canAcceptAttachments: boolean;
   canUseTools: boolean;
   canUseGoogleSearch: boolean;
@@ -60,7 +60,31 @@ interface ModelInteractionPermissions {
   requiresTextPrompt: boolean;
 }
 
-export const getModelCapabilities = (modelId: string) => {
+export interface ModelCapabilities {
+  isGemini3: boolean;
+  supportsRawReasoningPrefill: boolean;
+  supportsThinkingLevel: boolean;
+  supportsThinkingBudgetConfig: boolean;
+  isGemmaModel: boolean;
+  isFlashModel: boolean;
+  isGemini25Model: boolean;
+  isGemini3FlashModel: boolean;
+  isGemini31FlashLiveModel: boolean;
+  isGemini31FlashImageModel: boolean;
+  isGeminiRoboticsModel: boolean;
+  isGemini3ImageModel: boolean;
+  isFlashImageModel: boolean;
+  isRealImagenModel: boolean;
+  isImageGenerationModel: boolean;
+  isTtsModel: boolean;
+  isNativeAudioModel: boolean;
+  supportsBuiltInCustomToolCombination: boolean;
+  permissions: ModelInteractionPermissions;
+  supportedAspectRatios?: string[];
+  supportedImageSizes?: string[];
+}
+
+export const getModelCapabilities = (modelId: string): ModelCapabilities => {
   const lowerId = modelId.toLowerCase();
   const isGemini3 = isGemini3Model(modelId);
   const supportsThinkingLevelSelection = supportsThinkingLevel(modelId);
@@ -74,11 +98,11 @@ export const getModelCapabilities = (modelId: string) => {
   const gemini3FlashModel = isGemini3 && flashModel;
   const gemini31FlashLiveModel = isGemini31FlashLiveModel(modelId);
   const roboticsModel = isGeminiRoboticsModel(modelId);
-  const imageModel = realImagenModel || flashImageModel || gemini3ImageModel;
-  const canUseTextChatTools = !nativeAudioModel && !imageModel && !ttsModel;
+  const imageGenerationModel = realImagenModel || flashImageModel || gemini3ImageModel;
+  const canUseTextChatTools = !nativeAudioModel && !imageGenerationModel && !ttsModel;
   const permissions: ModelInteractionPermissions = {
     canAcceptAttachments: !realImagenModel && !ttsModel && !nativeAudioModel,
-    canUseTools: canUseTextChatTools || nativeAudioModel || gemini3ImageModel || imageModel,
+    canUseTools: canUseTextChatTools || nativeAudioModel || gemini3ImageModel || imageGenerationModel,
     canUseGoogleSearch: canUseTextChatTools || nativeAudioModel || gemini3ImageModel,
     canUseDeepSearch: canUseTextChatTools,
     canUseCodeExecution: canUseTextChatTools && !isGemmaModel(modelId),
@@ -87,9 +111,9 @@ export const getModelCapabilities = (modelId: string) => {
     canUseTokenCount: !nativeAudioModel,
     canUseYouTubeUrl: canUseTextChatTools,
     canGenerateSuggestions: canUseTextChatTools,
-    canUseVoiceInput: !nativeAudioModel && !imageModel && !ttsModel,
+    canUseVoiceInput: !nativeAudioModel && !imageGenerationModel && !ttsModel,
     canUseLiveControls: nativeAudioModel,
-    requiresTextPrompt: ttsModel || imageModel,
+    requiresTextPrompt: ttsModel || imageGenerationModel,
   };
 
   let supportedAspectRatios: string[] | undefined;
@@ -141,7 +165,7 @@ export const getModelCapabilities = (modelId: string) => {
     isGemini3ImageModel: gemini3ImageModel,
     isFlashImageModel: flashImageModel,
     isRealImagenModel: realImagenModel,
-    isImagenModel: imageModel,
+    isImageGenerationModel: imageGenerationModel,
     isTtsModel: ttsModel,
     isNativeAudioModel: nativeAudioModel,
     supportsBuiltInCustomToolCombination: isGemini3,
@@ -190,9 +214,12 @@ export const getDefaultThinkingLevelForModel = (modelId: string, fallback: Think
 export const normalizeThinkingLevelForModel = (
   modelId: string,
   thinkingLevel?: ThinkingLevel,
+  fallback: ThinkingLevel = 'HIGH',
 ): ThinkingLevel | undefined => {
-  if (thinkingLevel !== 'MINIMAL') {
-    return thinkingLevel;
+  const resolvedLevel = thinkingLevel ?? fallback;
+
+  if (resolvedLevel !== 'MINIMAL') {
+    return resolvedLevel;
   }
 
   const capabilities = getModelCapabilities(modelId);
@@ -204,7 +231,7 @@ export const normalizeThinkingLevelForModel = (
     return 'LOW';
   }
 
-  return thinkingLevel;
+  return resolvedLevel;
 };
 
 export const shouldStripThinkingFromContext = (modelId: string, hideThinkingInContext?: boolean): boolean => {

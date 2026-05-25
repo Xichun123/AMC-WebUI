@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import { projectRoot } from './projectFiles';
 
-const projectRoot = path.resolve(__dirname, '../../..');
 const viteConfigPath = path.join(projectRoot, 'vite.config.ts');
 const viteChunksPath = path.join(projectRoot, 'vite/chunks.ts');
 const viteStaticAssetsPath = path.join(projectRoot, 'vite/staticAssets.ts');
 const lazyMarkdownRendererPath = path.join(projectRoot, 'src/components/message/LazyMarkdownRenderer.tsx');
-const markdownRendererPath = path.join(projectRoot, 'src/components/message/MarkdownRenderer.tsx');
-const baseMarkdownRendererEntryPath = path.join(projectRoot, 'src/components/message/BaseMarkdownRendererEntry.tsx');
+const mathMarkdownRendererPath = path.join(projectRoot, 'src/components/message/MathMarkdownRenderer.tsx');
+const basicMarkdownRendererPath = path.join(projectRoot, 'src/components/message/BasicMarkdownRenderer.tsx');
 const i18nContextPath = path.join(projectRoot, 'src/contexts/I18nContext.tsx');
 const i18nTranslationsPath = path.join(projectRoot, 'src/i18n/translations.ts');
 const i18nFeatureTranslationsPath = path.join(projectRoot, 'src/i18n/featureTranslations.ts');
@@ -22,14 +22,20 @@ const standardClientFunctionsPath = path.join(projectRoot, 'src/features/standar
 const liveClientFunctionsPath = path.join(projectRoot, 'src/utils/live-api/liveClientFunctions.ts');
 const ttsVoiceSelectorPath = path.join(projectRoot, 'src/components/chat/input/toolbar/TtsVoiceSelector.tsx');
 const markdownPdfExportPath = path.join(projectRoot, 'src/utils/export/markdownPdf.ts');
+const markdownPdfFontsPath = path.join(projectRoot, 'src/utils/export/markdownPdfFonts.ts');
+const markdownPdfImagesPath = path.join(projectRoot, 'src/utils/export/markdownPdfImages.ts');
+const markdownPdfRendererPath = path.join(projectRoot, 'src/utils/export/MarkdownPdfRenderer.ts');
 const chatInputModalsPath = path.join(projectRoot, 'src/components/chat/input/ChatInputModals.tsx');
 const chatInputFileModalsPath = path.join(projectRoot, 'src/components/chat/input/ChatInputFileModals.tsx');
-const useCreateFileEditorPath = path.join(projectRoot, 'src/hooks/useCreateFileEditor.ts');
-const clipboardUtilsPath = path.join(projectRoot, 'src/utils/clipboardUtils.ts');
+const useCreateFileEditorPath = path.join(projectRoot, 'src/components/modals/create-file/useCreateFileEditor.ts');
+const clipboardDataPath = path.join(projectRoot, 'src/utils/chat-input/clipboardData.ts');
 const useChatInputClipboardPath = path.join(projectRoot, 'src/hooks/chat-input/useChatInputClipboard.ts');
 const useSelectionPositionPath = path.join(projectRoot, 'src/hooks/text-selection/useSelectionPosition.ts');
 const tableBlockPath = path.join(projectRoot, 'src/components/message/blocks/TableBlock.tsx');
-const folderImportUtilsPath = path.join(projectRoot, 'src/utils/folderImportUtils.ts');
+const pdfRuntimePath = path.join(projectRoot, 'src/utils/pdfRuntime.ts');
+const pdfFileThumbnailPath = path.join(projectRoot, 'src/components/chat/input/PdfFileThumbnail.tsx');
+const usePdfViewerPath = path.join(projectRoot, 'src/hooks/ui/usePdfViewer.ts');
+const importContextLoadersPath = path.join(projectRoot, 'src/utils/import-context/loaders.ts');
 const useFileDragDropPath = path.join(projectRoot, 'src/hooks/file-upload/useFileDragDrop.ts');
 const useFilePreProcessingPath = path.join(projectRoot, 'src/hooks/file-upload/useFilePreProcessing.ts');
 const useFilePreProcessingEffectsPath = path.join(projectRoot, 'src/hooks/chat-input/useFilePreProcessingEffects.ts');
@@ -85,6 +91,20 @@ describe('vite.config runtime ownership', () => {
     );
     expect(config).toContain('src: PDF_WORKER_COPY_SOURCE');
     expect(staticAssets).not.toContain("src: 'node_modules/pdfjs-dist/build/pdf.worker.min.mjs'");
+  });
+
+  it('centralizes PDF worker runtime configuration', () => {
+    const pdfRuntimeSource = fs.readFileSync(pdfRuntimePath, 'utf8');
+    const thumbnailSource = fs.readFileSync(pdfFileThumbnailPath, 'utf8');
+    const usePdfViewerSource = fs.readFileSync(usePdfViewerPath, 'utf8');
+
+    expect(pdfRuntimeSource).toContain("import { pdfjs } from 'react-pdf'");
+    expect(pdfRuntimeSource).toContain('configurePdfWorker(pdfjs)');
+    expect(pdfRuntimeSource).toContain('pdfWorkerConfigured');
+    expect(thumbnailSource).toContain("from '@/utils/pdfRuntime'");
+    expect(usePdfViewerSource).toContain("from '@/utils/pdfRuntime'");
+    expect(thumbnailSource).not.toContain('pdfjs');
+    expect(usePdfViewerSource).not.toContain('pdfjs');
   });
 
   it('copies the lamejs encoder asset used by the audio compression worker', () => {
@@ -162,6 +182,21 @@ describe('vite.config runtime ownership', () => {
     expect(source).not.toContain('html2pdf');
   });
 
+  it('keeps Markdown PDF font, image, and renderer responsibilities split', () => {
+    const markdownPdfSource = fs.readFileSync(markdownPdfExportPath, 'utf8');
+    const rendererSource = fs.readFileSync(markdownPdfRendererPath, 'utf8');
+
+    expect(fs.existsSync(markdownPdfFontsPath)).toBe(true);
+    expect(fs.existsSync(markdownPdfImagesPath)).toBe(true);
+    expect(fs.existsSync(markdownPdfRendererPath)).toBe(true);
+    expect(markdownPdfSource).toContain("from './MarkdownPdfRenderer'");
+    expect(markdownPdfSource).not.toContain('class MarkdownPdfRenderer');
+    expect(markdownPdfSource).not.toContain('loadCjkFontBase64');
+    expect(markdownPdfSource).not.toContain('fetchImageAsDataUrl');
+    expect(rendererSource).toContain("from './markdownPdfFonts'");
+    expect(rendererSource).toContain("from './markdownPdfImages'");
+  });
+
   it('keeps create-file PDF export code out of the initial chat input bundle', () => {
     const chatInputModalsSource = fs.readFileSync(chatInputModalsPath, 'utf8');
     const useCreateFileEditorSource = fs.readFileSync(useCreateFileEditorPath, 'utf8');
@@ -188,43 +223,47 @@ describe('vite.config runtime ownership', () => {
   });
 
   it('keeps HTML-to-Markdown conversion out of the initial chat and message interaction bundles', () => {
-    const clipboardUtilsSource = fs.readFileSync(clipboardUtilsPath, 'utf8');
+    const clipboardDataSource = fs.readFileSync(clipboardDataPath, 'utf8');
     const useChatInputClipboardSource = fs.readFileSync(useChatInputClipboardPath, 'utf8');
     const useSelectionPositionSource = fs.readFileSync(useSelectionPositionPath, 'utf8');
     const tableBlockSource = fs.readFileSync(tableBlockPath, 'utf8');
     const useCreateFileEditorSource = fs.readFileSync(useCreateFileEditorPath, 'utf8');
 
-    expect(clipboardUtilsSource).not.toContain("from './htmlToMarkdown'");
+    expect(clipboardDataSource).not.toContain("from '@/utils/htmlToMarkdown'");
     expect(useChatInputClipboardSource).not.toContain("from '@/utils/htmlToMarkdown'");
     expect(useSelectionPositionSource).not.toContain("from '@/utils/htmlToMarkdown'");
     expect(tableBlockSource).not.toContain("from '@/utils/htmlToMarkdown'");
     expect(useCreateFileEditorSource).not.toContain("from '@/utils/htmlToMarkdown'");
 
-    expect(clipboardUtilsSource).toContain("import('./htmlToMarkdown')");
+    expect(clipboardDataSource).toContain("import('@/utils/htmlToMarkdown')");
     expect(useSelectionPositionSource).toContain("import('@/utils/htmlToMarkdown')");
     expect(tableBlockSource).toContain("import('@/utils/htmlToMarkdown')");
     expect(useCreateFileEditorSource).toContain("import('@/utils/htmlToMarkdown')");
   });
 
   it('keeps ZIP and folder import builders out of the initial file upload bundles', () => {
-    const folderImportUtilsSource = fs.readFileSync(folderImportUtilsPath, 'utf8');
+    const importContextLoadersSource = fs.readFileSync(importContextLoadersPath, 'utf8');
     const useFileDragDropSource = fs.readFileSync(useFileDragDropPath, 'utf8');
     const useFilePreProcessingSource = fs.readFileSync(useFilePreProcessingPath, 'utf8');
     const useFilePreProcessingEffectsSource = fs.readFileSync(useFilePreProcessingEffectsPath, 'utf8');
 
-    expect(folderImportUtilsSource).not.toMatch(
+    expect(fs.existsSync(importContextLoadersPath)).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/utils/folderImportUtils.ts'))).toBe(false);
+    expect(importContextLoadersSource).not.toMatch(
       /import\s+(?!type)[\s\S]*from '\.\/import-context\/importContextBuilder'/,
     );
     expect(useFileDragDropSource).not.toContain("from '@/utils/import-context/importContextBuilder'");
     expect(useFileDragDropSource).not.toContain("from '@/utils/import-context/droppedItems'");
     expect(useFilePreProcessingSource).not.toContain("from '@/utils/folderImportUtils'");
     expect(useFilePreProcessingEffectsSource).not.toContain("from '@/utils/folderImportUtils'");
+    expect(useFilePreProcessingSource).not.toContain("import('@/utils/folderImportUtils')");
+    expect(useFilePreProcessingEffectsSource).not.toContain("import('@/utils/folderImportUtils')");
 
-    expect(folderImportUtilsSource).toContain("import('./import-context/importContextBuilder')");
+    expect(importContextLoadersSource).toContain("import('./importContextBuilder')");
     expect(useFileDragDropSource).toContain("import('@/utils/import-context/droppedItems')");
     expect(useFileDragDropSource).toContain("import('@/utils/import-context/importContextBuilder')");
-    expect(useFilePreProcessingSource).toContain("import('@/utils/folderImportUtils')");
-    expect(useFilePreProcessingEffectsSource).toContain("import('@/utils/folderImportUtils')");
+    expect(useFilePreProcessingSource).toContain("import('@/utils/import-context/loaders')");
+    expect(useFilePreProcessingEffectsSource).toContain("import('@/utils/import-context/loaders')");
   });
 });
 
@@ -251,14 +290,19 @@ describe('Runtime loading boundaries', () => {
   it('loads both base markdown and math markdown renderers lazily', () => {
     const lazyMarkdownSource = fs.readFileSync(lazyMarkdownRendererPath, 'utf8');
 
-    expect(fs.existsSync(baseMarkdownRendererEntryPath)).toBe(true);
-    expect(lazyMarkdownSource).toContain("import('./BaseMarkdownRendererEntry')");
-    expect(lazyMarkdownSource).toContain("import('./MarkdownRenderer')");
+    expect(fs.existsSync(basicMarkdownRendererPath)).toBe(true);
+    expect(fs.existsSync(mathMarkdownRendererPath)).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/components/message/BaseMarkdownRendererEntry.tsx'))).toBe(false);
+    expect(fs.existsSync(path.join(projectRoot, 'src/components/message/MarkdownRenderer.tsx'))).toBe(false);
+    expect(lazyMarkdownSource).toContain("import('./BasicMarkdownRenderer')");
+    expect(lazyMarkdownSource).toContain("import('./MathMarkdownRenderer')");
+    expect(lazyMarkdownSource).not.toContain("import('./BaseMarkdownRendererEntry')");
+    expect(lazyMarkdownSource).not.toContain("import('./MarkdownRenderer')");
   });
 
   it('moves KaTeX and PDF viewer CSS ownership out of the global app entry', () => {
     const indexSource = fs.readFileSync(indexEntryPath, 'utf8');
-    const markdownRendererSource = fs.readFileSync(markdownRendererPath, 'utf8');
+    const markdownRendererSource = fs.readFileSync(mathMarkdownRendererPath, 'utf8');
 
     expect(indexSource).not.toContain("import 'katex/dist/katex.min.css'");
     expect(indexSource).not.toContain("import 'react-pdf/dist/Page/AnnotationLayer.css'");

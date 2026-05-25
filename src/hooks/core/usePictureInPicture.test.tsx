@@ -1,10 +1,10 @@
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 import { usePictureInPicture } from './usePictureInPicture';
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });

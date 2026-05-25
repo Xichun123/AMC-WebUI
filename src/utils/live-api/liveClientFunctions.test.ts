@@ -1,6 +1,6 @@
 import { Type } from '@google/genai';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createUploadedFile } from '@/test/factories';
+import { createUploadedFile } from '@/test/data/factories';
 import { createLiveClientFunctions } from './liveClientFunctions';
 
 describe('createLiveClientFunctions', () => {

@@ -1,11 +1,11 @@
 import { act } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { SavedChatSession } from '@/types';
-import { createChatSettings } from '@/test/factories';
+import { createChatSettings } from '@/test/data/factories';
 import { useChatSessionActions } from './useChatSessionActions';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 
-vi.mock('@/utils/fileHelpers', () => ({
+vi.mock('@/utils/filePreviewUrls', () => ({
   cleanupFilePreviewUrls: vi.fn(),
 }));
 

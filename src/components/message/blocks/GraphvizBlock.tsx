@@ -2,7 +2,7 @@ import { logService } from '@/services/logService';
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Loader2, Repeat } from 'lucide-react';
 import { type SideViewContent, type UploadedFile } from '@/types';
-import { MESSAGE_BLOCK_BUTTON_CLASS } from '@/constants/styleClasses';
+import { MESSAGE_BLOCK_BUTTON_CLASS } from '@/constants/buttonClasses';
 import { DiagramWrapper } from './parts/DiagramWrapper';
 import { useI18n } from '@/contexts/I18nContext';
 
@@ -155,11 +155,7 @@ export const GraphvizBlock: React.FC<GraphvizBlockProps> = ({
 
       const svgElement = await vizInstance.renderSVGElement(processedCode);
 
-      // 【修复关键点 1】：不要移除原生的 width 和 height，以防止在 Flexbox 中被压缩为 0
-      // svgElement.removeAttribute('width');
-      // svgElement.removeAttribute('height');
-
-      // 依靠 max-width 依然可以保持图片在小屏幕的响应式缩小（不会撑破容器）
+      // Preserve intrinsic SVG dimensions so flex layouts do not collapse the diagram.
       svgElement.style.maxWidth = '100%';
       svgElement.style.height = 'auto';
       svgElement.style.display = 'block';
@@ -254,7 +250,6 @@ export const GraphvizBlock: React.FC<GraphvizBlockProps> = ({
       containerRef={diagramContainerRef}
       extraActions={layoutToggleBtn}
     >
-      {/* 【修复关键点 2】：添加 w-full 占满空间，并加上 custom-scrollbar 防止超宽图溢出 */}
       <div
         className="w-full flex justify-center overflow-x-auto custom-scrollbar"
         dangerouslySetInnerHTML={{ __html: svgContent }}

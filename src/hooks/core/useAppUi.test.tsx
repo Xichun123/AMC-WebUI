@@ -2,7 +2,7 @@ import { act, type TouchEvent } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAppUi } from './useAppUi';
 import { useUIStore } from '@/stores/uiStore';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 
 const createTouchEvent = (target: EventTarget, x: number, y: number): TouchEvent =>
   ({
@@ -21,6 +21,7 @@ describe('useAppUi', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     localStorage.clear();
+    window.history.replaceState({}, '', '/');
     Object.defineProperty(window, 'innerWidth', {
       configurable: true,
       value: 375,
@@ -143,6 +144,40 @@ describe('useAppUi', () => {
 
     flushRafCallbacks();
     expect(useUIStore.getState().isHistorySidebarOpen).toBe(true);
+
+    unmount();
+  });
+
+  it('closes mobile settings when the browser back button is pressed', () => {
+    const pushStateSpy = vi.spyOn(window.history, 'pushState');
+    useUIStore.setState({ isSettingsModalOpen: true });
+    const { unmount } = renderHook(() => useAppUi());
+
+    expect(pushStateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ amcModal: 'settings' }),
+      '',
+      expect.any(String),
+    );
+
+    act(() => {
+      window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
+    });
+
+    expect(useUIStore.getState().isSettingsModalOpen).toBe(false);
+
+    unmount();
+  });
+
+  it('collapses the mobile sidebar when browser history returns to the home page', () => {
+    useUIStore.setState({ isHistorySidebarOpen: true });
+    const { unmount } = renderHook(() => useAppUi());
+
+    act(() => {
+      window.history.replaceState({}, '', '/');
+      window.dispatchEvent(new PopStateEvent('popstate', { state: {} }));
+    });
+
+    expect(useUIStore.getState().isHistorySidebarOpen).toBe(false);
 
     unmount();
   });

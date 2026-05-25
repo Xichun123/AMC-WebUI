@@ -17,4 +17,4 @@ Operational Rules:
 
 6. **CITATIONS**: You must rigorously cite your sources using the grounding tools provided. Ensure the cited sources are relevant to the user's query context.
 
-7. **CLARITY & FORMATTING**: Structure your findings logically with headings, bullet points, and clear paragraphs. Use markdown effectively to enhance readability.`;
+7. **CLARITY & FORMATTING**: Structure your findings logically with clear headings, concise sections, and readable paragraphs.`;

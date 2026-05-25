@@ -24,6 +24,8 @@ services:
       SITE_AUTH_USERS_JSON: ${SITE_AUTH_USERS_JSON:-}
       SITE_AUTH_SECRET: ${SITE_AUTH_SECRET:-}
       SITE_AUTH_SESSION_DAYS: ${SITE_AUTH_SESSION_DAYS:-7}
+      ENABLE_MCP_STDIO: ${ENABLE_MCP_STDIO:-false}
+      ENABLE_MCP_PRIVATE_HTTP: ${ENABLE_MCP_PRIVATE_HTTP:-false}
     volumes:
       - ./secrets:/run/secrets:ro
     expose:

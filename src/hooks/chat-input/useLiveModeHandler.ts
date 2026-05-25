@@ -1,7 +1,11 @@
 import { logService } from '@/services/logService';
 import { useCallback } from 'react';
-import { type UploadedFile, type MediaResolution } from '@/types';
+import { type AppSettings, type ChatSettings, type UploadedFile, type MediaResolution } from '@/types';
 import { buildContentParts } from '@/utils/chat/builder';
+import { useI18n } from '@/contexts/I18nContext';
+import { getApiKeyErrorTranslationKey, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
+import { ensureFilesApiReferences } from '@/features/message-sender/fileApiReference';
+import { formatMessageSenderText } from '@/features/message-sender/i18nFormat';
 
 type SetSelectedFiles = (files: UploadedFile[] | ((prevFiles: UploadedFile[]) => UploadedFile[])) => void;
 
@@ -16,6 +20,9 @@ interface UseLiveModeHandlerParams {
   isNativeAudioModel: boolean;
   selectedFiles: UploadedFile[];
   setSelectedFiles: SetSelectedFiles;
+  setAppFileError: (error: string | null) => void;
+  appSettings: AppSettings;
+  currentChatSettings: ChatSettings;
   currentModelId: string;
   mediaResolution?: MediaResolution;
   liveApi: LiveModeApi;
@@ -27,12 +34,17 @@ export const useLiveModeHandler = ({
   isNativeAudioModel,
   selectedFiles,
   setSelectedFiles,
+  setAppFileError,
+  appSettings,
+  currentChatSettings,
   currentModelId,
   mediaResolution,
   liveApi,
   onAddUserMessage,
   onSendMessage,
 }: UseLiveModeHandlerParams) => {
+  const { t } = useI18n();
+
   const handleSmartSendMessage = useCallback(
     async (text: string, options?: { isFastMode?: boolean; files?: UploadedFile[] }) => {
       if (!isNativeAudioModel) {
@@ -55,10 +67,50 @@ export const useLiveModeHandler = ({
         return;
       }
 
-      let enrichedFiles = filesToSend;
-      let didSend: boolean;
+      let filesReadyForSend = filesToSend;
       if (filesToSend.length > 0) {
-        const builtContent = await buildContentParts(text, filesToSend, currentModelId, mediaResolution);
+        const keyResult = getGeminiKeyForRequest(appSettings, currentChatSettings, {
+          skipIncrement: true,
+          skipUsageLogging: true,
+        });
+
+        if ('error' in keyResult) {
+          const translationKey = getApiKeyErrorTranslationKey(keyResult.error);
+          setAppFileError(translationKey ? t(translationKey) : keyResult.error);
+          return;
+        }
+
+        const fileReferenceResult = await ensureFilesApiReferences({
+          files: filesToSend,
+          apiKey: keyResult.key,
+          abortSignal: new AbortController().signal,
+          onFileUpdate: (fileId, patch) => {
+            if (options?.files !== undefined) {
+              return;
+            }
+
+            setSelectedFiles((prev) => prev.map((file) => (file.id === fileId ? { ...file, ...patch } : file)));
+          },
+        });
+
+        if (!fileReferenceResult.ok) {
+          const template = t(fileReferenceResult.errorKey);
+          setAppFileError(
+            fileReferenceResult.fileName
+              ? formatMessageSenderText(template, { filename: fileReferenceResult.fileName })
+              : template,
+          );
+          return;
+        }
+
+        filesReadyForSend = fileReferenceResult.files;
+      }
+
+      setAppFileError(null);
+      let enrichedFiles = filesReadyForSend;
+      let didSend: boolean;
+      if (filesReadyForSend.length > 0) {
+        const builtContent = await buildContentParts(text, filesReadyForSend, currentModelId, mediaResolution);
         enrichedFiles = builtContent.enrichedFiles;
         didSend = await liveApi.sendContent(builtContent.contentParts);
       } else {
@@ -73,6 +125,8 @@ export const useLiveModeHandler = ({
       setSelectedFiles([]);
     },
     [
+      appSettings,
+      currentChatSettings,
       currentModelId,
       isNativeAudioModel,
       liveApi,
@@ -80,7 +134,9 @@ export const useLiveModeHandler = ({
       onAddUserMessage,
       onSendMessage,
       selectedFiles,
+      setAppFileError,
       setSelectedFiles,
+      t,
     ],
   );
 

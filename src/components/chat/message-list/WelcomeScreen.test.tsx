@@ -1,6 +1,6 @@
 import { act } from 'react';
-import { setupTestRenderer } from '@/test/testUtils';
-import { setTestMatchMedia } from '@/test/browserEnvironment';
+import { setupTestRenderer } from '@/test/render/renderer';
+import { setTestMatchMedia } from '@/test/browser/environment';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { WelcomeScreen } from './WelcomeScreen';

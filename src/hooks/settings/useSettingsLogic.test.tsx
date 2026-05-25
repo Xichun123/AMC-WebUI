@@ -1,8 +1,8 @@
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import { useSettingsLogic } from './useSettingsLogic';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 import { useSettingsUiStore } from '@/stores/settingsUiStore';
 
 describe('useSettingsLogic', () => {

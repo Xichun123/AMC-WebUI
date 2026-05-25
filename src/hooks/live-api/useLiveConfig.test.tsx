@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { LOCAL_PYTHON_SYSTEM_PROMPT } from '@/features/prompts/localPython';
 import { MediaResolution, type LiveClientFunctions } from '@/types';
 import { useLiveConfig } from './useLiveConfig';
-import { createChatSettings } from '@/test/factories';
-import { renderHook } from '@/test/testUtils';
+import { createChatSettings } from '@/test/data/factories';
+import { renderHook } from '@/test/render/renderer';
 
 const createLiveClientFunctions = (overrides: LiveClientFunctions): LiveClientFunctions => overrides;
 

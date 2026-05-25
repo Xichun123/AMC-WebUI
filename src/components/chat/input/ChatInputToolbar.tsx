@@ -38,7 +38,7 @@ const ChatInputToolbarComponent: React.FC = () => {
     onEditTtsContext,
   } = useChatInputToolbarContext();
   const {
-    isImagenModel,
+    isImageGenerationModel,
     isGemini3ImageModel,
     isRealImagenModel,
     isTtsModel,
@@ -61,11 +61,11 @@ const ChatInputToolbarComponent: React.FC = () => {
   const setTtsVoice = (voice: string) => setCurrentChatSettings((prev) => ({ ...prev, ttsVoice: voice }));
   const setMediaResolution = (res: typeof mediaResolution) =>
     setCurrentChatSettings((prev) => ({ ...prev, mediaResolution: res }));
-  const showAspectRatio = (isImagenModel || isGemini3ImageModel) && !!aspectRatio;
+  const showAspectRatio = (isImageGenerationModel || isGemini3ImageModel) && !!aspectRatio;
   const showImageSize = supportedImageSizes && supportedImageSizes.length > 0 && !!imageSize;
-  const showImageOutputMode = isImagenModel && !isRealImagenModel && !!imageOutputMode;
+  const showImageOutputMode = isImageGenerationModel && !isRealImagenModel && !!imageOutputMode;
   const showPersonGeneration = isRealImagenModel && !!personGeneration;
-  const showQuadToggle = (isImagenModel || isGemini3ImageModel) && generateQuadImages !== undefined;
+  const showQuadToggle = (isImageGenerationModel || isGemini3ImageModel) && generateQuadImages !== undefined;
 
   // Allow voice selection for both explicit TTS models and Native Audio (Live) models
   const canShowTtsVoice = (isTtsModel || isNativeAudioModel) && Boolean(ttsVoice);

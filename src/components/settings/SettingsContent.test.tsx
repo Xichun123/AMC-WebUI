@@ -1,7 +1,7 @@
 import { act, type ComponentProps } from 'react';
-import { setupTestRenderer } from '@/test/testUtils';
+import { setupTestRenderer } from '@/test/render/renderer';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import { SettingsContent } from './SettingsContent';
 import type { SettingsTab } from '@/stores/settingsUiStore';
 import type { ModelsSection } from './sections/ModelsSection';
@@ -11,8 +11,15 @@ import type { ShortcutsSection } from './sections/ShortcutsSection';
 type ModelsSectionProps = ComponentProps<typeof ModelsSection>;
 type GenerationSectionProps = ComponentProps<typeof GenerationSection>;
 type ShortcutsSectionProps = ComponentProps<typeof ShortcutsSection>;
+type SettingsContentTestProps = Omit<ComponentProps<typeof SettingsContent>, 'currentThemeId'> & {
+  currentThemeId?: string;
+};
 
 const removedSettingsTab = (tab: string): SettingsTab => tab as SettingsTab;
+
+const SettingsContentWithDefaultTheme = (props: SettingsContentTestProps) => (
+  <SettingsContent currentThemeId="pearl" {...props} />
+);
 
 const mockModelsSection = vi.hoisted(() => ({
   lastProps: null as ModelsSectionProps | null,
@@ -24,6 +31,13 @@ const mockGenerationSection = vi.hoisted(() => ({
 
 const mockShortcutsSection = vi.hoisted(() => ({
   lastProps: null as ShortcutsSectionProps | null,
+}));
+
+const mockMcpSection = vi.hoisted(() => ({
+  lastProps: null as {
+    settings: typeof DEFAULT_APP_SETTINGS;
+    onUpdate: ComponentProps<typeof SettingsContent>['updateSetting'];
+  } | null,
 }));
 
 vi.mock('./sections/UsageSection', () => ({
@@ -92,6 +106,33 @@ vi.mock('./sections/ShortcutsSection', () => ({
   },
 }));
 
+vi.mock('./sections/McpSection', () => ({
+  McpSection: (props: {
+    settings: typeof DEFAULT_APP_SETTINGS;
+    onUpdate: ComponentProps<typeof SettingsContent>['updateSetting'];
+  }) => {
+    mockMcpSection.lastProps = props;
+    return (
+      <button
+        data-testid="mcp-section"
+        onClick={() =>
+          props.onUpdate('mcpServers', [
+            {
+              id: 'filesystem',
+              name: 'Filesystem',
+              enabled: true,
+              transport: 'stdio',
+              command: 'npx',
+            },
+          ])
+        }
+      >
+        mcp
+      </button>
+    );
+  },
+}));
+
 describe('SettingsContent', () => {
   const renderer = setupTestRenderer();
 
@@ -99,12 +140,13 @@ describe('SettingsContent', () => {
     mockModelsSection.lastProps = null;
     mockGenerationSection.lastProps = null;
     mockShortcutsSection.lastProps = null;
+    mockMcpSection.lastProps = null;
   });
 
   it('does not render the obsolete usage section when the removed tab is requested', () => {
     act(() => {
       renderer.root.render(
-        <SettingsContent
+        <SettingsContentWithDefaultTheme
           activeTab={removedSettingsTab('usage')}
           currentSettings={DEFAULT_APP_SETTINGS}
           availableModels={[]}
@@ -138,7 +180,7 @@ describe('SettingsContent', () => {
 
     act(() => {
       renderer.root.render(
-        <SettingsContent
+        <SettingsContentWithDefaultTheme
           activeTab="models"
           currentSettings={{
             ...DEFAULT_APP_SETTINGS,
@@ -184,7 +226,7 @@ describe('SettingsContent', () => {
 
     act(() => {
       renderer.root.render(
-        <SettingsContent
+        <SettingsContentWithDefaultTheme
           activeTab="models"
           currentSettings={{
             ...DEFAULT_APP_SETTINGS,
@@ -232,10 +274,41 @@ describe('SettingsContent', () => {
     expect(updateSetting).not.toHaveBeenCalled();
   });
 
+  it('passes the current theme id into models settings', () => {
+    act(() => {
+      renderer.root.render(
+        <SettingsContentWithDefaultTheme
+          activeTab="models"
+          currentSettings={DEFAULT_APP_SETTINGS}
+          currentThemeId="onyx"
+          availableModels={[]}
+          updateSetting={vi.fn()}
+          handleModelChange={vi.fn()}
+          setAvailableModels={vi.fn()}
+          onClearHistory={vi.fn()}
+          onClearCache={vi.fn()}
+          onOpenLogViewer={vi.fn()}
+          onClearLogs={vi.fn()}
+          onReset={vi.fn()}
+          onInstallPwa={vi.fn()}
+          installState="installed"
+          onImportSettings={vi.fn()}
+          onExportSettings={vi.fn()}
+          onImportHistory={vi.fn()}
+          onExportHistory={vi.fn()}
+          onImportScenarios={vi.fn()}
+          onExportScenarios={vi.fn()}
+        />,
+      );
+    });
+
+    expect(mockModelsSection.lastProps!.currentThemeId).toBe('onyx');
+  });
+
   it('keeps OpenAI-compatible models out of model settings while the provider is disabled', () => {
     act(() => {
       renderer.root.render(
-        <SettingsContent
+        <SettingsContentWithDefaultTheme
           activeTab="models"
           currentSettings={{
             ...DEFAULT_APP_SETTINGS,
@@ -283,7 +356,7 @@ describe('SettingsContent', () => {
 
     act(() => {
       renderer.root.render(
-        <SettingsContent
+        <SettingsContentWithDefaultTheme
           activeTab="models"
           currentSettings={{
             ...DEFAULT_APP_SETTINGS,
@@ -341,7 +414,7 @@ describe('SettingsContent', () => {
 
     act(() => {
       renderer.root.render(
-        <SettingsContent
+        <SettingsContentWithDefaultTheme
           activeTab="models"
           currentSettings={{
             ...DEFAULT_APP_SETTINGS,
@@ -385,7 +458,7 @@ describe('SettingsContent', () => {
   it('includes OpenAI-compatible models in Tab cycle shortcut settings when the provider is enabled', () => {
     act(() => {
       renderer.root.render(
-        <SettingsContent
+        <SettingsContentWithDefaultTheme
           activeTab="shortcuts"
           currentSettings={{
             ...DEFAULT_APP_SETTINGS,
@@ -428,7 +501,7 @@ describe('SettingsContent', () => {
   it('does not render the removed model behavior section when the obsolete tab is requested', () => {
     act(() => {
       renderer.root.render(
-        <SettingsContent
+        <SettingsContentWithDefaultTheme
           activeTab={removedSettingsTab('generation')}
           currentSettings={DEFAULT_APP_SETTINGS}
           availableModels={[]}
@@ -460,7 +533,7 @@ describe('SettingsContent', () => {
 
     act(() => {
       renderer.root.render(
-        <SettingsContent
+        <SettingsContentWithDefaultTheme
           activeTab="models"
           currentSettings={{
             ...DEFAULT_APP_SETTINGS,
@@ -497,7 +570,7 @@ describe('SettingsContent', () => {
   it('does not apply zoom-based enter animation to the active settings panel', () => {
     act(() => {
       renderer.root.render(
-        <SettingsContent
+        <SettingsContentWithDefaultTheme
           activeTab="models"
           currentSettings={DEFAULT_APP_SETTINGS}
           availableModels={[]}
@@ -530,7 +603,7 @@ describe('SettingsContent', () => {
   it('keeps shortcuts out of the workspace tab', () => {
     act(() => {
       renderer.root.render(
-        <SettingsContent
+        <SettingsContentWithDefaultTheme
           activeTab="interface"
           currentSettings={DEFAULT_APP_SETTINGS}
           availableModels={[]}
@@ -563,7 +636,7 @@ describe('SettingsContent', () => {
 
     act(() => {
       renderer.root.render(
-        <SettingsContent
+        <SettingsContentWithDefaultTheme
           activeTab="shortcuts"
           currentSettings={DEFAULT_APP_SETTINGS}
           availableModels={availableModels}
@@ -590,6 +663,55 @@ describe('SettingsContent', () => {
     expect(renderer.container.querySelector('[data-testid="shortcuts-section"]')).not.toBeNull();
     expect(mockShortcutsSection.lastProps!.availableModels).toEqual([
       { id: 'gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro Preview', apiMode: 'gemini-native' },
+    ]);
+  });
+
+  it('renders MCP settings inside the MCP tab and updates MCP servers', () => {
+    const updateSetting = vi.fn();
+
+    act(() => {
+      renderer.root.render(
+        <SettingsContentWithDefaultTheme
+          activeTab="mcp"
+          currentSettings={DEFAULT_APP_SETTINGS}
+          availableModels={[]}
+          updateSetting={updateSetting}
+          handleModelChange={vi.fn()}
+          setAvailableModels={vi.fn()}
+          onClearHistory={vi.fn()}
+          onClearCache={vi.fn()}
+          onOpenLogViewer={vi.fn()}
+          onClearLogs={vi.fn()}
+          onReset={vi.fn()}
+          onInstallPwa={vi.fn()}
+          installState="installed"
+          onImportSettings={vi.fn()}
+          onExportSettings={vi.fn()}
+          onImportHistory={vi.fn()}
+          onExportHistory={vi.fn()}
+          onImportScenarios={vi.fn()}
+          onExportScenarios={vi.fn()}
+        />,
+      );
+    });
+
+    expect(renderer.container.querySelector('[data-testid="mcp-section"]')).not.toBeNull();
+    expect(mockMcpSection.lastProps!.settings).toBe(DEFAULT_APP_SETTINGS);
+
+    act(() => {
+      renderer.container
+        .querySelector('[data-testid="mcp-section"]')
+        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(updateSetting).toHaveBeenCalledWith('mcpServers', [
+      {
+        id: 'filesystem',
+        name: 'Filesystem',
+        enabled: true,
+        transport: 'stdio',
+        command: 'npx',
+      },
     ]);
   });
 });

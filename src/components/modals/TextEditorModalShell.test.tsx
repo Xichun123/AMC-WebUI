@@ -1,5 +1,5 @@
 import { act } from 'react';
-import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';

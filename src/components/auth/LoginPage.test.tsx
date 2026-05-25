@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { fireEvent } from '@testing-library/react';
-import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LoginPage } from './LoginPage';
 

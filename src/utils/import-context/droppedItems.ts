@@ -1,5 +1,7 @@
 import { attachRelativePath, normalizeRelativePath } from './filePath';
-import { IGNORED_DIRS } from './shared';
+import { readDirectoryHandle } from './directoryHandleReader';
+import { IGNORED_DIRS } from './defaultIgnorePatterns';
+import { snapshotDroppedItems, type DroppedItemsSnapshot } from './droppedItemsSnapshot';
 
 interface DroppedItemsResult {
   files: File[];
@@ -10,31 +12,15 @@ interface ProcessDroppedItemsOptions {
   skipDefaultIgnoredDirectories?: boolean;
 }
 
-export async function processDroppedItems(
-  items: DataTransferItemList,
+export { snapshotDroppedItems } from './droppedItemsSnapshot';
+
+export async function processDroppedItemsSnapshot(
+  snapshot: DroppedItemsSnapshot & { handles?: FileSystemHandle[] },
   signal?: AbortSignal,
   options: ProcessDroppedItemsOptions = {},
 ): Promise<DroppedItemsResult> {
-  const allFiles: File[] = [];
+  const allFiles = [...snapshot.files];
   const emptyDirectoryPaths: string[] = [];
-  const entries: FileSystemEntry[] = [];
-
-  for (const item of Array.from(items)) {
-    if (item.kind !== 'file') {
-      continue;
-    }
-
-    const entry = item.webkitGetAsEntry?.();
-    if (entry) {
-      entries.push(entry);
-      continue;
-    }
-
-    const file = item.getAsFile();
-    if (file) {
-      allFiles.push(file);
-    }
-  }
 
   const readEntries = async (entry: FileSystemEntry): Promise<DroppedItemsResult> => {
     if (signal?.aborted) {
@@ -101,12 +87,48 @@ export async function processDroppedItems(
     return { files: [], emptyDirectoryPaths: [] };
   };
 
-  const filesFromEntries = await Promise.all(entries.map(readEntries));
+  const readHandle = async (handle: FileSystemHandle): Promise<DroppedItemsResult> => {
+    if (signal?.aborted) {
+      throw new DOMException('Aborted', 'AbortError');
+    }
+
+    if (handle.kind === 'directory') {
+      if (options.skipDefaultIgnoredDirectories !== false && IGNORED_DIRS.has(handle.name)) {
+        return { files: [], emptyDirectoryPaths: [] };
+      }
+
+      return readDirectoryHandle(handle as FileSystemDirectoryHandle, options);
+    }
+
+    const file = await (handle as FileSystemFileHandle).getFile();
+    return {
+      files: [attachRelativePath(file, handle.name)],
+      emptyDirectoryPaths: [],
+    };
+  };
+
+  const filesFromEntries = await Promise.all(snapshot.entries.map(readEntries));
   allFiles.push(...filesFromEntries.flatMap((result) => result.files));
   emptyDirectoryPaths.push(...filesFromEntries.flatMap((result) => result.emptyDirectoryPaths));
+
+  const handlesFromPromises = snapshot.handlePromises
+    ? (await Promise.all(snapshot.handlePromises)).filter((handle): handle is FileSystemHandle => handle !== null)
+    : [];
+  const fileSystemHandles = [...(snapshot.handles ?? []), ...handlesFromPromises];
+  const filesFromHandles = await Promise.all(fileSystemHandles.map(readHandle));
+  allFiles.push(...filesFromHandles.flatMap((result) => result.files));
+  emptyDirectoryPaths.push(...filesFromHandles.flatMap((result) => result.emptyDirectoryPaths));
 
   return {
     files: allFiles,
     emptyDirectoryPaths,
   };
+}
+
+export async function processDroppedItems(
+  items: DataTransferItemList,
+  signal?: AbortSignal,
+  options: ProcessDroppedItemsOptions = {},
+): Promise<DroppedItemsResult> {
+  return processDroppedItemsSnapshot(snapshotDroppedItems(items), signal, options);
 }

@@ -1,11 +1,11 @@
 import { logService } from '@/services/logService';
 import React, { useMemo, useState } from 'react';
 import { type ChatMessage, type AppSettings, type SideViewContent, type UploadedFile } from '@/types';
-import { getGeminiKeyForRequest } from '@/utils/apiUtils';
+import { getGeminiKeyForRequest } from '@/utils/apiKeySelection';
 import { parseThoughtProcess } from '@/utils/chat/parsing';
 import { translateTextApi } from '@/services/api/generation/textApi';
-import { DEFAULT_CHAT_SETTINGS } from '@/constants/appConstants';
-import { DEFAULT_THOUGHT_TRANSLATION_MODEL_ID } from '@/constants/modelConstants';
+import { DEFAULT_CHAT_SETTINGS } from '@/constants/settingsDefaults';
+import { DEFAULT_THOUGHT_TRANSLATION_MODEL_ID } from '@/constants/modelConfiguration';
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { ThinkingHeader } from './thoughts/ThinkingHeader';
 import { ThinkingActions } from './thoughts/ThinkingActions';
@@ -108,6 +108,15 @@ export const MessageThoughts: React.FC<MessageThoughtsProps> = ({
       copyToClipboard(textToCopy);
     }
   };
+  const toggleExpanded = () => setIsExpanded((value) => !value);
+  const handleToggleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Enter' && e.key !== ' ') {
+      return;
+    }
+
+    e.preventDefault();
+    toggleExpanded();
+  };
 
   const hasFiles = message.files && message.files.length > 0;
 
@@ -117,8 +126,12 @@ export const MessageThoughts: React.FC<MessageThoughtsProps> = ({
         className={`group rounded-xl bg-[var(--theme-bg-tertiary)]/20 overflow-hidden transition-all duration-200 ${isExpanded ? 'bg-[var(--theme-bg-tertiary)]/30 shadow-sm' : ''}`}
       >
         <div
-          className="flex select-none items-center justify-between gap-2 px-3 py-2 cursor-pointer transition-colors hover:bg-[var(--theme-bg-tertiary)]/40 focus:outline-none"
-          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex select-none items-center justify-between gap-2 px-3 py-2 cursor-pointer transition-colors hover:bg-[var(--theme-bg-tertiary)]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--theme-border-focus)]"
+          onClick={toggleExpanded}
+          onKeyDown={handleToggleKeyDown}
+          role="button"
+          tabIndex={0}
+          aria-expanded={isExpanded}
         >
           <ThinkingHeader
             isLoading={!!isLoading}

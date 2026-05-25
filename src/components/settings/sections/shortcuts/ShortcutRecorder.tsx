@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, RotateCcw } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
-import { formatShortcut, recordKeyCombination } from '@/utils/shortcutUtils';
+import { formatShortcut, recordKeyCombination } from '@/utils/keyboardShortcuts';
 
 interface ShortcutRecorderProps {
-  value: string; // The current shortcut string (e.g. "mod+shift+p")
+  value: string;
   defaultValue: string;
   onChange: (newValue: string) => void;
 }
@@ -14,20 +14,29 @@ export const ShortcutRecorder: React.FC<ShortcutRecorderProps> = ({ value, defau
   const [isRecording, setIsRecording] = useState(false);
   const [tempKey, setTempKey] = useState<string | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const commitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const displayValue = tempKey !== null ? tempKey : value || defaultValue;
   const formattedKeys = formatShortcut(displayValue);
+
+  const clearCommitTimer = useCallback(() => {
+    if (commitTimerRef.current !== null) {
+      clearTimeout(commitTimerRef.current);
+      commitTimerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => () => clearCommitTimer(), [clearCommitTimer]);
 
   useEffect(() => {
     if (!isRecording) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Prevent default browser actions while recording
       e.preventDefault();
       e.stopPropagation();
 
-      // Allow Escape to cancel recording without saving
       if (e.key === 'Escape') {
+        clearCommitTimer();
         setIsRecording(false);
         setTempKey(null);
         return;
@@ -36,10 +45,10 @@ export const ShortcutRecorder: React.FC<ShortcutRecorderProps> = ({ value, defau
       const combo = recordKeyCombination(e);
 
       if (combo) {
+        clearCommitTimer();
         setTempKey(combo);
-        // End recording after a valid combo is pressed
-        // Small delay to show the user what they pressed before locking it
-        setTimeout(() => {
+        commitTimerRef.current = setTimeout(() => {
+          commitTimerRef.current = null;
           onChange(combo);
           setIsRecording(false);
           setTempKey(null);
@@ -48,8 +57,8 @@ export const ShortcutRecorder: React.FC<ShortcutRecorderProps> = ({ value, defau
     };
 
     const handleMouseDown = (e: MouseEvent) => {
-      // Click outside cancels recording
       if (buttonRef.current && !buttonRef.current.contains(e.target as Node)) {
+        clearCommitTimer();
         setIsRecording(false);
         setTempKey(null);
       }
@@ -59,10 +68,11 @@ export const ShortcutRecorder: React.FC<ShortcutRecorderProps> = ({ value, defau
     window.addEventListener('mousedown', handleMouseDown);
 
     return () => {
+      clearCommitTimer();
       window.removeEventListener('keydown', handleKeyDown, { capture: true });
       window.removeEventListener('mousedown', handleMouseDown);
     };
-  }, [isRecording, onChange]);
+  }, [clearCommitTimer, isRecording, onChange]);
 
   const handleReset = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -79,7 +89,6 @@ export const ShortcutRecorder: React.FC<ShortcutRecorderProps> = ({ value, defau
 
   return (
     <div className="flex items-center gap-3 group/recorder relative">
-      {/* Actions - visible on hover/focus or if actively recording/changed */}
       <div
         className={`flex items-center gap-1 transition-opacity duration-200 ${hasChanged || isRecording ? 'opacity-100' : 'opacity-0 group-hover/recorder:opacity-100 focus-within:opacity-100'}`}
       >

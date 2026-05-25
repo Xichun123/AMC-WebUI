@@ -7,7 +7,8 @@ import { useAudioRecorder } from '@/features/audio/useAudioRecorder';
 import { SYSTEM_AUDIO_CAPTURE_FAILED_WARNING, SYSTEM_AUDIO_NOT_SHARED_WARNING } from '@/features/audio/audioProcessing';
 import { AudioVisualizer } from '@/components/recorder/AudioVisualizer';
 import { RecorderControls } from '@/components/recorder/RecorderControls';
-import { FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS, MODAL_CLOSE_BUTTON_CLASS } from '@/constants/styleClasses';
+import { FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS } from '@/constants/focusClasses';
+import { MODAL_CLOSE_BUTTON_CLASS } from '@/constants/buttonClasses';
 import { useI18n } from '@/contexts/I18nContext';
 
 interface AudioRecorderProps {
@@ -79,7 +80,6 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
       contentClassName="w-full max-w-md bg-[var(--theme-bg-primary)] rounded-xl shadow-2xl overflow-hidden"
       noPadding
     >
-      {/* Header */}
       <div className="flex items-center justify-between px-5 pt-4 pb-3 bg-[var(--theme-bg-primary)]">
         <h2 className="flex items-center gap-2 text-lg font-semibold text-[var(--theme-text-primary)]">
           <Mic size={20} className="text-[var(--theme-text-link)]" />
@@ -90,7 +90,6 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
         </button>
       </div>
 
-      {/* Content Body */}
       <div className="px-5 pb-5 pt-2 space-y-4">
         {error && (
           <div className="flex flex-col items-center text-[var(--theme-text-danger)] gap-2 mb-4 text-center">
@@ -104,7 +103,6 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
           </div>
         )}
 
-        {/* State: Idle / Initializing */}
         {(viewState === 'idle' || (viewState === 'recording' && status !== 'recording')) && !error && (
           <div className="rounded-xl bg-[var(--theme-bg-tertiary)]/35 p-2">
             {isInitializing && (
@@ -159,7 +157,6 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
           </div>
         )}
 
-        {/* State: Recording */}
         {viewState === 'recording' && (
           <div className="w-full flex flex-col items-center gap-5 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="font-mono text-4xl font-medium text-[var(--theme-text-primary)] tabular-nums tracking-wider">
@@ -175,7 +172,6 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
           </div>
         )}
 
-        {/* State: Review */}
         {viewState === 'review' && audioUrl && (
           <div className="w-full space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="flex flex-col items-center mb-6">
@@ -189,7 +185,6 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
         )}
       </div>
 
-      {/* Controls */}
       <RecorderControls
         viewState={viewState}
         isInitializing={isInitializing}

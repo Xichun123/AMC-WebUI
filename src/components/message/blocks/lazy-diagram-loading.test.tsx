@@ -1,5 +1,5 @@
 import { act } from 'react';
-import { createTestRenderer } from '@/test/testUtils';
+import { createTestRenderer } from '@/test/render/renderer';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 type MockIntersectionObserverInstance = {
@@ -92,9 +92,9 @@ describe('lazy diagram loading', () => {
     });
 
     try {
-      const { MarkdownRenderer } = await import('@/components/message/MarkdownRenderer');
+      const { MathMarkdownRenderer } = await import('@/components/message/MathMarkdownRenderer');
       const { container } = renderIntoDom(
-        <MarkdownRenderer
+        <MathMarkdownRenderer
           content={'```mermaid\ngraph TD\n  A --> B\n```'}
           isLoading={false}
           onImageClick={vi.fn()}
@@ -143,9 +143,9 @@ describe('lazy diagram loading', () => {
     });
 
     try {
-      const { MarkdownRenderer } = await import('@/components/message/MarkdownRenderer');
+      const { MathMarkdownRenderer } = await import('@/components/message/MathMarkdownRenderer');
       const { container } = renderIntoDom(
-        <MarkdownRenderer
+        <MathMarkdownRenderer
           content={'```dot\ndigraph G {\n  A -> B;\n}\n```'}
           isLoading={false}
           onImageClick={vi.fn()}

@@ -8,9 +8,9 @@ import {
   HarmCategory,
   MediaResolution,
 } from '@/types';
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import { useDataImport } from './useDataImport';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 
 describe('useDataImport', () => {
   let originalFileReader: typeof FileReader;

@@ -1,10 +1,10 @@
 import { waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { AppSettings, UploadedFile } from '@/types';
-import { createAppSettings } from '@/test/factories';
-import { renderHook } from '@/test/testUtils';
+import { createAppSettings } from '@/test/data/factories';
+import { renderHook } from '@/test/render/renderer';
 
 const { countTokensApiMock } = vi.hoisted(() => ({
   countTokensApiMock: vi.fn(),

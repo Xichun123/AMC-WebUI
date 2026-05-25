@@ -1,9 +1,9 @@
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SavedChatSession, Theme } from '@/types';
-import { DEFAULT_CHAT_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_CHAT_SETTINGS } from '@/constants/settingsDefaults';
 import { useChatSessionExport } from './useChatSessionExport';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 
 const exportHtmlStringAsFile = vi.fn();
 const exportTextStringAsFile = vi.fn();
@@ -61,14 +61,9 @@ describe('useChatSessionExport', () => {
   });
 
   it('exports HTML from all active chat messages instead of the virtualized scroll window', async () => {
-    const scrollContainer = document.createElement('div');
-    scrollContainer.innerHTML = '<div data-message-id="message-visible">currently mounted</div>';
-    const ref = { current: scrollContainer };
-
     const { result, unmount } = renderHook(() =>
       useChatSessionExport({
         activeChat: makeSession(),
-        scrollContainerRef: ref,
         currentTheme: { id: 'pearl' } as Theme,
         language: 'en',
         t: (key) => key,
@@ -92,7 +87,6 @@ describe('useChatSessionExport', () => {
     const { result, unmount } = renderHook(() =>
       useChatSessionExport({
         activeChat: makeSession(),
-        scrollContainerRef: { current: document.createElement('div') },
         currentTheme: { id: 'pearl' } as Theme,
         language: 'en',
         t: (key) => key,

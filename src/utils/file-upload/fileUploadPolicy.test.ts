@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import type { AppSettings } from '@/types';
 import {
   buildFileUploadPreflight,
@@ -125,5 +125,29 @@ describe('buildFileUploadPreflight', () => {
 
     expect(result.filesToUpload).toEqual([unsupported]);
     expect(result.notice).toContain('Unsupported file types: archive.rar');
+  });
+
+  it('surfaces audio MIME types that Gemini does not support', () => {
+    const settings = makeSettings();
+    const unsupportedAudio = createFile('voice.webm', 'audio/webm', 4096);
+
+    const result = buildFileUploadPreflight([unsupportedAudio], settings, []);
+
+    expect(result.filesToUpload).toEqual([unsupportedAudio]);
+    expect(result.notice).toContain('Unsupported file types: voice.webm');
+  });
+
+  it('keeps generated-only archive and presentation MIME types out of the upload support set', () => {
+    const settings = makeSettings();
+    const archive = createFile('output.zip', 'application/zip', 4096);
+    const presentation = createFile(
+      'slides.pptx',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      4096,
+    );
+
+    const result = buildFileUploadPreflight([archive, presentation], settings, []);
+
+    expect(result.notice).toContain('Unsupported file types: output.zip, slides.pptx');
   });
 });

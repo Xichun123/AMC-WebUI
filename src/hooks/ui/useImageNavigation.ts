@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import { type UploadedFile } from '@/types';
-import { SUPPORTED_IMAGE_MIME_TYPES } from '@/constants/fileConstants';
+import { SUPPORTED_IMAGE_MIME_TYPES } from '@/constants/fileTypeSupport';
 
 export const useImageNavigation = (
   sourceFiles: UploadedFile[],

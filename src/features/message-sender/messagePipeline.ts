@@ -5,7 +5,7 @@ import type {
   SavedChatSession,
   UploadedFile,
 } from '@/types';
-import { DEFAULT_CHAT_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_CHAT_SETTINGS } from '@/constants/settingsDefaults';
 import { generateUniqueId } from '@/utils/chat/ids';
 import { createMessage, generateSessionTitle, performOptimisticSessionUpdate } from '@/utils/chat/session';
 import { insertMessageAfter, updateMessageInSession } from '@/utils/chat/sessionMutations';

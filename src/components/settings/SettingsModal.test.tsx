@@ -1,8 +1,8 @@
 import { act, type ComponentProps } from 'react';
-import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_APP_SETTINGS, DEFAULT_CHAT_SETTINGS } from '@/constants/appConstants';
-import { setupStoreStateReset } from '@/test/storeTestUtils';
+import { DEFAULT_APP_SETTINGS, DEFAULT_CHAT_SETTINGS } from '@/constants/settingsDefaults';
+import { setupStoreStateReset } from '@/test/stores/reset';
 import { SettingsModal } from './SettingsModal';
 
 describe('SettingsModal', () => {
@@ -15,6 +15,7 @@ describe('SettingsModal', () => {
     isOpen: true,
     onClose: vi.fn(),
     currentSettings: DEFAULT_APP_SETTINGS,
+    currentThemeId: 'pearl',
     availableModels: [],
     onSave: vi.fn(),
     onClearAllHistory: vi.fn(),
@@ -72,7 +73,7 @@ describe('SettingsModal', () => {
 
     const tabLabels = Array.from(document.querySelectorAll('[role="tab"]')).map((tab) => tab.textContent?.trim());
 
-    expect(tabLabels).toEqual(['Models', 'API', 'Interface & Interaction', 'Data & App', 'Shortcuts', 'About']);
+    expect(tabLabels).toEqual(['Models', 'API', 'MCP', 'Interface & Interaction', 'Data & App', 'Shortcuts', 'About']);
     expect(document.body.textContent).not.toContain('Chat');
   });
 
@@ -83,7 +84,11 @@ describe('SettingsModal', () => {
       Array.from(group.querySelectorAll('[role="tab"]')).map((tab) => tab.textContent?.trim()),
     );
 
-    expect(groups).toEqual([['Models', 'API', 'Interface & Interaction', 'Data & App'], ['Shortcuts'], ['About']]);
+    expect(groups).toEqual([
+      ['Models', 'API', 'MCP', 'Interface & Interaction', 'Data & App'],
+      ['Shortcuts'],
+      ['About'],
+    ]);
 
     for (const group of document.querySelectorAll('[data-settings-group]')) {
       expect(group.className).not.toContain('border-l');

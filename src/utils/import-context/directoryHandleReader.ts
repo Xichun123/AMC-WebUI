@@ -1,5 +1,5 @@
 import { attachRelativePath } from './filePath';
-import { IGNORED_DIRS } from './shared';
+import { IGNORED_DIRS } from './defaultIgnorePatterns';
 
 interface DirectoryReadResult {
   files: File[];

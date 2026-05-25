@@ -3,9 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AppSettings, ModelOption } from '@/types';
 import { FOCUS_HISTORY_SEARCH_EVENT } from '@/constants/shortcuts';
 import { useAppEvents } from './useAppEvents';
-import { createAppSettings, createChatSettings } from '@/test/factories';
-import { setTestMatchMedia } from '@/test/browserEnvironment';
-import { renderHook } from '@/test/testUtils';
+import { createAppSettings, createChatSettings } from '@/test/data/factories';
+import { setTestMatchMedia } from '@/test/browser/environment';
+import { renderHook } from '@/test/render/renderer';
 
 const registerPwaMock = vi.fn();
 const toggleFullscreenMock = vi.fn();
@@ -26,7 +26,7 @@ vi.mock('@/hooks/ui/useFullscreen', () => ({
 }));
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });

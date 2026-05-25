@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { getModelIcon } from './modelIcons';
+import { getModelIcon } from './ModelIcon';
 
 describe('getModelIcon', () => {
   it('renders picker icons at the larger shared size', () => {

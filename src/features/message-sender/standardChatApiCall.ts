@@ -1,7 +1,7 @@
 import { createChatHistoryForApi } from '@/utils/chat/builder';
 import { createMessage } from '@/utils/chat/session';
 import { isServerCodeExecutionMode } from '@/utils/codeExecution';
-import { isGemini3Model, isImageModel, shouldStripThinkingFromContext } from '@/utils/modelCapabilities';
+import { isGemini3Model, isImageGenerationModel, shouldStripThinkingFromContext } from '@/utils/modelCapabilities';
 import { appendFunctionDeclarationsToTools, buildGenerationConfig } from '@/services/api/generationConfig';
 import {
   generateContentTurnApi,
@@ -12,6 +12,7 @@ import {
   sendOpenAICompatibleMessageNonStream,
   sendOpenAICompatibleMessageStream,
 } from '@/services/api/openaiCompatibleApi';
+import { createMcpClientFunctions } from '@/features/mcp/mcpClientFunctions';
 import { createStandardClientFunctions } from '@/features/standard-chat/standardClientFunctions';
 import { runStandardToolLoop } from '@/features/standard-chat/standardToolLoop';
 import { collectLocalPythonInputFiles } from '@/features/local-python/executionFiles';
@@ -209,7 +210,7 @@ export const performStandardChatApiCall = async ({
           },
         ]
       : baseMessagesForApi;
-  const canUseLocalPythonForTurn = finalRole === 'user' && !isRawMode && !isImageModel(apiModelId);
+  const canUseLocalPythonForTurn = finalRole === 'user' && !isRawMode && !isImageGenerationModel(apiModelId);
   const shouldRouteCodeExecutionToLocalPython =
     canUseLocalPythonForTurn && !!sessionToUpdate.isCodeExecutionEnabled && !sessionToUpdate.isLocalPythonEnabled;
   const sessionSettingsForGeneration = shouldRouteCodeExecutionToLocalPython
@@ -239,13 +240,29 @@ export const performStandardChatApiCall = async ({
       return pyodideService.runPython(code, options);
     },
   });
-  const standardFunctionDeclarations = Object.values(standardClientFunctions).map(({ declaration }) => declaration);
+  const isMcpEnabledForTurn =
+    finalRole === 'user' &&
+    !isRawMode &&
+    !isImageGenerationModel(apiModelId) &&
+    (appSettings.mcpServers?.length ?? 0) > 0;
+  const mcpClientFunctions = isMcpEnabledForTurn
+    ? await createMcpClientFunctions({
+        servers: appSettings.mcpServers ?? [],
+        abortSignal: newAbortController.signal,
+      })
+    : {};
+  const combinedClientFunctions = {
+    ...standardClientFunctions,
+    ...mcpClientFunctions,
+  };
+  const localPythonFunctionDeclarations = Object.values(standardClientFunctions).map(({ declaration }) => declaration);
+  const mcpFunctionDeclarations = Object.values(mcpClientFunctions).map(({ declaration }) => declaration);
   const hasRequestedServerSideToolThatNeedsCombination =
     !!sessionSettingsForGeneration.isGoogleSearchEnabled ||
     !!sessionSettingsForGeneration.isDeepSearchEnabled ||
     !!sessionSettingsForGeneration.isUrlContextEnabled;
   const isLocalPythonEnabledForTurn =
-    standardFunctionDeclarations.length > 0 &&
+    localPythonFunctionDeclarations.length > 0 &&
     (isGemini3Model(apiModelId) || !hasRequestedServerSideToolThatNeedsCombination);
 
   const config = await buildGenerationConfig({
@@ -258,18 +275,17 @@ export const performStandardChatApiCall = async ({
     personGeneration,
   });
 
-  const requestConfig = appendFunctionDeclarationsToTools(
-    apiModelId,
-    config,
-    isLocalPythonEnabledForTurn ? standardFunctionDeclarations : [],
-  );
+  const requestConfig = appendFunctionDeclarationsToTools(apiModelId, config, [
+    ...(isLocalPythonEnabledForTurn ? localPythonFunctionDeclarations : []),
+    ...mcpFunctionDeclarations,
+  ]);
   const hasFunctionDeclarationsInRequest = !!requestConfig.tools?.some((tool) => 'functionDeclarations' in tool);
 
   if (hasFunctionDeclarationsInRequest) {
     try {
       const toolLoopResult = await runStandardToolLoop({
         initialContents: [...historyForChat, { role: finalRole, parts: finalParts }],
-        clientFunctions: standardClientFunctions,
+        clientFunctions: combinedClientFunctions,
         abortSignal: newAbortController.signal,
         runTurn: (contents) =>
           generateContentTurnApi(keyToUse, apiModelId, contents, requestConfig, newAbortController.signal),

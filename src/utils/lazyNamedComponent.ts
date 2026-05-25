@@ -1,10 +1,12 @@
-import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
+import { lazy, type LazyExoticComponent } from 'react';
 
-// React.lazy models lazy-loadable components as ComponentType<any>; keep the escape hatch local to this helper.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyComponent = ComponentType<any>;
+type LazyImporter = Parameters<typeof lazy>[0];
+type LazyLoadableComponent = Awaited<ReturnType<LazyImporter>>['default'];
 
-export const loadNamedComponent = async <TExportName extends string, TModule extends Record<TExportName, AnyComponent>>(
+export const loadNamedComponent = async <
+  TExportName extends string,
+  TModule extends Record<TExportName, LazyLoadableComponent>,
+>(
   importer: () => Promise<TModule>,
   exportName: TExportName,
 ): Promise<{ default: TModule[TExportName] }> => {
@@ -12,7 +14,10 @@ export const loadNamedComponent = async <TExportName extends string, TModule ext
   return { default: module[exportName] };
 };
 
-export const lazyNamedComponent = <TExportName extends string, TModule extends Record<TExportName, AnyComponent>>(
+export const lazyNamedComponent = <
+  TExportName extends string,
+  TModule extends Record<TExportName, LazyLoadableComponent>,
+>(
   importer: () => Promise<TModule>,
   exportName: TExportName,
 ): LazyExoticComponent<TModule[TExportName]> => lazy(() => loadNamedComponent(importer, exportName));

@@ -5,7 +5,7 @@ import {
   MENU_ITEM_BUTTON_CLASS,
   MENU_ITEM_DEFAULT_STATE_CLASS,
   MENU_ITEM_DANGER_STATE_CLASS,
-} from '@/constants/styleClasses';
+} from '@/constants/menuClasses';
 
 interface GroupItemMenuProps {
   menuRef: RefObject<HTMLDivElement>;

@@ -7,8 +7,8 @@ import {
   HTML_PREVIEW_CLEAR_SELECTION_EVENT,
   HTML_PREVIEW_DIAGNOSTIC_EVENT,
   HTML_PREVIEW_MESSAGE_CHANNEL,
-} from '@/utils/htmlPreview';
-import { renderHook } from '@/test/testUtils';
+} from '@/utils/html-preview/previewDocument';
+import { renderHook } from '@/test/render/renderer';
 
 const exportElementAsPngMock = vi.hoisted(() => vi.fn(async () => {}));
 

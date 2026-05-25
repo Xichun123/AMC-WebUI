@@ -133,8 +133,8 @@ export const useLiveAudio = () => {
 
   const playAudioChunk = useCallback(
     async (base64Audio: string) => {
-      const ctx = audioContextRef.current;
-      if (!ctx) return;
+      const audioContext = audioContextRef.current;
+      if (!audioContext) return;
 
       clearOutputAudioTail();
       outputAudioActiveRef.current = true;
@@ -142,14 +142,14 @@ export const useLiveAudio = () => {
 
       try {
         // Ensure strict timing sequence
-        nextStartTimeRef.current = Math.max(nextStartTimeRef.current, ctx.currentTime);
+        nextStartTimeRef.current = Math.max(nextStartTimeRef.current, audioContext.currentTime);
 
         const arrayBuffer = decodeBase64ToArrayBuffer(base64Audio);
-        const audioBuffer = await decodeAudioData(arrayBuffer, ctx);
+        const audioBuffer = await decodeAudioData(arrayBuffer, audioContext);
 
-        const source = ctx.createBufferSource();
+        const source = audioContext.createBufferSource();
         source.buffer = audioBuffer;
-        source.connect(ctx.destination);
+        source.connect(audioContext.destination);
 
         source.onended = () => {
           sourcesRef.current.delete(source);
@@ -170,9 +170,9 @@ export const useLiveAudio = () => {
 
   const stopAudioPlayback = useCallback(() => {
     clearOutputAudioTail();
-    sourcesRef.current.forEach((s) => {
+    sourcesRef.current.forEach((source) => {
       try {
-        s.stop();
+        source.stop();
       } catch {
         /* ignore already stopped */
       }

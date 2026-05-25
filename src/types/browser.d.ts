@@ -46,6 +46,7 @@ interface FileSystemDirectoryEntry extends FileSystemEntry {
 
 interface DataTransferItem {
   webkitGetAsEntry?: () => FileSystemEntry | null;
+  getAsFileSystemHandle?: () => Promise<FileSystemHandle | null>;
 }
 
 interface FileSystemHandlePermissionDescriptor {

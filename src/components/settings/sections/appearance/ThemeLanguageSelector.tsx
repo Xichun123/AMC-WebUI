@@ -25,7 +25,6 @@ export const ThemeLanguageSelector: React.FC<ThemeLanguageSelectorProps> = ({ se
 
   return (
     <div className="grid grid-cols-1 gap-2">
-      {/* Theme Selector */}
       <div className="flex items-center justify-between py-3 transition-colors">
         <span className="text-sm font-medium text-[var(--theme-text-primary)] flex items-center gap-2">
           {t('settingsTheme')}
@@ -47,7 +46,6 @@ export const ThemeLanguageSelector: React.FC<ThemeLanguageSelectorProps> = ({ se
         </div>
       </div>
 
-      {/* Language Selector */}
       <Select
         id="language-selector"
         label={t('settingsLanguage')}

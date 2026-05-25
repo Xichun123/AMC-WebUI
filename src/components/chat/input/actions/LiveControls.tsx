@@ -1,6 +1,6 @@
 import React from 'react';
 import { PhoneOff, AudioWaveform, Mic, MicOff, MonitorUp, Video, VideoOff } from 'lucide-react';
-import { CHAT_INPUT_BUTTON_CLASS } from '@/constants/styleClasses';
+import { CHAT_INPUT_BUTTON_CLASS } from '@/constants/buttonClasses';
 import { useChatInputActionsContext } from '@/components/chat/input/ChatInputContext';
 import { useI18n } from '@/contexts/I18nContext';
 
@@ -69,7 +69,6 @@ export const LiveControls: React.FC = () => {
         </button>
       )}
 
-      {/* Live Session Mute Button */}
       {isLiveConnected && onToggleLiveMute && (
         <button
           type="button"
@@ -83,7 +82,6 @@ export const LiveControls: React.FC = () => {
         </button>
       )}
 
-      {/* Live Session Button */}
       {!isRecording && !isTranscribing && (
         <button
           type="button"

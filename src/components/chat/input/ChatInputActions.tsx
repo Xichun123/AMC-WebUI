@@ -1,22 +1,15 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo } from 'react';
 import { AttachmentMenu } from './AttachmentMenu';
 import { ToolsMenu } from './ToolsMenu';
 import { WebSearchToggle } from './actions/WebSearchToggle';
 import { LiveControls } from './actions/LiveControls';
 import { RecordControls } from './actions/RecordControls';
-import { UtilityControls } from './actions/UtilityControls';
+import { ComposerAuxiliaryButtons } from './actions/ComposerAuxiliaryButtons';
 import { SendControls } from './actions/SendControls';
 import { ComposerMoreMenu } from './actions/ComposerMoreMenu';
 import { useComposerAuxiliaryActions } from './actions/useComposerAuxiliaryActions';
+import { useAuxiliaryActionCollapse } from './actions/useAuxiliaryActionCollapse';
 import { useChatInputActionsContext, useChatInputComposerStatusContext } from './ChatInputContext';
-
-const ACTION_ROW_GAP_PX = 8;
-const ACTION_ROW_COMFORT_BUFFER_PX = 40;
-
-interface AuxiliaryActionCollapseState {
-  measurementSignature: string;
-  shouldCollapse: boolean;
-}
 
 const ChatInputActionsComponent: React.FC = () => {
   const {
@@ -80,10 +73,6 @@ const ChatInputActionsComponent: React.FC = () => {
     [auxiliaryActions],
   );
   const hasComposerMoreActions = auxiliaryActions.length > 0;
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  const leftActionsRef = useRef<HTMLDivElement | null>(null);
-  const rightActionsRef = useRef<HTMLDivElement | null>(null);
-  const expandedRightWidthRef = useRef(0);
   const measurementSignature = useMemo(
     () =>
       [
@@ -109,84 +98,11 @@ const ChatInputActionsComponent: React.FC = () => {
       auxiliaryActionSignature,
     ],
   );
-  const [auxiliaryActionCollapseState, setAuxiliaryActionCollapseState] = useState<AuxiliaryActionCollapseState>({
+  const { rootRef, leftActionsRef, rightActionsRef, shouldCollapseAuxiliaryActions } = useAuxiliaryActionCollapse({
+    hasAuxiliaryActions: hasComposerMoreActions,
     measurementSignature,
-    shouldCollapse: false,
   });
-  const shouldCollapseAuxiliaryActions =
-    auxiliaryActionCollapseState.measurementSignature === measurementSignature
-      ? auxiliaryActionCollapseState.shouldCollapse
-      : false;
   const showAuxiliaryActionsInMenu = hasComposerMoreActions && shouldCollapseAuxiliaryActions;
-
-  const measureActionRow = useCallback(() => {
-    const root = rootRef.current;
-    const leftActions = leftActionsRef.current;
-    const rightActions = rightActionsRef.current;
-
-    if (!root || !leftActions || !rightActions) {
-      return;
-    }
-
-    if (!hasComposerMoreActions) {
-      expandedRightWidthRef.current = 0;
-      setAuxiliaryActionCollapseState((current) =>
-        current.measurementSignature === measurementSignature && !current.shouldCollapse
-          ? current
-          : { measurementSignature, shouldCollapse: false },
-      );
-      return;
-    }
-
-    const containerWidth = root.getBoundingClientRect().width;
-    const leftWidth = leftActions.getBoundingClientRect().width;
-    const currentRightWidth = rightActions.getBoundingClientRect().width;
-
-    if (containerWidth <= 0 || currentRightWidth <= 0) {
-      return;
-    }
-
-    if (!shouldCollapseAuxiliaryActions) {
-      expandedRightWidthRef.current = currentRightWidth;
-    }
-
-    const expandedRightWidth = expandedRightWidthRef.current || currentRightWidth;
-    const requiredWidth = leftWidth + expandedRightWidth + ACTION_ROW_GAP_PX + ACTION_ROW_COMFORT_BUFFER_PX;
-    const nextShouldCollapse = requiredWidth > containerWidth;
-
-    setAuxiliaryActionCollapseState((current) =>
-      current.measurementSignature === measurementSignature && current.shouldCollapse === nextShouldCollapse
-        ? current
-        : { measurementSignature, shouldCollapse: nextShouldCollapse },
-    );
-  }, [hasComposerMoreActions, measurementSignature, shouldCollapseAuxiliaryActions]);
-
-  useLayoutEffect(() => {
-    const animationFrameId = window.requestAnimationFrame(measureActionRow);
-    return () => window.cancelAnimationFrame(animationFrameId);
-  }, [measureActionRow]);
-
-  useEffect(() => {
-    const root = rootRef.current;
-    const leftActions = leftActionsRef.current;
-    const rightActions = rightActionsRef.current;
-
-    if (!root || !leftActions || !rightActions) {
-      return undefined;
-    }
-
-    if (typeof ResizeObserver === 'undefined') {
-      window.addEventListener('resize', measureActionRow);
-      return () => window.removeEventListener('resize', measureActionRow);
-    }
-
-    const resizeObserver = new ResizeObserver(() => measureActionRow());
-    resizeObserver.observe(root);
-    resizeObserver.observe(leftActions);
-    resizeObserver.observe(rightActions);
-
-    return () => resizeObserver.disconnect();
-  }, [measureActionRow]);
 
   return (
     <div
@@ -226,7 +142,7 @@ const ChatInputActionsComponent: React.FC = () => {
 
         {!showAuxiliaryActionsInMenu && auxiliaryActions.length > 0 && (
           <div className="flex items-center gap-2 sm:gap-3">
-            <UtilityControls actions={auxiliaryActions} />
+            <ComposerAuxiliaryButtons actions={auxiliaryActions} />
           </div>
         )}
 

@@ -8,10 +8,10 @@ import { ToolResultBlock } from './blocks/ToolResultBlock';
 import { DeferredDiagramBlock } from './blocks/DeferredDiagramBlock';
 import { type UploadedFile, type SideViewContent } from '@/types';
 import { extractTextFromNode } from '@/utils/reactNodeText';
-import { InlineCode } from './code-block/InlineCode';
-import { splitMarkdownSegments } from '@/utils/markdownUtils';
+import { InlineCode } from './code/InlineCode';
+import { splitMarkdownSegments } from '@/utils/markdownSegments';
 import { stripGemmaThoughtMarkup, wrapReasoningMarkup } from '@/utils/chat/reasoning';
-import { normalizePreviewableMarkdownContent } from '@/utils/codeUtils';
+import { normalizePreviewableMarkdownContent } from '@/utils/previewableMarkdown';
 import type { LiveArtifactFollowupPayload } from '@/utils/liveArtifactFollowup';
 import { loadNamedComponent } from '@/utils/lazyNamedComponent';
 

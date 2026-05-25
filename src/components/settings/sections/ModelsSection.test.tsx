@@ -1,8 +1,8 @@
 import { act, type ComponentProps, type ReactNode, useState } from 'react';
-import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { setupStoreStateReset } from '@/test/storeTestUtils';
+import { setupStoreStateReset } from '@/test/stores/reset';
 import { ModelsSection } from './ModelsSection';
 import type { AppSettings } from '@/types';
 import type { ModelSelector } from '@/components/settings/controls/ModelSelector';
@@ -71,6 +71,7 @@ describe('ModelsSection', () => {
           availableModels={[{ id: 'gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro Preview', isPinned: true }]}
           setAvailableModels={vi.fn()}
           currentSettings={useSettingsStore.getState().appSettings}
+          currentThemeId="pearl"
           onUpdateSettings={vi.fn()}
           {...overrides}
         />,
@@ -176,6 +177,7 @@ describe('ModelsSection', () => {
           availableModels={[{ id: 'gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro Preview', isPinned: true }]}
           setAvailableModels={vi.fn()}
           currentSettings={settings}
+          currentThemeId="pearl"
           onUpdateSettings={handleUpdateSettings}
         />
       );
@@ -285,9 +287,10 @@ describe('ModelsSection', () => {
     });
 
     await vi.waitFor(() => {
-      expect(renderer.container.querySelector<HTMLTextAreaElement>('#live-artifacts-prompt-input')?.value).toContain(
-        '[Live Artifacts Inline Protocol - en]',
-      );
+      const promptValue = renderer.container.querySelector<HTMLTextAreaElement>('#live-artifacts-prompt-input')?.value;
+      expect(promptValue).toContain('[Live Artifacts Inline Protocol - en]');
+      expect(promptValue).toContain('Current Page Theme');
+      expect(promptValue).toContain('light theme');
     });
   });
 

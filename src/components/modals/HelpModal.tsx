@@ -8,7 +8,7 @@ import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import {
   FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS,
   FOCUS_VISIBLE_RING_SECONDARY_OFFSET_CLASS,
-} from '@/constants/styleClasses';
+} from '@/constants/focusClasses';
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -42,7 +42,6 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, commands 
         className="bg-[var(--theme-bg-primary)] rounded-xl shadow-premium w-full max-w-md sm:max-w-2xl flex flex-col max-h-[85vh] sm:max-h-[650px] overflow-hidden border border-[var(--theme-border-primary)]"
         role="document"
       >
-        {/* Header */}
         <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-[var(--theme-border-primary)] bg-[var(--theme-bg-secondary)]/85">
           <h2
             id="help-modal-title"
@@ -60,7 +59,6 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, commands 
           </button>
         </div>
 
-        {/* Search Bar */}
         <div className="p-4 pb-0">
           <div className="relative">
             <Search
@@ -78,7 +76,6 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, commands 
           </div>
         </div>
 
-        {/* Content */}
         <div className="flex-grow min-h-0 overflow-y-auto custom-scrollbar p-4">
           <div className="grid grid-cols-1 gap-2">
             {filteredCommands.length > 0 ? (
@@ -87,12 +84,10 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, commands 
                   key={command.name}
                   className="group flex items-center gap-4 p-3 rounded-xl hover:bg-[var(--theme-bg-tertiary)]/50 border border-transparent hover:border-[var(--theme-border-secondary)] transition-all duration-200"
                 >
-                  {/* Icon */}
                   <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-[var(--theme-bg-input)] text-[var(--theme-text-secondary)] border border-[var(--theme-border-secondary)] group-hover:border-[var(--theme-border-focus)] group-hover:text-[var(--theme-text-primary)] transition-colors shadow-sm">
                     <CommandIcon icon={command.icon || 'bot'} />
                   </div>
 
-                  {/* Text Info */}
                   <div className="flex-grow min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
                     <button
                       onClick={() => handleCopy(command.name)}

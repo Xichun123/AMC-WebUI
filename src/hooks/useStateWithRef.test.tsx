@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { describe, expect, it } from 'vitest';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 import { useStateWithRef } from './useStateWithRef';
 
 describe('useStateWithRef', () => {

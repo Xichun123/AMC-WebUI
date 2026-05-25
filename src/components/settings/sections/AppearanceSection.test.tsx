@@ -1,8 +1,8 @@
 import { act } from 'react';
-import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { describe, expect, it, vi } from 'vitest';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { setupStoreStateReset } from '@/test/storeTestUtils';
+import { setupStoreStateReset } from '@/test/stores/reset';
 import type { AppSettings } from '@/types';
 import { AppearanceSection } from './AppearanceSection';
 

@@ -1,9 +1,9 @@
 import { act } from 'react';
-import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import { setupStoreStateReset } from '@/test/storeTestUtils';
+import { setupStoreStateReset } from '@/test/stores/reset';
 import { FileConfigurationModal } from './FileConfigurationModal';
 import { type UploadedFile } from '@/types';
 
@@ -104,6 +104,41 @@ describe('FileConfigurationModal', () => {
     });
 
     expect(onSave).toHaveBeenCalledWith(file.id, { videoMetadata: undefined });
+  });
+
+  it('normalizes video offsets and drops FPS values outside the Gemini range', async () => {
+    const file: UploadedFile = {
+      id: 'video-3',
+      name: 'demo.mp4',
+      type: 'video/mp4',
+      size: 128,
+      uploadState: 'active',
+    };
+
+    const { onSave } = renderModal(file);
+
+    const inputs = Array.from(document.querySelectorAll('input')) as HTMLInputElement[];
+    expect(inputs).toHaveLength(3);
+
+    await act(async () => {
+      setInputValue(inputs[0], '00:10');
+      setInputValue(inputs[1], '1:02:03');
+      setInputValue(inputs[2], '48');
+    });
+
+    const saveButton = getButtonByText('Save');
+    expect(saveButton).toBeDefined();
+
+    await act(async () => {
+      saveButton!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(onSave).toHaveBeenCalledWith(file.id, {
+      videoMetadata: {
+        startOffset: '10s',
+        endOffset: '3723s',
+      },
+    });
   });
 
   it('avoids per-field mirrored state plus a file-sync effect', () => {

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { extractTextFromNode } from '@/utils/reactNodeText';
-import { getCodeBlockPreviewType } from '@/utils/codeUtils';
+import { getCodeBlockPreviewType } from '@/utils/previewableMarkdown';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
 import { triggerDownload, sanitizeFilename } from '@/utils/export/core';
 import { type SideViewContent } from '@/types';
@@ -100,7 +100,6 @@ export const useCodeBlock = ({
 
   const { isCopied, copyToClipboard } = useCopyToClipboard();
 
-  // Auto-scroll logic state
   const userHasScrolledUp = useRef(false);
   const prevTextLength = useRef(0);
   const lastKnownScrollTop = useRef(0);
@@ -142,7 +141,6 @@ export const useCodeBlock = ({
     return undefined;
   }, [handleScroll]);
 
-  // Layout effect for overflow and auto-scroll
   useLayoutEffect(() => {
     const preElement = preRef.current;
     if (!preElement) return;
@@ -158,7 +156,6 @@ export const useCodeBlock = ({
       return;
     }
 
-    // Auto-scroll Logic
     const currentLength = resolvedCodeText.length;
     if (!isExpanded && prevTextLength.current > 0 && currentLength > prevTextLength.current) {
       if (!userHasScrolledUp.current) {
@@ -181,7 +178,6 @@ export const useCodeBlock = ({
     }
   };
 
-  // Language processing
   const langMatch = className?.match(/language-(\S+)/);
   const language = langMatch ? langMatch[1].toLowerCase() : 'txt';
 

@@ -16,7 +16,7 @@ vi.mock('./apiClient', async () => {
 });
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });

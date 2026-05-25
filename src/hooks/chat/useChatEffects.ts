@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { type UploadedFile, type SavedChatSession, type ChatSettings } from '@/types';
 import { logService } from '@/services/logService';
-import { cleanupFilePreviewUrls } from '@/utils/fileHelpers';
+import { cleanupFilePreviewUrls } from '@/utils/filePreviewUrls';
 import {
   getModelCapabilities,
   normalizeAspectRatioForModel,

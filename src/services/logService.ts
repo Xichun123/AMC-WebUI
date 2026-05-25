@@ -1,9 +1,13 @@
 import { dbService, type ApiUsageExactPricing } from '@/services/db/dbService';
-import type { LogCategory, LogEntry, LogLevel, TokenUsageStats } from '@/types/logging';
+import type { LogCategory, LogEntry, LogLevel } from '@/types/logging';
+import {
+  createLogUsageTracker,
+  type ApiKeyListener,
+  type TokenUsageInput,
+  type TokenUsageListener,
+} from './logUsageTracker';
 
 type LogListener = (newLogs: LogEntry[]) => void;
-type ApiKeyListener = (usage: Map<string, number>) => void;
-type TokenUsageListener = (usage: Map<string, TokenUsageStats>) => void;
 
 interface LogOptions {
   category?: LogCategory;
@@ -14,19 +18,15 @@ interface ErrorLogOptions extends LogOptions {
   error?: unknown;
 }
 
-const API_USAGE_STORAGE_KEY = 'chatApiUsageData';
-const TOKEN_USAGE_STORAGE_KEY = 'chatTokenUsageData';
 const LOG_RETENTION_MS = 2 * 24 * 60 * 60 * 1000; // 2 days
 const FLUSH_INTERVAL_MS = 2000; // 2 seconds
 const FLUSH_THRESHOLD = 50; // Flush if 50 items accumulate
 
 class LogServiceImpl {
   private listeners: Set<LogListener> = new Set();
-  private apiKeyUsage: Map<string, number> = new Map();
-  private apiKeyListeners: Set<ApiKeyListener> = new Set();
-
-  private tokenUsage: Map<string, TokenUsageStats> = new Map();
-  private tokenUsageListeners: Set<TokenUsageListener> = new Set();
+  private usageTracker = createLogUsageTracker((message, error) => {
+    console.error(message, error);
+  });
 
   // Batching Buffer
   private logBuffer: LogEntry[] = [];
@@ -35,8 +35,6 @@ class LogServiceImpl {
   private isClearing = false;
 
   constructor() {
-    this.loadApiKeyUsage();
-    this.loadTokenUsage();
     this.pruneOldLogs();
     this.info('Log service initialized (IndexedDB Batched Mode).', { category: 'SYSTEM' });
   }
@@ -230,128 +228,6 @@ class LogServiceImpl {
     }
   }
 
-  // --- API Usage Tracking (Kept in LocalStorage for speed/simplicity) ---
-
-  private loadApiKeyUsage() {
-    try {
-      const storedUsage = localStorage.getItem(API_USAGE_STORAGE_KEY);
-      if (storedUsage) {
-        const parsed = JSON.parse(storedUsage);
-        if (Array.isArray(parsed)) {
-          this.apiKeyUsage = new Map(parsed);
-        }
-      }
-    } catch (e) {
-      console.error('Failed to load API key usage:', e);
-    }
-  }
-
-  private saveApiKeyUsage() {
-    try {
-      const usageArray = Array.from(this.apiKeyUsage.entries());
-      localStorage.setItem(API_USAGE_STORAGE_KEY, JSON.stringify(usageArray));
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  private notifyApiKeyListeners() {
-    const listenersToNotify = Array.from(this.apiKeyListeners);
-    for (const listener of listenersToNotify) {
-      listener(new Map(this.apiKeyUsage));
-    }
-  }
-
-  // --- Token Usage Tracking ---
-
-  private normalizeTokenUsageStats(stats: unknown): TokenUsageStats {
-    if (!stats || typeof stats !== 'object') {
-      return { input: 0, output: 0 };
-    }
-
-    const usage = stats as {
-      input?: number;
-      output?: number;
-      prompt?: number;
-      completion?: number;
-    };
-
-    return {
-      input: usage.input ?? usage.prompt ?? 0,
-      output: usage.output ?? usage.completion ?? 0,
-    };
-  }
-
-  private loadTokenUsage() {
-    try {
-      const storedUsage = localStorage.getItem(TOKEN_USAGE_STORAGE_KEY);
-      if (storedUsage) {
-        const parsed = JSON.parse(storedUsage);
-        if (Array.isArray(parsed)) {
-          this.tokenUsage = new Map(parsed.map(([modelId, stats]) => [modelId, this.normalizeTokenUsageStats(stats)]));
-        }
-      }
-    } catch (e) {
-      console.error('Failed to load token usage:', e);
-    }
-  }
-
-  private saveTokenUsage() {
-    try {
-      const usageArray = Array.from(this.tokenUsage.entries());
-      localStorage.setItem(TOKEN_USAGE_STORAGE_KEY, JSON.stringify(usageArray));
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  private notifyTokenUsageListeners() {
-    const listenersToNotify = Array.from(this.tokenUsageListeners);
-    for (const listener of listenersToNotify) {
-      listener(new Map(this.tokenUsage));
-    }
-  }
-
-  public recordTokenUsage(
-    modelId: string,
-    usage: {
-      promptTokens: number;
-      cachedPromptTokens?: number;
-      completionTokens: number;
-      thoughtTokens?: number;
-      toolUsePromptTokens?: number;
-      totalTokens?: number;
-    },
-    exactPricing?: ApiUsageExactPricing,
-  ) {
-    if (!modelId) return;
-    const current = this.tokenUsage.get(modelId) || { input: 0, output: 0 };
-    const inputTokens =
-      Math.max(usage.promptTokens - (usage.cachedPromptTokens ?? 0), 0) + (usage.toolUsePromptTokens ?? 0);
-    const outputTokens = usage.completionTokens + (usage.thoughtTokens ?? 0);
-    this.tokenUsage.set(modelId, {
-      input: current.input + inputTokens,
-      output: current.output + outputTokens,
-    });
-    this.saveTokenUsage();
-    this.notifyTokenUsageListeners();
-    void dbService
-      .addApiUsageRecord({
-        timestamp: Date.now(),
-        modelId,
-        promptTokens: usage.promptTokens,
-        cachedPromptTokens: usage.cachedPromptTokens ?? 0,
-        completionTokens: usage.completionTokens,
-        thoughtTokens: usage.thoughtTokens ?? 0,
-        toolUsePromptTokens: usage.toolUsePromptTokens ?? 0,
-        totalTokens: usage.totalTokens ?? inputTokens + outputTokens,
-        ...(exactPricing ? { exactPricing } : {}),
-      })
-      .catch((error) => {
-        console.error('Failed to persist API usage record:', error);
-      });
-  }
-
   // --- Public Interface ---
 
   /**
@@ -407,11 +283,11 @@ class LogServiceImpl {
   }
 
   public recordApiKeyUsage(apiKey: string) {
-    if (!apiKey) return;
-    const currentCount = this.apiKeyUsage.get(apiKey) || 0;
-    this.apiKeyUsage.set(apiKey, currentCount + 1);
-    this.saveApiKeyUsage();
-    this.notifyApiKeyListeners();
+    this.usageTracker.recordApiKeyUsage(apiKey);
+  }
+
+  public recordTokenUsage(modelId: string, usage: TokenUsageInput, exactPricing?: ApiUsageExactPricing) {
+    this.usageTracker.recordTokenUsage(modelId, usage, exactPricing);
   }
 
   // --- Subscription & Retrieval ---
@@ -425,15 +301,11 @@ class LogServiceImpl {
   }
 
   public subscribeToApiKeys(listener: ApiKeyListener): () => void {
-    this.apiKeyListeners.add(listener);
-    listener(new Map(this.apiKeyUsage));
-    return () => this.apiKeyListeners.delete(listener);
+    return this.usageTracker.subscribeToApiKeys(listener);
   }
 
   public subscribeToTokenUsage(listener: TokenUsageListener): () => void {
-    this.tokenUsageListeners.add(listener);
-    listener(new Map(this.tokenUsage));
-    return () => this.tokenUsageListeners.delete(listener);
+    return this.usageTracker.subscribeToTokenUsage(listener);
   }
 
   /**
@@ -458,12 +330,7 @@ class LogServiceImpl {
       }
       await dbService.clearLogs();
       await dbService.clearApiUsage();
-      this.apiKeyUsage.clear();
-      this.tokenUsage.clear();
-      this.saveApiKeyUsage();
-      this.saveTokenUsage();
-      this.notifyApiKeyListeners();
-      this.notifyTokenUsageListeners();
+      this.usageTracker.clear();
     } finally {
       this.isClearing = false;
     }

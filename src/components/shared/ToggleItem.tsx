@@ -13,8 +13,20 @@ interface ToggleItemProps {
 
 export const ToggleItem: React.FC<ToggleItemProps> = ({ label, checked, onChange, tooltip, small = false }) => (
   <div
-    className={`flex items-center justify-between py-${small ? '2' : '3'} transition-colors cursor-pointer group select-none`}
+    className={`flex items-center justify-between py-${small ? '2' : '3'} transition-colors cursor-pointer group select-none rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-border-focus)]`}
+    role="switch"
+    tabIndex={0}
+    aria-checked={checked}
+    aria-label={label}
     onClick={() => onChange(!checked)}
+    onKeyDown={(e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') {
+        return;
+      }
+
+      e.preventDefault();
+      onChange(!checked);
+    }}
   >
     <div className="flex items-center pr-4 flex-1 min-w-0">
       <span

@@ -3,7 +3,7 @@ import { X, Loader2, Download } from 'lucide-react';
 import { Modal } from '@/components/shared/Modal';
 import { useResponsiveValue } from '@/hooks/useDevice';
 import { ExportOptions } from '@/components/message/buttons/export/ExportOptions';
-import { MODAL_CLOSE_BUTTON_CLASS } from '@/constants/styleClasses';
+import { MODAL_CLOSE_BUTTON_CLASS } from '@/constants/buttonClasses';
 import { useI18n } from '@/contexts/I18nContext';
 
 interface ExportChatModalProps {

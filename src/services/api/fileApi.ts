@@ -1,10 +1,6 @@
 import type { File as GeminiFile } from '@google/genai';
 import { getConfiguredApiClient, getConfiguredApiClientContext } from './apiClient';
-import {
-  createUploadAbortError,
-  uploadGeminiFileResumable,
-  type InternalGeminiApiClient,
-} from './geminiResumableUpload';
+import { createUploadAbortError, uploadGeminiFileResumable } from './geminiResumableUpload';
 import { logService } from '@/services/logService';
 
 /**
@@ -26,11 +22,10 @@ export const uploadFileApi = async (
   }
 
   try {
-    const { client, apiBaseUrl, proxyBaseUrl } = await getConfiguredApiClientContext(apiKey);
-    const internalApiClient = (client as unknown as { apiClient: InternalGeminiApiClient }).apiClient;
+    const { uploadApiClient, apiBaseUrl, proxyBaseUrl } = await getConfiguredApiClientContext(apiKey);
 
     return await uploadGeminiFileResumable({
-      apiClient: internalApiClient,
+      apiClient: uploadApiClient,
       apiBaseUrl,
       proxyBaseUrl,
       apiKey,

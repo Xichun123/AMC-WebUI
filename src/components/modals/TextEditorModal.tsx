@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { X, Check } from 'lucide-react';
 import { TextEditorModalShell } from './TextEditorModalShell';
-import { FOCUS_VISIBLE_RING_SECONDARY_OFFSET_CLASS } from '@/constants/styleClasses';
+import { FOCUS_VISIBLE_RING_SECONDARY_OFFSET_CLASS } from '@/constants/focusClasses';
 
 interface TextEditorModalProps {
   isOpen: boolean;

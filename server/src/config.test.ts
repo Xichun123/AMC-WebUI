@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { loadConfig } from './config';
 
@@ -113,6 +114,16 @@ describe('loadConfig', () => {
         SITE_AUTH_USERS_JSON: JSON.stringify([{ username: 'amc', passwordHash: 'scrypt:hash' }]),
       }),
     ).toThrow(/SITE_AUTH_SECRET is required/);
+  });
+
+  it('parses MCP transport enablement flags from the environment', () => {
+    const config = loadConfig({
+      ENABLE_MCP_STDIO: 'true',
+      ENABLE_MCP_PRIVATE_HTTP: 'yes',
+    });
+
+    expect(config.enableMcpStdio).toBe(true);
+    expect(config.enableMcpPrivateHttp).toBe(true);
   });
 
   it('enables MCP transports without changing Vertex, GCS, or Site Access configuration', () => {

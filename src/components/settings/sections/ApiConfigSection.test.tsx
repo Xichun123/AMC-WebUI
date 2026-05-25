@@ -1,10 +1,10 @@
 import { act, type ComponentProps } from 'react';
-import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { setupStoreStateReset } from '@/test/storeTestUtils';
+import { setupStoreStateReset } from '@/test/stores/reset';
 import type { AppSettings } from '@/types';
-import { SERVER_MANAGED_API_KEY } from '@/utils/apiUtils';
+import { SERVER_MANAGED_API_KEY } from '@/utils/apiKeySelection';
 import { ApiConfigSection } from './ApiConfigSection';
 
 const { getClientMock, generateContentMock, sendOpenAICompatibleMessageNonStreamMock } = vi.hoisted(() => ({
@@ -26,7 +26,7 @@ vi.mock('@/services/api/openaiCompatibleApi', () => ({
 }));
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });

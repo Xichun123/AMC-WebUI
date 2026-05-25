@@ -4,11 +4,11 @@ import {
   buildGenerationConfig as buildGenerationConfigFromSettings,
   toCountTokensConfig,
 } from './generationConfig';
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import { MediaResolution, type ThinkingLevel } from '@/types';
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });
@@ -480,13 +480,13 @@ describe('buildGenerationConfig', () => {
     expect(config.thinkingConfig!.thinkingLevel).toBe('LOW');
   });
 
-  it('normalizes stale MINIMAL thinking to LOW for Gemini 3.1 Pro', async () => {
+  it('normalizes unsupported MINIMAL thinking level for Gemini 3.1 Pro', async () => {
     const config = await buildGenerationConfig(
       'gemini-3.1-pro-preview',
       'sys',
       baseConfig,
       false,
-      -1,
+      0,
       false,
       false,
       false,

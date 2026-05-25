@@ -27,7 +27,6 @@ export const ApiConnectionTester: React.FC<ApiConnectionTesterProps> = ({
   return (
     <div className="pt-2 flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        {/* Optional Model Selector for Testing */}
         {availableModels && availableModels.length > 0 && onModelChange && testModelId && (
           <div className="flex-grow">
             <Select
@@ -71,7 +70,6 @@ export const ApiConnectionTester: React.FC<ApiConnectionTesterProps> = ({
         </button>
       </div>
 
-      {/* Test Results */}
       {testStatus === 'success' && (
         <div className="flex items-center gap-2 p-2 rounded-lg bg-green-500/10 border border-green-500/20 text-green-600 text-sm animate-in fade-in slide-in-from-top-1">
           <svg

@@ -4,7 +4,7 @@ import { type SideViewContent } from '@/types';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
 import { triggerDownload, sanitizeFilename } from '@/utils/export/core';
 import { useIsMobile } from '@/hooks/useDevice';
-import { FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS } from '@/constants/styleClasses';
+import { FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS } from '@/constants/focusClasses';
 import { useI18n } from '@/contexts/I18nContext';
 import { lazyNamedComponent } from '@/utils/lazyNamedComponent';
 

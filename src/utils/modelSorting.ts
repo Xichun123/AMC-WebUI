@@ -1,6 +1,6 @@
 import { type ModelOption } from '@/types';
 
-import { getModelCapabilities, isImageModel } from './modelCapabilities';
+import { getModelCapabilities, isImageGenerationModel } from './modelCapabilities';
 
 export const sanitizeModelOptions = (models: ModelOption[]): ModelOption[] => {
   const seenIds = new Set<string>();
@@ -38,7 +38,7 @@ export const sortModels = (models: ModelOption[]): ModelOption[] => {
     const capabilities = getModelCapabilities(id);
     if (capabilities.isTtsModel) return 3;
     if (capabilities.isRealImagenModel) return 5;
-    if (isImageModel(id)) return 4;
+    if (isImageGenerationModel(id)) return 4;
     if (capabilities.isNativeAudioModel) return 2;
     return 1;
   };

@@ -215,27 +215,24 @@ export const exportSvgAsImage = async (
   const svgDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(scaledSvgString)}`;
   const img = new Image();
 
-  // 5. Draw to canvas
   return new Promise((resolve, reject) => {
     img.onload = () => {
       const canvas = document.createElement('canvas');
       canvas.width = scaledWidth;
       canvas.height = scaledHeight;
-      const ctx = canvas.getContext('2d');
+      const canvasContext = canvas.getContext('2d');
 
-      if (ctx) {
-        // Handle background color
+      if (canvasContext) {
         if (backgroundColor) {
-          ctx.fillStyle = backgroundColor;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          canvasContext.fillStyle = backgroundColor;
+          canvasContext.fillRect(0, 0, canvas.width, canvas.height);
         } else if (mimeType === 'image/jpeg') {
           // Force white background for JPG to prevent black transparent areas
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          canvasContext.fillStyle = '#FFFFFF';
+          canvasContext.fillRect(0, 0, canvas.width, canvas.height);
         }
 
-        // Draw at 1:1 of the scaled image
-        ctx.drawImage(img, 0, 0, scaledWidth, scaledHeight);
+        canvasContext.drawImage(img, 0, 0, scaledWidth, scaledHeight);
 
         try {
           const dataUrl = canvas.toDataURL(mimeType);

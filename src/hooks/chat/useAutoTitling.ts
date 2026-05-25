@@ -1,7 +1,7 @@
-import { type Dispatch, type MutableRefObject, type SetStateAction, useCallback, useEffect } from 'react';
+import { type Dispatch, type MutableRefObject, type SetStateAction, useCallback, useEffect, useRef } from 'react';
 import { type AppSettings, type SavedChatSession } from '@/types';
 import { logService } from '@/services/logService';
-import { getGeminiKeyForRequest } from '@/utils/apiUtils';
+import { getGeminiKeyForRequest } from '@/utils/apiKeySelection';
 import { generateSessionTitle } from '@/utils/chat/session';
 import { generateTitleApi } from '@/services/api/generation/textApi';
 import { getVisibleChatMessages } from '@/utils/chat/visibility';
@@ -19,6 +19,54 @@ interface AutoTitlingProps {
   sessionKeyMapRef?: MutableRefObject<Map<string, string>>;
 }
 
+const hashAttemptValue = (value: string | null | undefined): string => {
+  const text = value ?? '';
+  let hash = 2166136261;
+
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return `${text.length}:${(hash >>> 0).toString(36)}`;
+};
+
+const buildAutoTitleAttemptKey = (
+  session: SavedChatSession,
+  appSettings: AppSettings,
+  language: 'en' | 'zh',
+): string => {
+  const messages = getVisibleChatMessages(session.messages);
+  const firstMessage = messages[0];
+  const secondMessage = messages[1];
+  const messageKey = (message: (typeof messages)[number] | undefined) =>
+    message
+      ? [
+          message.id,
+          message.role,
+          message.isLoading ? 'loading' : 'idle',
+          message.stoppedByUser ? 'stopped' : 'active',
+          hashAttemptValue(message.content),
+        ].join(':')
+      : 'none';
+
+  return [
+    session.id,
+    hashAttemptValue(session.title),
+    messageKey(firstMessage),
+    messageKey(secondMessage),
+    hashAttemptValue(session.settings.lockedApiKey),
+    language,
+    appSettings.apiMode,
+    appSettings.isOpenAICompatibleApiEnabled ? 'openai-compatible' : 'gemini-native',
+    appSettings.useCustomApiConfig ? 'custom-api' : 'env-api',
+    appSettings.serverManagedApi ? 'server-managed' : 'browser-managed',
+    appSettings.useApiProxy ? 'proxy' : 'direct',
+    hashAttemptValue(appSettings.apiKey),
+    hashAttemptValue(appSettings.apiProxyUrl),
+  ].join('|');
+};
+
 export const useAutoTitling = ({
   appSettings,
   activeChat,
@@ -28,6 +76,8 @@ export const useAutoTitling = ({
   setGeneratingTitleSessionIds,
   sessionKeyMapRef,
 }: AutoTitlingProps) => {
+  const attemptedTitleKeysRef = useRef<Set<string>>(new Set());
+
   const generateTitleForSession = useCallback(
     async (session: SavedChatSession) => {
       const sessionId = session.id;
@@ -115,6 +165,10 @@ export const useAutoTitling = ({
 
     if (secondMsg.isLoading || secondMsg.stoppedByUser) return;
 
+    const attemptKey = buildAutoTitleAttemptKey(activeChat, appSettings, language);
+    if (attemptedTitleKeysRef.current.has(attemptKey)) return;
+    attemptedTitleKeysRef.current.add(attemptKey);
+
     generateTitleForSession(activeChat);
-  }, [activeChat, appSettings.isAutoTitleEnabled, generatingTitleSessionIds, generateTitleForSession]);
+  }, [activeChat, appSettings, generatingTitleSessionIds, generateTitleForSession, language]);
 };

@@ -1,9 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page } from 'react-pdf';
 import type { UploadedFile } from '@/types';
-import { configurePdfWorker } from '@/utils/pdfWorker';
-
-configurePdfWorker(pdfjs);
+import { ensurePdfWorkerConfigured } from '@/utils/pdfRuntime';
 
 const pdfThumbnailImageCache = new Map<string, string>();
 
@@ -16,6 +14,8 @@ interface PdfFileThumbnailProps {
 }
 
 export const PdfFileThumbnail: React.FC<PdfFileThumbnailProps> = ({ file, fallback }) => {
+  ensurePdfWorkerConfigured();
+
   const containerRef = useRef<HTMLDivElement | null>(null);
   const cacheKey = useMemo(() => getPdfThumbnailCacheKey(file), [file]);
   const [cachedImageUrl, setCachedImageUrl] = useState(() => pdfThumbnailImageCache.get(cacheKey) ?? null);

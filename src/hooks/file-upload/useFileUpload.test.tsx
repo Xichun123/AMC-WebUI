@@ -1,11 +1,11 @@
 import { act } from 'react';
-import { renderHookWithProviders } from '@/test/providerTestUtils';
+import { renderHookWithProviders } from '@/test/render/providerRenderer';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import type { UploadedFile } from '@/types';
 import { useChatStore } from '@/stores/chatStore';
 import { useFileUpload } from './useFileUpload';
-import { createDeferred } from '@/test/testUtils';
+import { createDeferred } from '@/test/render/renderer';
 
 const { mockUploadFileItem } = vi.hoisted(() => ({
   mockUploadFileItem: vi.fn(),
@@ -16,13 +16,13 @@ vi.mock('@/utils/file-upload/uploadFileItem', () => ({
 }));
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });
 
 vi.mock('@/services/db/dbService', async () => {
-  const { createDbServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createDbServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createDbServiceMockModule();
 });

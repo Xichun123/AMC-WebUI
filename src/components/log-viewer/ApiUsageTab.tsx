@@ -3,7 +3,7 @@ import { KeyRound, CheckCircle } from 'lucide-react';
 
 import { useI18n } from '@/contexts/I18nContext';
 import { type AppSettings, type ChatSettings } from '@/types';
-import { parseApiKeys } from '@/utils/apiUtils';
+import { parseApiKeys } from '@/utils/apiKeySelection';
 
 import { ObfuscatedApiKey } from './ObfuscatedApiKey';
 
@@ -15,7 +15,7 @@ interface ApiUsageTabProps {
 
 export const ApiUsageTab: React.FC<ApiUsageTabProps> = ({ apiKeyUsage, appSettings, currentChatSettings }) => {
   const { t } = useI18n();
-  // Sanitize keys to match how they are logged in utils/apiUtils.ts (strip quotes, split by newlines/commas)
+  // Sanitize keys to match how they are logged in utils/apiKeySelection.ts (strip quotes, split by newlines/commas)
   const allApiKeys = parseApiKeys(appSettings.apiKey);
 
   const displayApiKeyUsage = new Map<string, number>();

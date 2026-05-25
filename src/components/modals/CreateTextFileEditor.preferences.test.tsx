@@ -1,6 +1,6 @@
 import { act } from 'react';
-import { createProviderTestRenderer as createTestRenderer } from '@/test/providerTestUtils';
-import type { TestRenderer } from '@/test/testUtils';
+import { createProviderTestRenderer as createTestRenderer } from '@/test/render/providerRenderer';
+import type { TestRenderer } from '@/test/render/renderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CreateTextFileEditor } from './CreateTextFileEditor';
 

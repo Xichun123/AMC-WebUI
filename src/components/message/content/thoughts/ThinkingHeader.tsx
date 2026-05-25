@@ -3,7 +3,7 @@ import { useI18n } from '@/contexts/I18nContext';
 import { ChevronDown } from 'lucide-react';
 import { GoogleSpinner } from '@/components/icons/GoogleSpinner';
 import { ThinkingTimer } from '@/components/message/ThinkingTimer';
-import { formatDuration } from '@/utils/dateHelpers';
+import { formatDuration } from '@/utils/durationFormat';
 
 interface ThinkingHeaderProps {
   isLoading: boolean;
@@ -35,14 +35,12 @@ export const ThinkingHeader: React.FC<ThinkingHeaderProps> = ({
 
   return (
     <div className="flex items-center gap-2 min-w-0 overflow-hidden flex-grow">
-      {/* Icon Area */}
       {isLoading && (
         <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 transition-colors duration-300">
           <GoogleSpinner size={20} />
         </div>
       )}
 
-      {/* Text Area + Integrated Chevron */}
       <div className="flex items-center gap-2 min-w-0">
         <div className="flex flex-col min-w-0 justify-center min-h-[1.75rem] sm:min-h-[2rem]">
           {isLoading ? (
@@ -83,7 +81,6 @@ export const ThinkingHeader: React.FC<ThinkingHeaderProps> = ({
           )}
         </div>
 
-        {/* Chevron */}
         <div className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-[var(--theme-bg-input)] transition-colors flex-shrink-0">
           <ChevronDown
             size={14}

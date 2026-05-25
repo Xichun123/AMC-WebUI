@@ -9,7 +9,7 @@ import { ChatTextArea } from './area/ChatTextArea';
 import { LiveStatusBanner } from './LiveStatusBanner';
 import { QueuedSubmissionCard } from './QueuedSubmissionCard';
 import { HiddenFileInputs } from './HiddenFileInputs';
-import { useChatInputAreaLayout } from './useChatInputAreaLayout';
+import { getChatInputAreaLayout } from './chatInputAreaLayout';
 import { useI18n } from '@/contexts/I18nContext';
 import { useChatInputContext } from './ChatInputContext';
 
@@ -45,7 +45,7 @@ export const ChatInputArea: React.FC = () => {
     inputContainerClass,
     queuedSubmissionContainerClass,
     actionsContainerClass,
-  } = useChatInputAreaLayout({
+  } = getChatInputAreaLayout({
     isFullscreen,
     isPipActive,
     isAnimatingSend,
@@ -117,7 +117,13 @@ export const ChatInputArea: React.FC = () => {
           onDisconnect={liveApi.disconnect}
         />
 
-        <form onSubmit={handlers.handleSubmit} className={formClass}>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            handlers.handleSubmit();
+          }}
+          className={formClass}
+        >
           <SlashCommandMenu
             isOpen={slashCommandState.slashCommandState.isOpen}
             commands={slashCommandState.slashCommandState.filteredCommands}

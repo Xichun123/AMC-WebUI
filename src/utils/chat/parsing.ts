@@ -1,6 +1,7 @@
 import { type UploadedFile } from '@/types';
 import { generateUniqueId } from './ids';
-import { base64ToBlob, getExtensionFromMimeType } from '@/utils/fileHelpers';
+import { base64ToBlob } from '@/utils/fileEncoding';
+import { getExtensionFromMimeType } from '@/utils/fileMime';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
 
 export const parseThoughtProcess = (thoughts: string | undefined) => {

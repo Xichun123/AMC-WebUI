@@ -18,7 +18,7 @@ vi.mock('./pyodideService', () => ({
 }));
 
 import { usePyodide } from './usePyodide';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 
 describe('usePyodide', () => {
   beforeEach(() => {

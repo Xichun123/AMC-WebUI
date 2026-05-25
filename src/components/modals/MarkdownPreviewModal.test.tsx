@@ -1,7 +1,7 @@
 import { act } from 'react';
-import { setupProviderTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createUploadedFile } from '@/test/factories';
+import { createUploadedFile } from '@/test/data/factories';
 
 const { mockMarkdownFileViewer, mockSettingsState } = vi.hoisted(() => ({
   mockMarkdownFileViewer: vi.fn(

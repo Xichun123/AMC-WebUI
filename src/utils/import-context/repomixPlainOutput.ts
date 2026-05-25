@@ -1,5 +1,5 @@
 import type { FileContent, FileNode, ProcessedFiles } from './types';
-import { compareTreeNodes } from './shared';
+import { compareTreeNodes } from './treeSorting';
 
 const PLAIN_SEPARATOR = '='.repeat(16);
 const PLAIN_LONG_SEPARATOR = '='.repeat(64);

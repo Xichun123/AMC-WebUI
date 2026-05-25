@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { Download } from 'lucide-react';
 import { type ChatMessage } from '@/types';
-import { useMessageExport } from '@/hooks/useMessageExport';
+import { useMessageExport } from './export/useMessageExport';
 import { useResponsiveValue } from '@/hooks/useDevice';
 import { ExportModal } from './export/ExportModal';
 

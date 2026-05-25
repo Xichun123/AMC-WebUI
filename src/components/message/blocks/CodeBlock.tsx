@@ -6,7 +6,7 @@ import { usePyodide } from '@/features/local-python/usePyodide';
 import { CodeHeader } from './parts/CodeHeader';
 import { ArtifactFrame } from './ArtifactFrame';
 import { extractTextFromNode } from '@/utils/reactNodeText';
-import { isImageMimeType } from '@/utils/fileTypeUtils';
+import { isImageMimeType } from '@/utils/fileTypeClassification';
 import { FileDisplay } from '@/components/message/FileDisplay';
 import { useI18n } from '@/contexts/I18nContext';
 import {
@@ -15,7 +15,7 @@ import {
   isLikelyStreamingLiveArtifactInteractionJson,
   isLiveArtifactInteractionLanguage,
   isLiveArtifactLanguage,
-} from '@/utils/codeUtils';
+} from '@/utils/previewableMarkdown';
 import type { LiveArtifactFollowupPayload } from '@/utils/liveArtifactFollowup';
 import { parseLiveArtifactInteractionSpec } from '@/utils/liveArtifactInteraction';
 import { LiveArtifactInteractionFrame } from './LiveArtifactInteractionFrame';
@@ -73,7 +73,6 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
 
   const isPython = finalLanguage.toLowerCase() === 'python' || finalLanguage.toLowerCase() === 'py';
 
-  // Extract raw code for execution
   const rawCode = useMemo(() => {
     if (!isPython) return '';
     if (codeElement) {
@@ -155,7 +154,6 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
         onDownload={handleDownload}
         onOpenSide={handleOpenSide}
         onFullscreen={handleFullscreenPreview}
-        // Execution Props
         canRun={isPython}
         isRunning={isRunning}
         onRun={handleRun}
@@ -204,7 +202,6 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
         )}
       </div>
 
-      {/* Execution Console */}
       {hasRun && (
         <div className="border-t border-[var(--theme-border-secondary)] bg-[var(--theme-bg-primary)] rounded-b-lg overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
           <div className="flex select-none items-center justify-between px-3 py-1.5 bg-[var(--theme-bg-tertiary)]/50">

@@ -1,5 +1,5 @@
 import { act } from 'react';
-import { setupTestRenderer } from '@/test/testUtils';
+import { setupTestRenderer } from '@/test/render/renderer';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ModelOption } from '@/types';
 import { ModelPicker } from './ModelPicker';
@@ -97,5 +97,46 @@ describe('ModelPicker behavior', () => {
     expect(geminiSection?.textContent).toContain('Gemini 3 Flash Preview');
     expect(openaiSection?.textContent).toContain('OpenAI Compatible');
     expect(openaiSection?.textContent).toContain('GPT-5.5');
+  });
+
+  it('supports keyboard navigation through model options', () => {
+    const onSelect = vi.fn();
+
+    act(() => {
+      renderer.root.render(renderPicker({ models, selectedId: 'gemini-3-flash-preview', onSelect }));
+    });
+
+    const trigger = renderer.container.querySelector<HTMLButtonElement>('[data-testid="model-picker-trigger"]');
+
+    act(() => {
+      trigger?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+      trigger?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+      trigger?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    });
+
+    expect(onSelect).toHaveBeenCalledWith('gemma-4-31b-it');
+    expect(renderer.container.querySelector('[role="listbox"]')).toBeNull();
+  });
+
+  it('links the open model list to an active option', () => {
+    act(() => {
+      renderer.root.render(renderPicker({ models, selectedId: 'gemini-3-flash-preview' }));
+    });
+
+    const trigger = renderer.container.querySelector<HTMLButtonElement>('[data-testid="model-picker-trigger"]');
+
+    act(() => {
+      trigger?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const listbox = renderer.container.querySelector('[role="listbox"]');
+    const activeId = listbox?.getAttribute('aria-activedescendant');
+
+    expect(listbox?.id).toBeTruthy();
+    expect(activeId).toBeTruthy();
+    const activeOption = Array.from(renderer.container.querySelectorAll('[role="option"]')).find(
+      (option) => option.id === activeId,
+    );
+    expect(activeOption?.textContent).toContain('Gemini 3 Flash Preview');
   });
 });

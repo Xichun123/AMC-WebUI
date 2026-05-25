@@ -70,12 +70,12 @@ const ChatInputContent: React.FC = () => {
         isGemini3={capabilities.isGemini3}
         isPreviewEditable={localFileState.isPreviewEditable}
         onSaveTextFile={localFileState.handleSavePreviewTextFile}
-        handlers={{
-          handleSaveFileConfig: handlers.handleSaveFileConfig,
-          handlePrevImage: handlers.handlePrevImage,
-          handleNextImage: handlers.handleNextImage,
-          currentImageIndex: handlers.currentImageIndex,
-          inputImages: handlers.inputImages,
+        onSaveFileConfig={handlers.handleSaveFileConfig}
+        previewNavigation={{
+          handlePrevImage: localFileState.handlePrevImage,
+          handleNextImage: localFileState.handleNextImage,
+          currentImageIndex: localFileState.currentImageIndex,
+          inputImages: localFileState.inputImages,
         }}
       />
 

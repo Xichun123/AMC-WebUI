@@ -17,6 +17,7 @@ interface AppModalsProps {
   isSettingsModalOpen?: boolean;
   setIsSettingsModalOpen?: (isOpen: boolean) => void;
   appSettings?: AppSettings;
+  currentThemeId: string;
   availableModels: ModelOption[];
   handleSaveSettings: (newSettings: AppSettings) => void;
   handleSaveCurrentChatSettings: (newSettings: ChatSettings) => void;
@@ -61,6 +62,7 @@ export const AppModals: React.FC<AppModalsProps> = (props) => {
     isSettingsModalOpen = false,
     setIsSettingsModalOpen = () => {},
     appSettings,
+    currentThemeId,
     availableModels,
     handleSaveSettings,
     handleSaveCurrentChatSettings,
@@ -163,6 +165,7 @@ export const AppModals: React.FC<AppModalsProps> = (props) => {
             isOpen={isSettingsModalOpen}
             onClose={() => setIsSettingsModalOpen(false)}
             currentSettings={appSettings!}
+            currentThemeId={currentThemeId}
             currentChatSettings={currentChatSettings}
             hasActiveSession={!!activeSessionId}
             availableModels={availableModels}

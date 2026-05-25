@@ -1,7 +1,7 @@
 import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import type { AppSettings } from '@/types';
-import { isShortcutPressed } from '@/utils/shortcutUtils';
-import type { SlashCommandState } from '@/hooks/useSlashCommands';
+import { isShortcutPressed } from '@/utils/keyboardShortcuts';
+import type { SlashCommandState } from './useSlashCommands';
 
 const IME_PROCESS_KEY_CODE = 229;
 
@@ -38,7 +38,7 @@ interface UseChatInputKeyboardParams {
   isEditing: boolean;
   canSend: boolean;
   canQueueMessage: boolean;
-  handleSubmit: (event: React.FormEvent) => void;
+  handleSubmit: () => void;
   queueCurrentSubmission: () => void;
   onStopGenerating: () => void;
   onCancelEdit: () => void;
@@ -165,7 +165,7 @@ export const useChatInputKeyboard = ({
 
         if (canSend) {
           event.preventDefault();
-          handleSubmit(event as unknown as React.FormEvent);
+          handleSubmit();
           return;
         }
 

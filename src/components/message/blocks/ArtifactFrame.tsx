@@ -10,7 +10,7 @@ import {
   HTML_PREVIEW_DIAGNOSTIC_EVENT,
   HTML_PREVIEW_MESSAGE_CHANNEL,
   HTML_PREVIEW_STREAM_RENDER_EVENT,
-} from '@/utils/htmlPreview';
+} from '@/utils/html-preview/previewDocument';
 import { normalizeLiveArtifactFollowupPayload, type LiveArtifactFollowupPayload } from '@/utils/liveArtifactFollowup';
 import {
   createRelayedLiveArtifactSelectionDetail,

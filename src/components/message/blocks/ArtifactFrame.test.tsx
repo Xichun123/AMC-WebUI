@@ -1,13 +1,13 @@
 import { act } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { logService } from '@/services/logService';
-import { setupTestRenderer } from '@/test/testUtils';
+import { setupTestRenderer } from '@/test/render/renderer';
 import {
   HTML_PREVIEW_CLEAR_SELECTION_EVENT,
   HTML_PREVIEW_DIAGNOSTIC_EVENT,
   HTML_PREVIEW_MESSAGE_CHANNEL,
   HTML_PREVIEW_STREAM_RENDER_EVENT,
-} from '@/utils/htmlPreview';
+} from '@/utils/html-preview/previewDocument';
 import { ArtifactFrame } from './ArtifactFrame';
 
 const createRect = (overrides: Partial<DOMRect> = {}): DOMRect =>

@@ -2,7 +2,7 @@ import { useCallback, type Dispatch, type SetStateAction, type MutableRefObject 
 import { type SavedChatSession, type ChatGroup } from '@/types';
 import { dbService } from '@/services/db/dbService';
 import { logService } from '@/services/logService';
-import { cleanupFilePreviewUrls } from '@/utils/fileHelpers';
+import { cleanupFilePreviewUrls } from '@/utils/filePreviewUrls';
 import { removeSessionScopedLocalStorageEntries } from '@/utils/sessionLocalStorage';
 import { useChatDraftStore } from '@/stores/chatDraftStore';
 

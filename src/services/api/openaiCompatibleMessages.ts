@@ -1,6 +1,6 @@
 import type { Part } from '@google/genai';
 import type { ChatHistoryItem } from '@/types';
-import { isAudioMimeType, isImageMimeType } from '@/utils/fileTypeUtils';
+import { isAudioMimeType, isImageMimeType } from '@/utils/fileTypeClassification';
 import type { OpenAICompatibleChatConfig, OpenAIMessage, OpenAIMessageContent } from './openaiCompatibleTypes';
 
 const OPENAI_COMPATIBLE_FILE_DATA_ERROR = 'OpenAI-compatible mode cannot send Gemini Files API file references.';

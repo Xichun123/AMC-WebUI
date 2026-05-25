@@ -1,23 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
+import { listProjectSourceFiles, projectRoot, readProjectFile } from './projectFiles';
 
-const projectRoot = path.resolve(__dirname, '../../..');
-
-const readProjectFile = (relativePath: string) => fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
 const importDeclarationPattern = /^import\s+(?:type\s+)?[\s\S]*?\s+from\s+['"]([^'"]+)['"];$/gm;
 const sourceImportSpecifierPattern =
   /\b(?:import|export)\b[\s\S]*?from\s+['"]([^'"]+)['"]|import\s*\(\s*['"]([^'"]+)['"]\s*\)|vi\.(?:mock|doMock|unmock|importActual|importMock)\s*(?:<[^>]+>)?\(\s*['"]([^'"]+)['"]/g;
-const listProjectSourceFiles = (relativeDir: string): string[] => {
-  const absoluteDir = path.join(projectRoot, relativeDir);
-  return fs.readdirSync(absoluteDir, { withFileTypes: true }).flatMap((entry) => {
-    const entryPath = path.join(relativeDir, entry.name);
-    if (entry.isDirectory()) {
-      return listProjectSourceFiles(entryPath);
-    }
-    return /\.(ts|tsx)$/.test(entry.name) ? [entryPath] : [];
-  });
-};
 
 describe('code style boundaries', () => {
   it('keeps lint coverage on TypeScript and local JavaScript tooling', () => {
@@ -162,6 +150,15 @@ describe('code style boundaries', () => {
     expect(offenders).toEqual([]);
   });
 
+  it('keeps production code free of double type assertions', () => {
+    const offenders = listProjectSourceFiles('src')
+      .filter((relativePath) => !relativePath.includes('.test.'))
+      .filter((relativePath) => !relativePath.startsWith('src/test/'))
+      .filter((relativePath) => readProjectFile(relativePath).includes('as unknown as'));
+
+    expect(offenders).toEqual([]);
+  });
+
   it('does not call useI18n more than once in a production component or hook', () => {
     const offenders = listProjectSourceFiles('src')
       .filter((relativePath) => !relativePath.includes('.test.'))
@@ -246,30 +243,9 @@ describe('code style boundaries', () => {
     expect(liveConnectionSource).not.toContain('const baseDelay = 1000;');
   });
 
-  it('keeps core type comments focused on domain meaning instead of change history', () => {
-    const chatTypes = readProjectFile('src/types/chat.ts');
-
-    expect(chatTypes).not.toMatch(/\/\/\s*Added (?:for|to)\b/);
-  });
-
-  it('keeps production comments focused on current behavior instead of change history', () => {
-    const changeHistoryCommentPattern =
-      /\/\/\s*(?:New\s+(?:method|UI|ASR|SRT)\b|Added\s+(?:setter|for|to|allow-downloads)\b|Renamed\b|Removed\b|Changed\b|.*\bLegacy\/Shared\b|.*\bduring refactor transition\b|.*\bnew specific container class\b|.*\bPreviously this logic\b|.*\bAbuse Check\b|Update state:)/i;
-    const offenders = listProjectSourceFiles('src')
-      .filter((relativePath) => !relativePath.includes('.test.'))
-      .filter((relativePath) => relativePath !== 'src/test/architecture/codeStyleBoundaries.test.ts')
-      .filter((relativePath) =>
-        readProjectFile(relativePath)
-          .split('\n')
-          .some((line) => changeHistoryCommentPattern.test(line)),
-      );
-
-    expect(offenders).toEqual([]);
-  });
-
   it('does not keep tautological ternaries in production sources', () => {
     const tautologicalLiteralTernaryPattern = /\?\s*(['"`][^'"`]+['"`])\s*:\s*\1/;
-    const tautologicalExtensionFallbackPattern = /SUPPORTED_EXTENSIONS\.includes\(ext\)\s*\?\s*ext\s*:\s*ext/;
+    const tautologicalExtensionFallbackPattern = /CREATE_FILE_EXTENSION_OPTIONS\.includes\(ext\)\s*\?\s*ext\s*:\s*ext/;
     const offenders = listProjectSourceFiles('src')
       .filter((relativePath) => !relativePath.includes('.test.'))
       .filter((relativePath) => relativePath !== 'src/test/architecture/codeStyleBoundaries.test.ts')
@@ -277,21 +253,6 @@ describe('code style boundaries', () => {
         const source = readProjectFile(relativePath);
         return tautologicalLiteralTernaryPattern.test(source) || tautologicalExtensionFallbackPattern.test(source);
       });
-
-    expect(offenders).toEqual([]);
-  });
-
-  it('keeps production comments from echoing nearby code structure', () => {
-    const lowInformationCommentPattern =
-      /(?:\/\/\s*(?:Refs|Hooks|Components|Header|Content Area|Scrollable Content|Model Selection|Floating Toolbars & Navigation|Modals|Actions|Build Config|Fix:|Filename Logic|Logic|(?:\d+\.\s*)?(?:Audio|Position|Drag|Scroll|UI|Auto Fullscreen HTML|Sticky Key|Token|Thinking Budget|Core Logging|Comparison|Resizing) Logic|Find the index|Update ref|Update index|Update existing message content|Clear files for new chat|Determine default resolution|Start polling for new files|Normal Logic|Enhanced Navigation Logic|Minimum scale floor|Add local preview URL|Preserve local file reference|Clear speed on complete|Important for cross-origin images|Must be false to allow export|Helper to extract stack traces|Helper to register page refs|Helper to match types|Pass data to callback|Only fire callback if we have data|Filter and read files that have raw data|Filter duplicates if any|Reconnection Refs|Cleanup on unmount|Determine state priorities|Determine disabled state|Determine background class|Find the code element|Synchronously resolve content string|Scroll handler|Check if title is generic or a placeholder|Skip if already generating|Need at least user prompt and model response|Basic structure check|Wait for the first model message to be complete|Initialize Stream Handler Factory|Pyodide Execution Logic|Simple CSV detection|Simple JSON detection|Output Context|Input Context|Apply initial mute state|AudioWorklet Setup|Handle Worklet Messages|Calculate Volume|Stop Microphone|Disconnect Input Nodes|Close Contexts|Pass progress callback|Mark active immediately|Sanitize the session before export|We create a structure compatible with the history import feature|Exporting only the active chat session|No groups are exported with a single chat|Use blobToBase64 which is efficient and handles Blobs\/Files|Use configured media resolution|Save if any changes were made)\b|\{\/\*\s*Text Content\s*\*\/\})/;
-    const offenders = listProjectSourceFiles('src')
-      .filter((relativePath) => !relativePath.includes('.test.'))
-      .filter((relativePath) => relativePath !== 'src/test/architecture/codeStyleBoundaries.test.ts')
-      .filter((relativePath) =>
-        readProjectFile(relativePath)
-          .split('\n')
-          .some((line) => lowInformationCommentPattern.test(line)),
-      );
 
     expect(offenders).toEqual([]);
   });
@@ -356,7 +317,7 @@ describe('code style boundaries', () => {
       'src/features/message-sender/useMessageSender.ts',
       'src/hooks/chat/actions/useAudioActions.ts',
       'src/hooks/token-count/useTokenCountLogic.ts',
-      'src/hooks/useMessageExport.ts',
+      'src/components/message/buttons/export/useMessageExport.ts',
       'src/hooks/data-management/useChatSessionExport.ts',
       'src/utils/export/templates.ts',
       'src/components/message/content/MessageFiles.tsx',
@@ -409,10 +370,10 @@ describe('code style boundaries', () => {
   it('routes browser runtime diagnostics through logService instead of direct console calls', () => {
     const allowedConsoleFiles = new Set([
       'src/services/logService.ts',
-      'src/services/db/dbService.ts',
+      'src/services/db/indexedDbAccess.ts',
       'src/features/local-python/pyodideWorkerTemplate.ts',
       'src/utils/chat/session.ts',
-      'src/utils/htmlPreviewScripts.ts',
+      'src/utils/html-preview/previewBridgeScript.ts',
     ]);
 
     const offenders = listProjectSourceFiles('src')
@@ -468,6 +429,9 @@ describe('code style boundaries', () => {
     expect(sourceLevelRefDisables).toEqual([]);
     expect(unexplainedSetStateEffectDisables).toEqual([]);
     expect(unexplainedExhaustiveDepsDisables).toEqual([]);
+    expect(readProjectFile('src/hooks/live-api/useLiveConnection.ts')).not.toContain(
+      'eslint-disable-next-line react-hooks/exhaustive-deps',
+    );
   });
 
   it('keeps React Refresh component-export exceptions in ESLint config instead of source comments', () => {

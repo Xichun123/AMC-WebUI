@@ -281,6 +281,10 @@ export const chatInputTranslations = {
     en: '[Error: Image generation failed with no specific message.]',
     zh: '[错误：图片生成失败，且没有具体错误信息。]',
   },
+  messageSender_imageEditHistoryMissingGeneratedImage: {
+    en: 'A previously generated image is missing from this image edit history. Please reattach the image or start a new image edit turn.',
+    zh: '之前生成的图片已无法从历史记录中恢复。请重新附加这张图片，或开启新的图片编辑回合。',
+  },
 
   // File Settings Modal
   fileSettings_title: { en: 'File Configuration', zh: '文件配置' },
@@ -367,6 +371,10 @@ export const chatInputTranslations = {
   messageSender_imageReferenceLimit: {
     en: 'Gemini 3 image models support up to 14 reference images per request.',
     zh: 'Gemini 3 图片模型每次请求最多支持 14 张参考图。',
+  },
+  messageSender_gemma4TextImageOnly: {
+    en: 'Gemma 4 31B/26B models support text and image attachments only.',
+    zh: 'Gemma 4 31B/26B 模型仅支持文本和图片附件。',
   },
   messageSender_codeExecutionTextFileTooLarge: {
     en: 'Code execution text/CSV files should be 2MB or smaller. Split the file or turn off Code Execution.',

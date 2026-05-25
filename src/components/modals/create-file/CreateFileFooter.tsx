@@ -1,7 +1,7 @@
 import React from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { ChevronDown, Save, FilePlus, Loader2 } from 'lucide-react';
-import { SUPPORTED_EXTENSIONS } from '@/hooks/useCreateFileEditor';
+import { CREATE_FILE_EXTENSION_OPTIONS } from './createFileExtensionOptions';
 
 interface CreateFileFooterProps {
   filenameBase: string;
@@ -51,12 +51,12 @@ export const CreateFileFooter: React.FC<CreateFileFooterProps> = ({
             className="h-9 pl-3 pr-8 bg-[var(--theme-bg-input)] border border-[var(--theme-border-secondary)] rounded-lg focus:ring-2 focus:ring-[var(--theme-border-focus)] focus:border-transparent text-[var(--theme-text-primary)] outline-none transition-all text-sm font-mono cursor-pointer appearance-none max-w-[80px]"
             aria-label={t('createText_file_extension_aria')}
           >
-            {SUPPORTED_EXTENSIONS.map((ext) => (
+            {CREATE_FILE_EXTENSION_OPTIONS.map((ext) => (
               <option key={ext} value={ext}>
                 {ext}
               </option>
             ))}
-            {!SUPPORTED_EXTENSIONS.includes(extension) && <option value={extension}>{extension}</option>}
+            {!CREATE_FILE_EXTENSION_OPTIONS.includes(extension) && <option value={extension}>{extension}</option>}
           </select>
           <ChevronDown
             size={14}

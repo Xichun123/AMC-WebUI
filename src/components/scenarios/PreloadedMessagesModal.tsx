@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { type SavedScenario } from '@/types';
 import { X, Plus, Upload, Download, ArrowLeft } from 'lucide-react';
@@ -6,7 +6,7 @@ import { Modal } from '@/components/shared/Modal';
 import { ScenarioEditor } from './ScenarioEditor';
 import { ScenarioList } from './ScenarioList';
 import { useScenarioManager } from '@/hooks/scenarios/useScenarioManager';
-import { MODAL_CLOSE_BUTTON_DANGER_HOVER_CLASS, SMALL_ICON_BUTTON_ROUND_CLASS } from '@/constants/styleClasses';
+import { MODAL_CLOSE_BUTTON_DANGER_HOVER_CLASS, SMALL_ICON_BUTTON_ROUND_CLASS } from '@/constants/buttonClasses';
 
 interface PreloadedMessagesModalProps {
   isOpen: boolean;
@@ -45,8 +45,15 @@ export const PreloadedMessagesModal: React.FC<PreloadedMessagesModalProps> = ({
   });
 
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const delayedCloseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Focus management when modal opens
+  const clearDelayedCloseTimeout = useCallback(() => {
+    if (delayedCloseTimeoutRef.current !== null) {
+      clearTimeout(delayedCloseTimeoutRef.current);
+      delayedCloseTimeoutRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => closeButtonRef.current?.focus(), 100);
@@ -55,20 +62,27 @@ export const PreloadedMessagesModal: React.FC<PreloadedMessagesModalProps> = ({
     return undefined;
   }, [isOpen]);
 
+  useEffect(() => () => clearDelayedCloseTimeout(), [clearDelayedCloseTimeout]);
+
   const handleClose = () => {
+    clearDelayedCloseTimeout();
     if (isOpen) {
       onClose();
     }
   };
 
   const handleLoadAndClose = (scenario: SavedScenario) => {
-    if (scenario.messages.length === 0 && (!scenario.systemInstruction || !scenario.systemInstruction.trim())) {
+    if (scenario.messages.length === 0 && !scenario.systemInstruction?.trim()) {
       showFeedback('error', t('scenarios_feedback_empty'));
       return;
     }
     onLoadScenario(scenario);
     showFeedback('success', t('scenarios_feedback_loaded'));
-    setTimeout(onClose, 300);
+    clearDelayedCloseTimeout();
+    delayedCloseTimeoutRef.current = setTimeout(() => {
+      delayedCloseTimeoutRef.current = null;
+      onClose();
+    }, 300);
   };
 
   const isSystemScenario = editingScenario && systemScenarioIds.includes(editingScenario.id);
@@ -83,7 +97,6 @@ export const PreloadedMessagesModal: React.FC<PreloadedMessagesModalProps> = ({
       contentClassName="w-full h-full sm:w-[95vw] sm:h-[90vh] sm:max-w-7xl sm:rounded-xl shadow-2xl flex flex-col overflow-hidden bg-[var(--theme-bg-primary)] border border-[var(--theme-border-primary)] transition-all"
     >
       <div className="flex flex-col h-full relative">
-        {/* Modal Header */}
         <div className="flex justify-between items-center px-4 sm:px-6 py-4 sm:py-5 bg-[var(--theme-bg-primary)] flex-shrink-0 z-10 border-b border-[var(--theme-border-secondary)]/50">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             {view === 'editor' && (
@@ -171,7 +184,6 @@ export const PreloadedMessagesModal: React.FC<PreloadedMessagesModalProps> = ({
           </div>
         </div>
 
-        {/* Feedback Toast */}
         {feedback && (
           <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-300 pointer-events-none">
             <div
@@ -186,7 +198,6 @@ export const PreloadedMessagesModal: React.FC<PreloadedMessagesModalProps> = ({
           </div>
         )}
 
-        {/* Content Area */}
         <div className="flex-grow flex flex-col min-h-0 bg-[var(--theme-bg-secondary)] p-3 sm:p-4 md:px-6 md:py-5 overflow-hidden">
           {view === 'list' ? (
             <ScenarioList

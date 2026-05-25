@@ -3,23 +3,13 @@ import { Language, Outcome } from '@google/genai';
 import { buildContentParts, createChatHistoryForApi } from './builder';
 import { type UploadedFile, type ChatMessage, MediaResolution } from '@/types';
 
-vi.mock('@/utils/fileHelpers', () => ({
+vi.mock('@/utils/fileEncoding', () => ({
   blobToBase64: vi.fn().mockResolvedValue('base64data'),
   fileToString: vi.fn().mockResolvedValue('file text content'),
-  isTextFile: vi.fn((file: { name: string; type: string }) => {
-    return (
-      file.type === 'text/plain' || file.type === 'text/csv' || file.name.endsWith('.txt') || file.name.endsWith('.csv')
-    );
-  }),
-  getExtensionFromMimeType: vi.fn((mimeType: string) => {
-    const map: Record<string, string> = { 'image/png': '.png', 'audio/mp3': '.mp3' };
-    return map[mimeType] || '.bin';
-  }),
-  base64ToBlob: vi.fn(() => new Blob(['data'])),
 }));
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });
@@ -559,6 +549,24 @@ describe('createChatHistoryForApi', () => {
       inlineData: { mimeType: 'image/png', data: 'base64data' },
       thoughtSignature: 'sig-image',
     });
+  });
+
+  it('blocks Gemini image turns when generated media cannot be rehydrated', async () => {
+    const msgs = [
+      makeMessage('model', '', {
+        apiParts: [
+          { text: 'Here is an updated result.', thoughtSignature: 'sig-text' },
+          {
+            inlineData: { mimeType: 'image/png', data: '' },
+            thoughtSignature: 'sig-image',
+          },
+        ],
+      }),
+    ];
+
+    await expect(createChatHistoryForApi(msgs, false, 'gemini-3.1-flash-image-preview')).rejects.toThrow(
+      'Please reattach the image',
+    );
   });
 
   it('rebuilds prior user text files as file inputs when code execution file I/O is preferred', async () => {

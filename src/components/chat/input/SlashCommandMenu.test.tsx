@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { describe, expect, it } from 'vitest';
-import { setupTestRenderer } from '@/test/testUtils';
+import { setupTestRenderer } from '@/test/render/renderer';
 import { SlashCommandMenu } from './SlashCommandMenu';
 import type { SlashCommand } from '@/types/slashCommands';
 

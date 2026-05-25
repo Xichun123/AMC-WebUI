@@ -10,10 +10,10 @@ import {
 } from 'react';
 
 import type { UploadedFile } from '@/types';
-import { EXTENSION_TO_MIME } from '@/constants/fileConstants';
+import { EXTENSION_TO_MIME } from '@/constants/fileTypeSupport';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
-import { cleanupFilePreviewUrl, cleanupReplacedFilePreviewUrl } from '@/utils/fileHelpers';
-import { isTextFile } from '@/utils/fileTypeUtils';
+import { cleanupFilePreviewUrl, cleanupReplacedFilePreviewUrl } from '@/utils/filePreviewUrls';
+import { isTextFile } from '@/utils/fileTypeClassification';
 import { useFileModalState } from '@/hooks/ui/useFileModalState';
 import { readUploadedTextFileContent } from '@/utils/chat-input/textFileToInput';
 import { useI18n } from '@/contexts/I18nContext';

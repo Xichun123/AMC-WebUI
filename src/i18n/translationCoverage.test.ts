@@ -351,7 +351,7 @@ describe('translation coverage for protected UI surfaces', () => {
         snippets: ['This field is required.', "'Continue'"],
       },
       {
-        file: 'src/components/message/code-block/InlineCode.tsx',
+        file: 'src/components/message/code/InlineCode.tsx',
         snippets: ['Click to copy', 'Copied!'],
       },
       {
@@ -359,7 +359,7 @@ describe('translation coverage for protected UI surfaces', () => {
         snippets: ['Read Aloud (TTS)'],
       },
       {
-        file: 'src/hooks/useCreateFileEditor.ts',
+        file: 'src/components/modals/create-file/useCreateFileEditor.ts',
         snippets: ['Error generating PDF.'],
       },
       {
@@ -367,7 +367,7 @@ describe('translation coverage for protected UI surfaces', () => {
         snippets: ['Sorry, the screenshot could not be captured. Please check the console for errors.'],
       },
       {
-        file: 'src/utils/mediaUtils.ts',
+        file: 'src/utils/screenCapture.ts',
         snippets: ['Your browser does not support screen capture.', 'Could not start screen capture:'],
       },
       {
@@ -389,7 +389,7 @@ describe('translation coverage for protected UI surfaces', () => {
         snippets: ['Failed to capture screenshot.', 'Processing folder...', 'Failed to process folder structure.'],
       },
       {
-        file: 'src/hooks/useMessageExport.ts',
+        file: 'src/components/message/buttons/export/useMessageExport.ts',
         snippets: ['Exported Message', 'Message Export', "language: 'en'", 'USER', 'ASSISTANT', 'N/A'],
       },
       {
@@ -429,7 +429,7 @@ describe('translation coverage for protected UI surfaces', () => {
         snippets: ['Translation failed.'],
       },
       {
-        file: 'src/hooks/useMessageExport.ts',
+        file: 'src/components/message/buttons/export/useMessageExport.ts',
         snippets: ['Could not find message content in DOM. Please ensure the message is visible.'],
       },
       {
@@ -437,8 +437,12 @@ describe('translation coverage for protected UI surfaces', () => {
         snippets: ['An unknown error occurred.', 'API key is not configured in settings.'],
       },
       {
-        file: 'src/features/message-sender/ttsImagenStrategy.ts',
-        snippets: ['TTS Error', 'Image Gen Error', 'Audio Ready', 'Image Ready', 'Generated '],
+        file: 'src/features/message-sender/ttsStrategy.ts',
+        snippets: ['TTS Error', 'Audio Ready'],
+      },
+      {
+        file: 'src/features/message-sender/imageGenerationStrategy.ts',
+        snippets: ['Image Gen Error', 'Image Ready', 'Generated '],
       },
       {
         file: 'src/features/message-sender/imageEditStrategy.ts',
@@ -464,7 +468,7 @@ describe('translation coverage for protected UI surfaces', () => {
         ],
       },
       {
-        file: 'src/hooks/useHistorySidebarLogic.ts',
+        file: 'src/components/sidebar/useHistorySidebarLogic.ts',
         snippets: ["'Today'", "'Yesterday'", "'Previous 7 Days'", "'Previous 30 Days'"],
       },
       {
@@ -601,7 +605,7 @@ describe('translation coverage for protected UI surfaces', () => {
         snippets: ['Could not start recording. Please check permissions.'],
       },
       {
-        file: 'src/hooks/useVoiceInput.ts',
+        file: 'src/hooks/chat-input/useVoiceInput.ts',
         snippets: ['Voice input failed:'],
       },
       {

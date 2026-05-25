@@ -6,13 +6,13 @@ import {
   registerPersistedStoreSync,
 } from './persistentStorage';
 
-export type SettingsTab = 'models' | 'interface' | 'api' | 'data' | 'shortcuts' | 'about';
+export type SettingsTab = 'models' | 'interface' | 'api' | 'mcp' | 'data' | 'shortcuts' | 'about';
 export type SettingsTabDescriptor = { id: SettingsTab; labelKey: string };
 
 const SETTINGS_UI_STORE_STORAGE_KEY = 'all_model_chat_settings_ui_v1';
 
 const LEGACY_SETTINGS_TAB_STORAGE_KEY = 'chatSettingsLastTab';
-const SETTINGS_TABS: SettingsTab[] = ['models', 'interface', 'api', 'data', 'shortcuts', 'about'];
+const SETTINGS_TABS: SettingsTab[] = ['models', 'interface', 'api', 'mcp', 'data', 'shortcuts', 'about'];
 
 interface SettingsUiState {
   activeTab: SettingsTab;
@@ -43,6 +43,8 @@ const normalizeSettingsTab = (savedTab: string | null): SettingsTab | null => {
     case 'api':
     case 'account':
       return 'api';
+    case 'mcp':
+      return 'mcp';
     case 'data':
       return 'data';
     case 'about':

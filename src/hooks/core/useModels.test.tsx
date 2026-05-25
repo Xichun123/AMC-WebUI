@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useModels } from './useModels';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 import { useModelPreferencesStore } from '@/stores/modelPreferencesStore';
 
 let storage: Map<string, string>;

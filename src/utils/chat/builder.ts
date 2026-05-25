@@ -2,8 +2,8 @@ import { type ChatMessage, type ContentPart, type UploadedFile, type ChatHistory
 import type { PartMediaResolutionLevel } from '@google/genai';
 import { logService } from '@/services/logService';
 import { isGemini3Model } from '@/utils/modelCapabilities';
-import { blobToBase64, fileToString } from '@/utils/fileHelpers';
-import { getFileKindFlags, isImageMimeType, isTextFile } from '@/utils/fileTypeUtils';
+import { blobToBase64, fileToString } from '@/utils/fileEncoding';
+import { getFileKindFlags, isImageMimeType, isTextFile } from '@/utils/fileTypeClassification';
 
 import { usesRemoteFileReference } from './fileTransferStrategy';
 import { stripReasoningMarkup } from './reasoning';
@@ -15,6 +15,9 @@ const PART_MEDIA_RESOLUTION_LEVEL = {
   MEDIA_RESOLUTION_HIGH: 'MEDIA_RESOLUTION_HIGH',
   MEDIA_RESOLUTION_ULTRA_HIGH: 'MEDIA_RESOLUTION_ULTRA_HIGH',
 } as const;
+
+export const GEMINI_IMAGE_HISTORY_REHYDRATION_ERROR =
+  'A previously generated image is missing from this image edit history. Please reattach the image or start a new image edit turn.';
 
 const isGeminiImageHistoryTarget = (modelId?: string): boolean => {
   if (!modelId) return false;
@@ -298,8 +301,9 @@ export const createChatHistoryForApi = async (
 
                 if (partCopy.inlineData) {
                   const mimeType = partCopy.inlineData.mimeType || 'unknown';
+                  const isGeminiImageHistoryPart = isImageMimeType(mimeType) && isGeminiImageHistoryTarget(modelId);
                   const canRehydrateGeneratedMedia =
-                    isImageMimeType(mimeType) && (hasCodeExecutionArtifacts || isGeminiImageHistoryTarget(modelId));
+                    isImageMimeType(mimeType) && (hasCodeExecutionArtifacts || isGeminiImageHistoryPart);
                   if (partCopy.inlineData.data && canRehydrateGeneratedMedia) {
                     return partCopy;
                   }
@@ -320,6 +324,10 @@ export const createChatHistoryForApi = async (
                         error,
                       });
                     }
+                  }
+
+                  if (isGeminiImageHistoryPart) {
+                    throw new Error(GEMINI_IMAGE_HISTORY_REHYDRATION_ERROR);
                   }
 
                   return {

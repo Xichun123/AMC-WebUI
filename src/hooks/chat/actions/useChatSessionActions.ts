@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { type ChatSettings as IndividualChatSettings, type SavedChatSession, type UploadedFile } from '@/types';
-import { cleanupFilePreviewUrls } from '@/utils/fileHelpers';
+import { cleanupFilePreviewUrls } from '@/utils/filePreviewUrls';
 import { updateSessionById } from '@/utils/chat/sessionMutations';
 
 interface UseChatSessionActionsProps {

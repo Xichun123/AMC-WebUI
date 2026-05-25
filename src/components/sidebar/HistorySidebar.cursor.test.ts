@@ -19,6 +19,6 @@ describe('HistorySidebar cursor affordances', () => {
     expect(stylesSource).toContain('cursor-pointer');
     expect(stylesSource).toContain('SIDEBAR_ICON_LINK_BUTTON_CLASS');
     expect(stylesSource).toContain('no-underline');
-    expect(stylesSource).toContain('focus:visible:ring-[var(--theme-border-focus)]');
+    expect(stylesSource).toContain('focus-visible:ring-[var(--theme-border-focus)]');
   });
 });

@@ -7,7 +7,7 @@ import {
 } from '@/types';
 import { logService } from '@/services/logService';
 import { releaseManagedObjectUrl } from '@/services/objectUrlManager';
-import { getApiKeyErrorTranslationKey, getGeminiKeyForRequest } from '@/utils/apiUtils';
+import { getApiKeyErrorTranslationKey, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
 import {
   buildFileUploadPreflight,
   checkBatchNeedsApiKey,
@@ -105,15 +105,12 @@ export const useFileUploader = ({
       setSelectedFiles((prevFiles) =>
         prevFiles.map((file) => {
           if (file.id === fileIdToCancel) {
-            // 1. Abort the actual network request
             if (file.abortController) {
               file.abortController.abort();
             }
 
-            // 2. Fix Memory Leak: Revoke the local Blob URL to free up browser memory
             releaseManagedObjectUrl(file.dataUrl);
 
-            // 3. Update state to reflect cancellation and clear heavy object references
             return {
               ...file,
               isProcessing: false,

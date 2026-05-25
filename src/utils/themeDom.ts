@@ -1,4 +1,4 @@
-import { AVAILABLE_THEMES } from '@/constants/themeConstants';
+import { AVAILABLE_THEMES } from '@/constants/themeRegistry';
 import type { AppSettings } from '@/types';
 import type { Theme, ThemeColors } from '@/types/theme';
 

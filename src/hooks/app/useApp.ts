@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { type Dispatch, type SetStateAction, useCallback, useEffect, useMemo, useState } from 'react';
 import { useAppSettings } from '@/hooks/core/useAppSettings';
 import { useChat } from '@/hooks/chat/useChat';
 import { useAppUi } from '@/hooks/core/useAppUi';
@@ -12,7 +12,9 @@ import {
   type AppSettings,
   type ChatSettings,
   type ModelOption,
+  type SavedChatSession,
   type SideViewContent,
+  type Theme,
   type ThinkingLevel,
 } from '@/types';
 import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
@@ -21,15 +23,56 @@ import { useDataImport } from '@/hooks/data-management/useDataImport';
 import { useChatSessionExport } from '@/hooks/data-management/useChatSessionExport';
 import { useAppInitialization } from './useAppInitialization';
 import { useAppTitle } from './useAppTitle';
-import { focusChatInput, useAppPromptModes } from './useAppPromptModes';
-import { DEFAULT_THINKING_BUDGET } from '@/constants/modelConstants';
+import { focusChatInput } from '@/utils/chat-input/focus';
+import { useAppPromptModes } from './useAppPromptModes';
+import { DEFAULT_THINKING_BUDGET } from '@/constants/modelConfiguration';
 import { getModelCapabilities } from '@/utils/modelCapabilities';
 
 const buildProviderAwareModels = (apiModels: ModelOption[]): ModelOption[] => {
   return apiModels.map((model) => ({ ...model, apiMode: 'gemini-native' as const }));
 };
 
-export const useApp = () => {
+type AppTranslator = ReturnType<typeof getTranslator>;
+type ChatViewModel = ReturnType<typeof useChat>;
+type AppUiViewModel = ReturnType<typeof useAppUi>;
+type PipViewModel = ReturnType<typeof usePictureInPicture>;
+type AppEventsViewModel = ReturnType<typeof useAppEvents>;
+type AppSuggestionSource = 'homepage' | 'organize' | 'follow-up' | 'follow-up-fill';
+
+export interface AppViewModel {
+  appSettings: AppSettings;
+  setAppSettings: Dispatch<SetStateAction<AppSettings>>;
+  currentTheme: Theme;
+  language: 'en' | 'zh';
+  t: AppTranslator;
+  chatState: ChatViewModel;
+  uiState: AppUiViewModel;
+  pipState: PipViewModel;
+  eventsState: AppEventsViewModel;
+  sidePanelContent: SideViewContent | null;
+  handleOpenSidePanel: (content: SideViewContent) => void;
+  handleCloseSidePanel: () => void;
+  isExportModalOpen: boolean;
+  setIsExportModalOpen: Dispatch<SetStateAction<boolean>>;
+  exportStatus: 'idle' | 'exporting';
+  handleExportChat: (format: 'png' | 'html' | 'txt' | 'json') => Promise<void>;
+  activeChat: SavedChatSession | undefined;
+  sessionTitle: string;
+  handleSaveSettings: (newSettings: AppSettings) => void;
+  handleSaveCurrentChatSettings: (newSettings: ChatSettings) => void;
+  handleLoadLiveArtifactsPromptAndSave: () => Promise<void>;
+  handleToggleBBoxMode: () => Promise<void>;
+  handleToggleGuideMode: () => Promise<void>;
+  handleSuggestionClick: (type: AppSuggestionSource, text: string) => Promise<void>;
+  isLiveArtifactsPromptActive: boolean;
+  isLiveArtifactsPromptBusy: boolean;
+  handleSetThinkingLevel: (level: ThinkingLevel) => void;
+  getCurrentModelDisplayName: () => string;
+  handleExportAllScenarios: () => void;
+  handleImportAllScenarios: (file: File) => void;
+}
+
+export const useApp = (): AppViewModel => {
   const { appSettings, setAppSettings, currentTheme, language } = useAppSettings();
   const t = useMemo(() => getTranslator(language), [language]);
 
@@ -50,7 +93,6 @@ export const useApp = () => {
     messages,
     savedGroups,
     savedScenarios,
-    scrollContainerRef,
     setCommandedInput,
     setCurrentChatSettings,
     startNewChat,
@@ -132,7 +174,6 @@ export const useApp = () => {
 
   const { exportChatLogic } = useChatSessionExport({
     activeChat,
-    scrollContainerRef,
     currentTheme,
     language,
     t,
@@ -198,6 +239,7 @@ export const useApp = () => {
     isLiveArtifactsPromptBusy,
   } = useAppPromptModes({
     appSettings,
+    currentThemeId: currentTheme.id,
     setAppSettings,
     activeChat,
     activeSessionId,
@@ -309,5 +351,3 @@ export const useApp = () => {
     handleImportAllScenarios: dataImport.handleImportAllScenarios,
   };
 };
-
-export type AppViewModel = ReturnType<typeof useApp>;

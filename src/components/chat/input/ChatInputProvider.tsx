@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useChatInput } from '@/hooks/chat-input/useChatInput';
-import { INITIAL_TEXTAREA_HEIGHT_PX } from '@/hooks/chat-input/useChatInputState';
+import { INITIAL_TEXTAREA_HEIGHT_PX } from './chatInputTextAreaMetrics';
 import {
   ChatInputActionsContext,
   ChatInputComposerStatusContext,
@@ -174,7 +174,7 @@ export const ChatInputProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       liveVideoSource: liveApi.videoSource,
       onToggleToolAndFocus,
       onCountTokens,
-      isImageModel: logic.capabilities.isImagenModel || false,
+      isImageGenerationModel: logic.capabilities.isImageGenerationModel || false,
       isRealImagenModel: logic.capabilities.isRealImagenModel || false,
       isNativeAudioModel: logic.capabilities.isNativeAudioModel || false,
       canAddYouTubeVideo: !!logic.capabilities.permissions?.canUseYouTubeUrl,
@@ -192,7 +192,7 @@ export const ChatInputProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       liveApi.isConnected,
       liveApi.isMuted,
       liveApi.videoSource,
-      logic.capabilities.isImagenModel,
+      logic.capabilities.isImageGenerationModel,
       logic.capabilities.isNativeAudioModel,
       logic.capabilities.isRealImagenModel,
       logic.capabilities.permissions?.canUseYouTubeUrl,

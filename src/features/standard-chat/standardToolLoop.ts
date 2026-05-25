@@ -1,7 +1,7 @@
 import type { FunctionCall, Part, UsageMetadata } from '@google/genai';
 import type { ChatHistoryItem, StandardClientFunctions, UploadedFile } from '@/types';
 import { toStructuredToolResponse } from '@/features/chat-tools/toolResponse';
-import { mergeUsageMetadata, mergeUrlContextMetadata } from '@/features/chat-streaming/messageStreamReducer';
+import { mergeUsageMetadata, mergeUrlContextMetadata } from '@/features/chat-streaming/messageStreamMetadata';
 import {
   getGroundingChunkSource,
   isRecord,

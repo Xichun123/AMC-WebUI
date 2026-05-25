@@ -47,10 +47,9 @@ export const HeaderModelSelector: FC<HeaderModelSelectorProps> = ({
 
   const isSelectorDisabled = availableModels.length === 0 || isLoading || isSwitchingModel;
 
-  // Check for Gemini 3 models (ignoring case) but exclude image models
-  const { supportsThinkingLevel, isImagenModel, isGemmaModel, isFlashModel, isGeminiRoboticsModel } =
+  const { supportsThinkingLevel, isImageGenerationModel, isGemmaModel, isFlashModel, isGeminiRoboticsModel } =
     getCachedModelCapabilities(selectedModelId);
-  const supportsThinkingToggle = (supportsThinkingLevel && !isImagenModel) || isGemmaModel;
+  const supportsThinkingToggle = (supportsThinkingLevel && !isImageGenerationModel) || isGemmaModel;
 
   // Determine the target "Fast" level based on model capabilities
   // Gemini 3 Flash models support MINIMAL thinking for maximum speed
@@ -75,7 +74,7 @@ export const HeaderModelSelector: FC<HeaderModelSelectorProps> = ({
       selectedId={selectedModelId}
       onSelect={onSelectModel}
       dropdownClassName="w-[calc(100vw-2rem)] max-w-[320px] sm:w-[320px] sm:max-w-none max-h-96"
-      renderTrigger={({ isOpen, setIsOpen }) => (
+      renderTrigger={({ isOpen, setIsOpen, listboxId, activeDescendantId }) => (
         <div className="relative flex items-center gap-1">
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -85,6 +84,8 @@ export const HeaderModelSelector: FC<HeaderModelSelectorProps> = ({
             aria-label={`${t('headerModelAriaLabel_current')}: ${currentModelName}. ${t('headerModelAriaLabel_action')}`}
             aria-haspopup="listbox"
             aria-expanded={isOpen}
+            aria-controls={isOpen ? listboxId : undefined}
+            aria-activedescendant={isOpen ? activeDescendantId : undefined}
           >
             {!currentModelName && (
               <div className="flex items-center justify-center">
@@ -95,7 +96,6 @@ export const HeaderModelSelector: FC<HeaderModelSelectorProps> = ({
             <span className="truncate max-w-[180px] font-semibold sm:max-w-[220px]">{abbreviatedModelName}</span>
           </button>
 
-          {/* Thinking Level Toggle */}
           {supportsThinkingToggle && (
             <button
               onClick={(e) => {
@@ -106,7 +106,7 @@ export const HeaderModelSelector: FC<HeaderModelSelectorProps> = ({
                 }
                 onSetThinkingLevel(isFastState ? 'HIGH' : targetFastLevel);
               }}
-              className={`h-9 w-9 flex items-center justify-center rounded-xl transition-all duration-200 ease-out focus:outline-none focus:visible:ring-2 focus:visible:ring-offset-2 focus:visible:ring-offset-[var(--theme-bg-primary)] focus-visible:ring-[var(--theme-border-focus)] ${
+              className={`h-9 w-9 flex items-center justify-center rounded-xl transition-all duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--theme-bg-primary)] focus-visible:ring-[var(--theme-border-focus)] ${
                 isFastState
                   ? 'text-yellow-500 hover:bg-[var(--theme-bg-tertiary)]'
                   : 'text-[var(--theme-text-tertiary)] hover:text-[var(--theme-text-primary)] hover:bg-[var(--theme-bg-tertiary)]'

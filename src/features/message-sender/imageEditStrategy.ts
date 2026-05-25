@@ -9,11 +9,15 @@ import {
 } from '@/types';
 import { editImageApi } from '@/services/api/generation/imageEditApi';
 import { logService } from '@/services/logService';
-import { buildContentParts, createChatHistoryForApi } from '@/utils/chat/builder';
+import {
+  buildContentParts,
+  createChatHistoryForApi,
+  GEMINI_IMAGE_HISTORY_REHYDRATION_ERROR,
+} from '@/utils/chat/builder';
 import { createUploadedFileFromBase64 } from '@/utils/chat/parsing';
 import { shouldStripThinkingFromContext } from '@/utils/modelCapabilities';
-import { isImageMimeType } from '@/utils/fileTypeUtils';
-import { appendApiPart } from '@/features/chat-streaming/processors';
+import { isImageMimeType } from '@/utils/fileTypeClassification';
+import { appendApiPart } from '@/features/chat-streaming/messageStreamParts';
 import { formatMessageSenderText } from './i18nFormat';
 import { runOptimisticMessagePipeline } from './messagePipeline';
 import type { MessageSenderTranslator, SessionsUpdater } from './types';
@@ -31,6 +35,14 @@ const stripGeneratedInlinePayload = (part: Part): Part => {
       data: '',
     },
   } as Part;
+};
+
+const translateImageHistoryError = (error: unknown, t: MessageSenderTranslator): unknown => {
+  if (error instanceof Error && error.message === GEMINI_IMAGE_HISTORY_REHYDRATION_ERROR) {
+    return new Error(t('messageSender_imageEditHistoryMissingGeneratedImage'));
+  }
+
+  return error;
 };
 
 interface SendImageEditMessageParams {
@@ -107,11 +119,16 @@ export const sendImageEditMessage = async ({
         if (index !== -1) historyMessages = messages.slice(0, index);
       }
 
-      const historyForApi = await createChatHistoryForApi(
-        historyMessages,
-        shouldStripThinking,
-        currentChatSettings.modelId,
-      );
+      let historyForApi: Awaited<ReturnType<typeof createChatHistoryForApi>>;
+      try {
+        historyForApi = await createChatHistoryForApi(
+          historyMessages,
+          shouldStripThinking,
+          currentChatSettings.modelId,
+        );
+      } catch (error) {
+        throw translateImageHistoryError(error, t);
+      }
 
       const callApi = () =>
         editImageApi(

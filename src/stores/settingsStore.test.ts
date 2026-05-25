@@ -6,13 +6,13 @@ const { mockGetRuntimeConfigAppSettingsOverrides, mockGetBackendFlavor } = vi.ho
 }));
 
 vi.mock('@/services/db/dbService', async () => {
-  const { createDbServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createDbServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createDbServiceMockModule();
 });
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });
@@ -22,10 +22,10 @@ vi.mock('@/runtime/runtimeConfig', () => ({
   getBackendFlavor: mockGetBackendFlavor,
 }));
 
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import { useSettingsStore } from './settingsStore';
 import { dbService } from '@/services/db/dbService';
-import { createTheme } from '@/test/factories';
+import { createTheme } from '@/test/data/factories';
 import type { AppSettings } from '@/types';
 
 const createStoredSettingsSnapshot = (overrides: Partial<AppSettings>): AppSettings => overrides as AppSettings;
@@ -133,6 +133,18 @@ describe('settingsStore', () => {
       await useSettingsStore.getState().loadSettings();
 
       expect(useSettingsStore.getState().appSettings.translationTargetLanguage).toBe('English');
+    });
+
+    it('migrates the previous speech-to-text default to Gemini 3.5 Flash', async () => {
+      vi.mocked(dbService.getAppSettings).mockResolvedValue(
+        createStoredSettingsSnapshot({
+          transcriptionModelId: 'gemini-3-flash-preview',
+        }),
+      );
+
+      await useSettingsStore.getState().loadSettings();
+
+      expect(useSettingsStore.getState().appSettings.transcriptionModelId).toBe('gemini-3.5-flash');
     });
 
     it('preserves user edits made before settings finish loading', async () => {

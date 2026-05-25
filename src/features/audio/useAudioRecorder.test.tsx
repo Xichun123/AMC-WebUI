@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockUseRecorder, mockCreateObjectURL, mockRevokeObjectURL } = vi.hoisted(() => ({
   mockUseRecorder: vi.fn(),
-  mockCreateObjectURL: vi.fn(() => 'blob:recording-url'),
+  mockCreateObjectURL: vi.fn(),
   mockRevokeObjectURL: vi.fn(),
 }));
 
@@ -12,7 +12,7 @@ vi.mock('@/hooks/core/useRecorder', () => ({
 }));
 
 import { useAudioRecorder } from './useAudioRecorder';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 
 describe('useAudioRecorder', () => {
   const recorderState = {
@@ -29,6 +29,8 @@ describe('useAudioRecorder', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCreateObjectURL.mockReset();
+    mockRevokeObjectURL.mockReset();
     recorderState.status = 'idle';
     recorderState.isInitializing = false;
     recorderState.duration = 0;
@@ -38,6 +40,10 @@ describe('useAudioRecorder', () => {
     recorderState.stopRecording = vi.fn();
     recorderState.cancelRecording = vi.fn();
     recorderState.onStop = undefined;
+    mockCreateObjectURL
+      .mockReturnValueOnce('blob:recording-url-1')
+      .mockReturnValueOnce('blob:recording-url-2')
+      .mockReturnValue('blob:recording-url-latest');
 
     Object.defineProperty(URL, 'createObjectURL', {
       configurable: true,
@@ -85,8 +91,54 @@ describe('useAudioRecorder', () => {
 
     expect(result.current.viewState).toBe('review');
     expect(result.current.audioBlob).toBe(blob);
-    expect(result.current.audioUrl).toBe('blob:recording-url');
+    expect(result.current.audioUrl).toBe('blob:recording-url-1');
 
     unmount();
+  });
+
+  it('releases each replaced recording URL exactly once', () => {
+    const { result, unmount } = renderHook(() => useAudioRecorder());
+
+    act(() => {
+      recorderState.onStop?.(new Blob(['first'], { type: 'audio/webm' }));
+    });
+
+    expect(result.current.audioUrl).toBe('blob:recording-url-1');
+    expect(mockRevokeObjectURL).not.toHaveBeenCalled();
+
+    act(() => {
+      recorderState.onStop?.(new Blob(['second'], { type: 'audio/webm' }));
+    });
+
+    expect(result.current.audioUrl).toBe('blob:recording-url-2');
+    expect(mockRevokeObjectURL).toHaveBeenCalledTimes(1);
+    expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:recording-url-1');
+
+    unmount();
+
+    expect(mockRevokeObjectURL).toHaveBeenCalledTimes(2);
+    expect(mockRevokeObjectURL).toHaveBeenLastCalledWith('blob:recording-url-2');
+  });
+
+  it('does not release a discarded recording URL again on unmount', () => {
+    const { result, unmount } = renderHook(() => useAudioRecorder());
+
+    act(() => {
+      recorderState.onStop?.(new Blob(['audio'], { type: 'audio/webm' }));
+    });
+
+    expect(result.current.audioUrl).toBe('blob:recording-url-1');
+
+    act(() => {
+      result.current.discardRecording();
+    });
+
+    expect(result.current.audioUrl).toBeNull();
+    expect(mockRevokeObjectURL).toHaveBeenCalledTimes(1);
+    expect(mockRevokeObjectURL).toHaveBeenCalledWith('blob:recording-url-1');
+
+    unmount();
+
+    expect(mockRevokeObjectURL).toHaveBeenCalledTimes(1);
   });
 });

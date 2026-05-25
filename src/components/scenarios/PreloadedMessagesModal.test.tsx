@@ -1,9 +1,14 @@
 import React, { act } from 'react';
-import { setupTestRenderer } from '@/test/testUtils';
+import { setupTestRenderer } from '@/test/render/renderer';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PreloadedMessagesModal } from './PreloadedMessagesModal';
 
-const { scenarioManagerState } = vi.hoisted(() => ({
+const { loadableScenario, scenarioManagerState } = vi.hoisted(() => ({
+  loadableScenario: {
+    id: 'scenario-1',
+    title: 'Loadable scenario',
+    messages: [{ id: 'message-1', role: 'user' as const, content: 'Hello' }],
+  },
   scenarioManagerState: {
     scenarios: [],
     view: 'list' as const,
@@ -43,7 +48,11 @@ vi.mock('@/components/shared/Modal', () => ({
 }));
 
 vi.mock('./ScenarioList', () => ({
-  ScenarioList: () => <div data-testid="scenario-list" />,
+  ScenarioList: ({ onLoad }: { onLoad: (scenario: typeof loadableScenario) => void }) => (
+    <button data-testid="scenario-list" type="button" onClick={() => onLoad(loadableScenario)}>
+      Load scenario
+    </button>
+  ),
 }));
 
 vi.mock('./ScenarioEditor', () => ({
@@ -152,5 +161,44 @@ describe('PreloadedMessagesModal', () => {
 
     expect(modalShell?.className).toContain('sm:rounded-xl');
     expect(modalShell?.className).not.toContain('sm:rounded-3xl');
+  });
+
+  it('cleans up the delayed close when a loaded scenario is dismissed before the timeout fires', () => {
+    vi.useFakeTimers();
+
+    try {
+      const onClose = vi.fn();
+      const onLoadScenario = vi.fn();
+
+      act(() => {
+        renderer.root.render(
+          <PreloadedMessagesModal
+            isOpen
+            onClose={onClose}
+            savedScenarios={[]}
+            onSaveAllScenarios={vi.fn()}
+            onLoadScenario={onLoadScenario}
+          />,
+        );
+      });
+
+      const loadButton = renderer.container.querySelector('[data-testid="scenario-list"]');
+      expect(loadButton).not.toBeNull();
+
+      act(() => {
+        loadButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+
+      expect(onLoadScenario).toHaveBeenCalledTimes(1);
+
+      act(() => {
+        renderer.unmount();
+        vi.advanceTimersByTime(300);
+      });
+
+      expect(onClose).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

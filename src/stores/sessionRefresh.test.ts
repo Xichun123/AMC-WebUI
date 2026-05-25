@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_MODEL_ID } from '@/constants/modelConstants';
+import { DEFAULT_MODEL_ID } from '@/constants/modelConfiguration';
 import type { SavedChatSession } from '@/types';
-import { createChatSettings } from '@/test/factories';
+import { createChatSettings } from '@/test/data/factories';
 import { mergeSessionMetadata } from './sessionRefresh';
 
 const makeSession = (overrides: Partial<SavedChatSession> = {}): SavedChatSession => ({

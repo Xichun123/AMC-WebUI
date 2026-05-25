@@ -62,4 +62,117 @@ describe('appSettingsSchema', () => {
 
     expect(settings.liveArtifactsPromptMode).toBe('fullHtml');
   });
+
+  it('preserves valid MCP server settings from imported settings', () => {
+    const settings = sanitizeImportedAppSettings({
+      mcpServers: [
+        {
+          id: 'filesystem',
+          name: 'Filesystem',
+          enabled: true,
+          transport: 'stdio',
+          command: 'npx',
+          args: ['-y', '@modelcontextprotocol/server-filesystem', '/tmp'],
+          env: {
+            DEBUG: 'mcp:*',
+          },
+        },
+        {
+          id: 'remote-search',
+          name: 'Remote Search',
+          enabled: false,
+          transport: 'http',
+          url: 'https://mcp.example.com/mcp',
+          headers: {
+            authorization: 'Bearer token',
+          },
+          auth: {
+            type: 'bearer',
+            token: 'remote-token',
+          },
+        },
+      ],
+    });
+
+    expect(settings.mcpServers).toEqual([
+      {
+        id: 'filesystem',
+        name: 'Filesystem',
+        enabled: true,
+        transport: 'stdio',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-filesystem', '/tmp'],
+        env: {
+          DEBUG: 'mcp:*',
+        },
+      },
+      {
+        id: 'remote-search',
+        name: 'Remote Search',
+        enabled: false,
+        transport: 'http',
+        url: 'https://mcp.example.com/mcp',
+        headers: {
+          authorization: 'Bearer token',
+        },
+        auth: {
+          type: 'bearer',
+          token: 'remote-token',
+        },
+      },
+    ]);
+  });
+
+  it('drops invalid MCP server entries from imported settings', () => {
+    const settings = sanitizeImportedAppSettings({
+      mcpServers: [
+        {
+          id: 'valid',
+          name: 'Valid',
+          enabled: true,
+          transport: 'stdio',
+          command: 'node',
+          args: ['server.js', 42],
+          env: {
+            KEEP: 'yes',
+            DROP: 1,
+          },
+        },
+        {
+          id: '',
+          name: 'Missing ID',
+          enabled: true,
+          transport: 'stdio',
+          command: 'node',
+        },
+        {
+          id: 'unsupported',
+          name: 'Unsupported',
+          enabled: true,
+          transport: 'websocket',
+        },
+        {
+          id: 'file-url',
+          name: 'File URL',
+          enabled: true,
+          transport: 'http',
+          url: 'file:///tmp/mcp',
+        },
+      ],
+    });
+
+    expect(settings.mcpServers).toEqual([
+      {
+        id: 'valid',
+        name: 'Valid',
+        enabled: true,
+        transport: 'stdio',
+        command: 'node',
+        args: ['server.js'],
+        env: {
+          KEEP: 'yes',
+        },
+      },
+    ]);
+  });
 });

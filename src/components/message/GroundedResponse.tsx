@@ -185,7 +185,6 @@ export const GroundedResponse: React.FC<GroundedResponseProps> = ({
     <div className="space-y-4">
       {searchEntryPointContent ? <SearchEntryPointWidget renderedContent={searchEntryPointContent} /> : null}
 
-      {/* Main Content */}
       <div className="markdown-body">
         <LazyMarkdownRenderer
           messageId={messageId}
@@ -204,10 +203,8 @@ export const GroundedResponse: React.FC<GroundedResponseProps> = ({
         />
       </div>
 
-      {/* URL Context Metadata */}
       <ContextUrls metadata={urlContextMetadata} />
 
-      {/* Sources List (Search Grounding) */}
       <SearchSources sources={sources} />
     </div>
   );

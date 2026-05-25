@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { type UploadedFile } from '@/types';
 import { FileDisplay } from '@/components/message/FileDisplay';
-import { SUPPORTED_IMAGE_MIME_TYPES } from '@/constants/fileConstants';
+import { SUPPORTED_IMAGE_MIME_TYPES } from '@/constants/fileTypeSupport';
 
 interface MessageFilesProps {
   files: UploadedFile[];
@@ -63,7 +63,6 @@ export const MessageFiles: React.FC<MessageFilesProps> = ({
 
   return (
     <div className={`flex flex-col gap-2 ${marginClass}`}>
-      {/* 1. Images Section (Retain existing horizontal/grid layout) */}
       {imageFiles.length > 0 &&
         (isQuadImageView ? (
           <div className="grid grid-cols-2 gap-2">
@@ -94,7 +93,6 @@ export const MessageFiles: React.FC<MessageFilesProps> = ({
           </div>
         ))}
 
-      {/* 2. Documents/Other Files Section (Columnar Layout: Max 4 rows, flow col) */}
       {documentFiles.length > 0 && (
         <div
           className={`grid grid-flow-col gap-2 ${showDocScroll ? 'overflow-x-auto pb-2' : ''} -mx-1 px-1 custom-scrollbar w-fit max-w-full`}

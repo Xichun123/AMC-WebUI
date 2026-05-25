@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createDeferred } from '@/test/testUtils';
+import { createDeferred } from '@/test/render/renderer';
 
 const { mockAddApiUsageRecord, mockAddLogs, mockPruneLogs, mockClearLogs, mockClearApiUsage, mockGetLogs } = vi.hoisted(
   () => ({
@@ -13,7 +13,7 @@ const { mockAddApiUsageRecord, mockAddLogs, mockPruneLogs, mockClearLogs, mockCl
 );
 
 vi.mock('@/services/db/dbService', async () => {
-  const { createDbServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createDbServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createDbServiceMockModule({
     addApiUsageRecord: mockAddApiUsageRecord,

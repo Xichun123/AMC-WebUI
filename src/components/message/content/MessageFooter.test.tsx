@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { setupProviderTestRenderer } from '@/test/providerTestUtils';
-import { createChatMessage } from '@/test/factories';
+import { setupProviderTestRenderer } from '@/test/render/providerRenderer';
+import { createChatMessage } from '@/test/data/factories';
 import { MessageFooter } from './MessageFooter';
 
 describe('MessageFooter', () => {

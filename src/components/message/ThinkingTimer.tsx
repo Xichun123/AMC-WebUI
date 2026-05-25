@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
-import { formatDuration } from '@/utils/dateHelpers';
+import { formatDuration } from '@/utils/durationFormat';
 
 interface ThinkingTimerProps {
   startTime: Date;

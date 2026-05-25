@@ -17,19 +17,26 @@ import { MessageCopyButton } from './buttons/MessageCopyButton';
 import { useIsMobile, useResponsiveValue } from '@/hooks/useDevice';
 import { useWindowContext } from '@/contexts/WindowContext';
 
-const AvatarWrapper: React.FC<{ children: React.ReactNode; onClick: () => void; showEditOverlay: boolean }> = ({
-  children,
-  onClick,
-  showEditOverlay,
-}) => (
-  <div className="relative group/avatar cursor-pointer" onClick={onClick}>
+const AvatarWrapper: React.FC<{
+  children: React.ReactNode;
+  onClick: () => void;
+  showEditOverlay: boolean;
+  label: string;
+}> = ({ children, onClick, showEditOverlay, label }) => (
+  <button
+    type="button"
+    className="relative group/avatar cursor-pointer rounded-full bg-transparent p-0 border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--theme-bg-primary)] focus-visible:ring-[var(--theme-border-focus)]"
+    onClick={onClick}
+    aria-label={label}
+    title={label}
+  >
     {children}
     {showEditOverlay && (
       <div className="absolute inset-0 bg-black/60 dark:bg-black/50 rounded-full hidden group-hover/avatar:flex items-center justify-center backdrop-blur-[1px] transition-all animate-in fade-in duration-200">
         <Pencil size={12} className="text-white" strokeWidth={2.5} />
       </div>
     )}
-  </div>
+  </button>
 );
 
 const UserIcon: React.FC = () => {
@@ -131,12 +138,20 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
         {!isGrouped && (
           <>
             {message.role === 'user' && (
-              <AvatarWrapper onClick={() => onEditMessage(message.id, 'update')} showEditOverlay={true}>
+              <AvatarWrapper
+                onClick={() => onEditMessage(message.id, 'update')}
+                showEditOverlay={true}
+                label={t('edit')}
+              >
                 <UserIcon />
               </AvatarWrapper>
             )}
             {message.role === 'model' && (
-              <AvatarWrapper onClick={() => onEditMessage(message.id, 'update')} showEditOverlay={true}>
+              <AvatarWrapper
+                onClick={() => onEditMessage(message.id, 'update')}
+                showEditOverlay={true}
+                label={t('edit')}
+              >
                 <BotIcon alt={t('assistant_avatar_alt')} />
               </AvatarWrapper>
             )}
@@ -145,7 +160,6 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
         )}
       </div>
 
-      {/* Container for actions - Fades in on group hover with a subtle slide effect */}
       <div
         className={`message-actions flex flex-col items-center gap-1 mt-1 transition-all duration-300 ease-in-out ${actionsVisibilityClasses}`}
       >

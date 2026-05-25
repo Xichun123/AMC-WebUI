@@ -1,5 +1,5 @@
 import { act } from 'react';
-import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
@@ -21,7 +21,7 @@ const {
 }));
 
 vi.mock('@/services/db/dbService', async () => {
-  const { createDbServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createDbServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createDbServiceMockModule({
     getApiUsageByTimeRange: mockGetApiUsageByTimeRange,

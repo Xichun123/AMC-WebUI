@@ -1,19 +1,15 @@
 import JSZip from 'jszip';
 
-import { fileToString } from '@/utils/fileHelpers';
+import { fileToString } from '@/utils/fileEncoding';
+import { extractDocxText, isDocxFile } from '@/utils/docxPreview';
 import { attachRelativePath, getFilePath } from './filePath';
 import { buildRootGitignoreMatchers, isIgnoredByGitignore, type IgnoreMatcher } from './ignoreMatcher';
 import { generateRepomixPlainOutput } from './repomixPlainOutput';
 import { scanSensitiveContent } from './securityScan';
-import {
-  compareFilePaths,
-  countLines,
-  estimateTokens,
-  IGNORED_DIRS,
-  IGNORED_EXTENSIONS,
-  LANG_MAP,
-  sortTreeNodes,
-} from './shared';
+import { IGNORED_DIRS, IGNORED_EXTENSIONS } from './defaultIgnorePatterns';
+import { IMPORT_CONTEXT_LANGUAGE_MAP } from './languageMap';
+import { compareFilePaths, sortTreeNodes } from './treeSorting';
+import { countLines, estimateTokens } from './textStats';
 import type { AnalysisSummary, FileContent, FileNode, ProcessedFiles, SecurityFinding } from './types';
 
 export interface ImportContextBuildOptions {
@@ -38,7 +34,7 @@ interface ZipExtractionResult {
 
 function getLanguage(fileName: string): string {
   const extension = fileName.split('.').pop()?.toLowerCase() || '';
-  return LANG_MAP[extension] || 'plaintext';
+  return IMPORT_CONTEXT_LANGUAGE_MAP[extension] || 'plaintext';
 }
 
 function shouldExpandZipFile(file: File): boolean {
@@ -46,7 +42,7 @@ function shouldExpandZipFile(file: File): boolean {
   return !relativePath || relativePath === file.name;
 }
 
-function buildASCIITree(treeData: FileNode[], rootName: string): string {
+function buildUnicodeTree(treeData: FileNode[], rootName: string): string {
   let structure = `${rootName}\n`;
 
   const generateLines = (nodes: FileNode[], prefix: string) => {
@@ -89,6 +85,18 @@ async function readTextFileWithMetrics(file: File): Promise<ReadTextFileResult> 
     content,
     lineCount: countLines(content),
   };
+}
+
+async function readImportFileWithMetrics(file: File): Promise<ReadTextFileResult> {
+  if (isDocxFile(file)) {
+    const { text } = await extractDocxText(file);
+    return {
+      content: text,
+      lineCount: countLines(text),
+    };
+  }
+
+  return readTextFileWithMetrics(file);
 }
 
 function ensurePathNodes(
@@ -230,14 +238,14 @@ async function processImportFiles(
     }
 
     const extension = `.${file.name.split('.').pop()?.toLowerCase()}`;
-    if (IGNORED_EXTENSIONS.has(extension)) {
+    if (!isDocxFile(file) && IGNORED_EXTENSIONS.has(extension)) {
       fileNode.status = 'skipped';
       fileNode.chars = file.size;
       continue;
     }
 
     try {
-      const { content, lineCount } = await readTextFileWithMetrics(file);
+      const { content, lineCount } = await readImportFileWithMetrics(file);
       fileContents.push({
         path,
         content,
@@ -278,7 +286,7 @@ async function processImportFiles(
 
   sortTreeNodes(roots);
 
-  const structureString = buildASCIITree(roots, rootNameForDisplay);
+  const structureString = buildUnicodeTree(roots, rootNameForDisplay);
   const { analysisSummary, securityFindings } = summarizeAnalysis(fileContents);
 
   return {

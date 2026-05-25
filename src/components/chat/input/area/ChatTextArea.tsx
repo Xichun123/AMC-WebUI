@@ -1,6 +1,6 @@
 import React, { useRef, useLayoutEffect, type RefObject } from 'react';
-import { MAX_TEXTAREA_HEIGHT_PX } from '@/hooks/chat-input/useChatInputState';
 import { useI18n } from '@/contexts/I18nContext';
+import { MAX_TEXTAREA_HEIGHT_PX } from '@/components/chat/input/chatInputTextAreaMetrics';
 
 interface ChatTextAreaProps {
   textareaRef: RefObject<HTMLTextAreaElement>;
@@ -9,7 +9,7 @@ interface ChatTextAreaProps {
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onPaste: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
   onCompositionStart: () => void;
-  onCompositionEnd: () => void;
+  onCompositionEnd: (value: string) => void;
   onFocus?: () => void;
   placeholder: string;
   disabled: boolean;
@@ -86,8 +86,7 @@ export const ChatTextArea: React.FC<ChatTextAreaProps> = ({
 
   const handleCompositionEnd = (event: React.CompositionEvent<HTMLTextAreaElement>) => {
     isComposingRef.current = false;
-    onCompositionEnd();
-    onChange(event as unknown as React.ChangeEvent<HTMLTextAreaElement>);
+    onCompositionEnd(event.currentTarget.value);
   };
 
   return (

@@ -16,7 +16,6 @@ interface PdfMainContentProps {
   containerRef: MutableRefObject<HTMLDivElement | null>;
 }
 
-// 核心优化：懒加载/虚拟化 PDF 页面
 const LazyPdfPage = ({
   pageNum,
   scale,
@@ -34,7 +33,6 @@ const LazyPdfPage = ({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const wrapperRef = useRef<HTMLDivElement | null>(null);
 
-  // 标准 A4 纸比例估算，用于首次加载前的占位高度，防止滚动条严重跳动
   const isRotated = rotation === 90 || rotation === 270;
   const estimatedWidth = (isRotated ? 842 : 595) * scale;
   const estimatedHeight = (isRotated ? 595 : 842) * scale;
@@ -49,7 +47,6 @@ const LazyPdfPage = ({
         if (entry.isIntersecting) {
           setIsVisible(true);
         } else {
-          // 当页面离开视口时，记录它准确的宽高，然后卸载 Canvas 释放内存
           const rect = el.getBoundingClientRect();
           if (rect.height > 0 && rect.width > 0) {
             setDimensions({ width: rect.width, height: rect.height });
@@ -59,7 +56,6 @@ const LazyPdfPage = ({
       },
       {
         root: container,
-        // 上下预加载 1.5 个视口的高度，保证滚动平滑且不闪烁
         rootMargin: '150% 0px 150% 0px',
         threshold: 0,
       },
@@ -78,7 +74,6 @@ const LazyPdfPage = ({
       data-page-number={pageNum}
       className="shadow-2xl relative bg-white flex items-center justify-center transition-all duration-200"
       style={{
-        // 如果 Canvas 被卸载，使用缓存的尺寸或估算尺寸撑起高度，防止滚动条乱跳
         height: isVisible ? 'auto' : dimensions.height ? `${dimensions.height}px` : `${estimatedHeight}px`,
         width: isVisible ? 'auto' : dimensions.width ? `${dimensions.width}px` : `${estimatedWidth}px`,
       }}
@@ -98,7 +93,6 @@ const LazyPdfPage = ({
           }
         />
       ) : (
-        // Canvas 卸载后的占位 UI，极低内存消耗
         <div className="absolute inset-0 flex items-center justify-center bg-gray-50 text-gray-300">
           <span className="text-sm font-mono font-medium tracking-widest">PAGE {pageNum}</span>
         </div>
@@ -123,7 +117,6 @@ export const PdfMainContent: React.FC<PdfMainContentProps> = ({
   return (
     <div className="flex-grow h-full relative flex flex-col min-w-0">
       <div ref={containerRef} className="flex-grow overflow-y-auto custom-scrollbar p-4 sm:p-8 relative">
-        {/* PDF Content */}
         <div
           className={`flex flex-col items-center gap-6 transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
         >
@@ -152,7 +145,6 @@ export const PdfMainContent: React.FC<PdfMainContentProps> = ({
           </Document>
         </div>
 
-        {/* Loading Indicator */}
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-black/80 p-4 rounded-xl flex flex-col items-center gap-2 text-white">
@@ -162,7 +154,6 @@ export const PdfMainContent: React.FC<PdfMainContentProps> = ({
           </div>
         )}
 
-        {/* Error Indicator */}
         {error && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-red-950/80 p-6 rounded-xl flex flex-col items-center gap-3 text-red-200 border border-red-500/30 max-w-sm text-center">

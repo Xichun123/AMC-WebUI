@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
-import { renderHook } from '@/test/testUtils';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
+import { renderHook } from '@/test/render/renderer';
 import { useFilePreProcessing } from './useFilePreProcessing';
 
 const { compressAudioToMp3Mock } = vi.hoisted(() => ({

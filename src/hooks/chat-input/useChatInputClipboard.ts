@@ -1,8 +1,8 @@
 import { useCallback, type MutableRefObject, type RefObject } from 'react';
 import type { AppSettings, UploadedFile } from '@/types';
-import { processClipboardData } from '@/utils/clipboardUtils';
+import { processChatInputClipboardData } from '@/utils/chat-input/clipboardData';
 import { useI18n } from '@/contexts/I18nContext';
-import { MIME_TO_EXTENSION_MAP, SUPPORTED_IMAGE_MIME_TYPES } from '@/constants/fileConstants';
+import { MIME_TO_EXTENSION_MAP, SUPPORTED_IMAGE_MIME_TYPES } from '@/constants/fileTypeSupport';
 
 const YOUTUBE_URL_REGEX = /^(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})(?:\S+)?$/;
 const DEFAULT_CLIPBOARD_IMAGE_EXTENSION = '.image';
@@ -148,7 +148,7 @@ export const useChatInputClipboard = ({
         return false;
       }
 
-      const result = await processClipboardData(clipboardData, {
+      const result = await processChatInputClipboardData(clipboardData, {
         isPasteRichTextAsMarkdownEnabled: appSettings.isPasteRichTextAsMarkdownEnabled ?? true,
         isPasteAsTextFileEnabled: appSettings.isPasteAsTextFileEnabled ?? true,
       });

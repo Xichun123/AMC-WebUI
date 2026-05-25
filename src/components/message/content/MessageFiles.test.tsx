@@ -1,8 +1,8 @@
 import { act } from 'react';
-import { setupTestRenderer } from '@/test/testUtils';
+import { setupTestRenderer } from '@/test/render/renderer';
 import { describe, expect, it } from 'vitest';
 import { MessageFiles } from './MessageFiles';
-import { createUploadedFile } from '@/test/factories';
+import { createUploadedFile } from '@/test/data/factories';
 
 const createImageFile = (id: string, name: string) =>
   createUploadedFile({

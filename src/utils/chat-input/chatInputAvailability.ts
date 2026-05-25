@@ -1,7 +1,8 @@
 import type { UploadedFile } from '@/types';
-import { hasSendableChatInputContent } from './chatInputUtils';
+import type { ModelCapabilities } from '@/utils/modelCapabilities';
+import { hasSendableChatInputContent } from './chatInputContent';
 import { getChatInputMode, type ChatInputMachineState } from './chatInputStateMachine';
-import { areFilesStillProcessing } from './pendingSubmissionUtils';
+import { areFilesStillProcessing } from './pendingSubmission';
 
 interface ChatInputAvailabilityState {
   inputText: string;
@@ -23,14 +24,7 @@ interface ChatInputLocalFileState {
   isConverting: boolean;
 }
 
-interface ChatInputCapabilities {
-  isNativeAudioModel: boolean;
-  permissions: {
-    canAcceptAttachments: boolean;
-    canUseLiveControls: boolean;
-    requiresTextPrompt: boolean;
-  };
-}
+type ChatInputCapabilities = Pick<ModelCapabilities, 'isNativeAudioModel' | 'permissions'>;
 
 interface ChatInputAvailabilityOptions {
   inputState: ChatInputAvailabilityState;

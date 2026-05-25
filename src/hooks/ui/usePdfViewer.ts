@@ -1,15 +1,10 @@
 import { logService } from '@/services/logService';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { pdfjs } from 'react-pdf';
 import { type UploadedFile } from '@/types';
 import { MOBILE_BREAKPOINT_PX } from '@/constants/layout';
-import { configurePdfWorker } from '@/utils/pdfWorker';
+import { ensurePdfWorkerConfigured } from '@/utils/pdfRuntime';
 import { useI18n } from '@/contexts/I18nContext';
 
-// Configure PDF worker globally
-configurePdfWorker(pdfjs);
-
-// Determine responsive initial scale
 const getInitialScale = () => {
   if (typeof window === 'undefined') return 1.0;
   const width = window.innerWidth;
@@ -19,6 +14,8 @@ const getInitialScale = () => {
 };
 
 export const usePdfViewer = (_file: UploadedFile) => {
+  ensurePdfWorkerConfigured();
+
   const { t } = useI18n();
   const [numPages, setNumPages] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,7 +29,6 @@ export const usePdfViewer = (_file: UploadedFile) => {
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const sidebarRef = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer to update current page number on scroll
   useEffect(() => {
     const container = containerRef.current;
     if (!container || !numPages || isLoading) return;
@@ -63,7 +59,6 @@ export const usePdfViewer = (_file: UploadedFile) => {
   }, [numPages, isLoading]);
 
   useEffect(() => {
-    // Auto-scroll sidebar to keep current page thumbnail in view
     if (showSidebar && sidebarRef.current) {
       const thumbnail = sidebarRef.current.querySelector(`[data-thumbnail-page="${currentPage}"]`);
       if (thumbnail) {

@@ -14,11 +14,43 @@ interface UseDataExportProps {
   t: (key: string) => string;
 }
 
+const isSensitiveMcpHeader = (name: string): boolean => {
+  const normalized = name.trim().toLowerCase();
+  return (
+    normalized === 'authorization' ||
+    normalized === 'proxy-authorization' ||
+    normalized.includes('token') ||
+    normalized.includes('secret') ||
+    normalized.includes('api-key') ||
+    normalized.includes('apikey')
+  );
+};
+
+const redactMcpSecretsForExport = (settings: AppSettings): AppSettings => ({
+  ...settings,
+  mcpServers: (settings.mcpServers ?? []).map((server) => ({
+    ...server,
+    ...(server.env ? { env: {} } : {}),
+    ...(server.headers
+      ? {
+          headers: Object.fromEntries(
+            Object.entries(server.headers).filter(([header]) => !isSensitiveMcpHeader(header)),
+          ),
+        }
+      : {}),
+    ...(server.auth ? { auth: { type: server.auth.type } } : {}),
+  })),
+});
+
 export const useDataExport = ({ appSettings, savedGroups, savedScenarios, t }: UseDataExportProps) => {
   const handleExportSettings = useCallback(() => {
     logService.info(`Exporting settings.`);
     try {
-      const dataToExport = { type: 'AllModelChat-Settings', version: 1, settings: appSettings };
+      const dataToExport = {
+        type: 'AllModelChat-Settings',
+        version: 1,
+        settings: redactMcpSecretsForExport(appSettings),
+      };
       const jsonString = JSON.stringify(dataToExport, null, 2);
       const blob = new Blob([jsonString], { type: 'application/json' });
       const date = new Date().toISOString().slice(0, 10);

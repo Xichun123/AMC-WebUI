@@ -1,10 +1,5 @@
-import fs from 'fs';
-import path from 'path';
 import { describe, expect, it } from 'vitest';
-
-const projectRoot = path.resolve(__dirname, '../../..');
-
-const readProjectFile = (relativePath: string) => fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
+import { readProjectFile } from './projectFiles';
 
 describe('Docker build boundaries', () => {
   it('keeps Docker CI on source builds instead of requiring host build artifacts', () => {

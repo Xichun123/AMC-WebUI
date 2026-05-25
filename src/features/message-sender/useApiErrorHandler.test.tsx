@@ -1,12 +1,12 @@
 import { act } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { renderHookWithProviders } from '@/test/providerTestUtils';
-import { createChatSettings } from '@/test/factories';
+import { renderHookWithProviders } from '@/test/render/providerRenderer';
+import { createChatSettings } from '@/test/data/factories';
 import type { SavedChatSession } from '@/types';
 import { useApiErrorHandler } from './useApiErrorHandler';
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });

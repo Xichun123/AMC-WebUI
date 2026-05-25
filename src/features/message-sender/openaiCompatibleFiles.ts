@@ -1,5 +1,5 @@
 import type { UploadedFile } from '@/types';
-import { isAudioMimeType, isImageMimeType, isTextFile } from '@/utils/fileTypeUtils';
+import { isAudioMimeType, isImageMimeType, isTextFile } from '@/utils/fileTypeClassification';
 import { usesRemoteFileReference } from '@/utils/chat/fileTransferStrategy';
 
 type OpenAICompatibleFilesResult =

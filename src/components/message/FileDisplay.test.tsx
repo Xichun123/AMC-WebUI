@@ -1,8 +1,8 @@
 import { act, type ReactNode } from 'react';
-import { setupTestRenderer } from '@/test/testUtils';
+import { setupTestRenderer } from '@/test/render/renderer';
 import { describe, expect, it, vi } from 'vitest';
 import { FileDisplay } from './FileDisplay';
-import { createUploadedFile } from '@/test/factories';
+import { createUploadedFile } from '@/test/data/factories';
 
 vi.mock('react-pdf', () => ({
   Document: ({ children }: { children: ReactNode }) => <div data-testid="mock-pdf-document">{children}</div>,
@@ -22,6 +22,10 @@ const triggerDownloadMock = vi.fn();
 
 vi.mock('@/utils/export/core', () => ({
   triggerDownload: (...args: unknown[]) => triggerDownloadMock(...args),
+}));
+
+vi.mock('@/utils/pdfRuntime', () => ({
+  ensurePdfWorkerConfigured: vi.fn(),
 }));
 
 const createImageFile = () =>

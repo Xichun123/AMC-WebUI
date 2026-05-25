@@ -156,4 +156,23 @@ describe('resolveModelSwitchSettings', () => {
       thinkingLevel: 'MINIMAL',
     });
   });
+
+  it('normalizes unsupported MINIMAL thinking level when switching to Gemini 3.1 Pro', () => {
+    const result = resolveModelSwitchSettings({
+      currentSettings: {
+        modelId: 'gemini-3.1-flash-lite',
+        mediaResolution: undefined,
+        thinkingBudget: -1,
+        thinkingLevel: 'MINIMAL',
+      },
+      sourceSettings: {
+        mediaResolution: undefined,
+        thinkingBudget: -1,
+        thinkingLevel: 'MINIMAL',
+      },
+      targetModelId: 'gemini-3.1-pro-preview',
+    });
+
+    expect(result.thinkingLevel).toBe('LOW');
+  });
 });

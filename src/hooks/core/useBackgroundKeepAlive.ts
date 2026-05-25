@@ -3,11 +3,10 @@ import { logService } from '@/services/logService';
 
 export const useBackgroundKeepAlive = (isActive: boolean) => {
   const workerRef = useRef<Worker | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
     if (isActive) {
-      // 1. Web Worker Keep-Alive
       try {
         if (!workerRef.current) {
           workerRef.current = new Worker(new URL('./backgroundKeepAliveWorker.ts', import.meta.url), {
@@ -23,61 +22,56 @@ export const useBackgroundKeepAlive = (isActive: boolean) => {
         logService.error('Failed to start KeepAlive worker', e);
       }
 
-      // 2. Silent Audio Keep-Alive (Force High Priority Network)
       try {
-        if (!audioCtxRef.current) {
+        if (!audioContextRef.current) {
           const AudioContextClass = window.AudioContext || window.webkitAudioContext;
           if (AudioContextClass) {
-            const ctx = new AudioContextClass();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
+            const audioContext = new AudioContextClass();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
 
-            // 100Hz sine wave
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(100, ctx.currentTime);
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(100, audioContext.currentTime);
 
             // Inaudible gain (0.0001) prevents user hearing it but tricks browser
-            gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+            gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
 
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.start();
 
-            audioCtxRef.current = ctx;
+            audioContextRef.current = audioContext;
             logService.debug('[KeepAlive] Silent audio active');
           }
         }
         // Resume if suspended (browser policy)
-        if (audioCtxRef.current?.state === 'suspended') {
-          audioCtxRef.current.resume().catch(() => {});
+        if (audioContextRef.current?.state === 'suspended') {
+          audioContextRef.current.resume().catch(() => {});
         }
       } catch (e) {
         logService.error('Failed to start KeepAlive audio', e);
       }
     } else {
-      // Stop Worker
       if (workerRef.current) {
         workerRef.current.postMessage('stop');
       }
 
-      // Stop Audio
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close().catch(() => {});
-        audioCtxRef.current = null;
+      if (audioContextRef.current) {
+        audioContextRef.current.close().catch(() => {});
+        audioContextRef.current = null;
       }
     }
   }, [isActive]);
 
-  // Full cleanup on unmount
   useEffect(() => {
     return () => {
       if (workerRef.current) {
         workerRef.current.terminate();
         workerRef.current = null;
       }
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close().catch(() => {});
-        audioCtxRef.current = null;
+      if (audioContextRef.current) {
+        audioContextRef.current.close().catch(() => {});
+        audioContextRef.current = null;
       }
     };
   }, []);

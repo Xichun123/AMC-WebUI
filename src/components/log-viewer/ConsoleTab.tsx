@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Filter, Download, Trash2, RefreshCw, Terminal } from 'lucide-react';
 import type { LogEntry, LogLevel, LogCategory } from '@/types/logging';
-import { LOG_LEVEL_COLORS, CATEGORY_COLORS } from './constants';
+import { LOG_LEVEL_COLORS, CATEGORY_COLORS } from './logColorClasses';
 import { LogRow } from './LogRow';
 import { useI18n } from '@/contexts/I18nContext';
-import { FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS } from '@/constants/styleClasses';
+import { FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS } from '@/constants/focusClasses';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
 import { triggerDownload } from '@/utils/export/core';
 
@@ -49,7 +49,6 @@ export const ConsoleTab: React.FC<ConsoleTabProps> = ({ logs, isLoading, hasMore
 
   return (
     <>
-      {/* Toolbar */}
       <div className="p-3 border-b border-[var(--theme-border-secondary)] bg-[var(--theme-bg-primary)] flex flex-wrap items-center gap-3">
         <input
           type="text"
@@ -111,7 +110,6 @@ export const ConsoleTab: React.FC<ConsoleTabProps> = ({ logs, isLoading, hasMore
         </button>
       </div>
 
-      {/* List */}
       <div className="flex-grow overflow-y-auto overflow-x-hidden custom-scrollbar bg-[var(--theme-bg-primary)]">
         {filteredLogs.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-[var(--theme-text-tertiary)] opacity-50">
@@ -122,7 +120,6 @@ export const ConsoleTab: React.FC<ConsoleTabProps> = ({ logs, isLoading, hasMore
           filteredLogs.map((log) => <LogRow key={log.id || log.timestamp.toISOString()} log={log} />)
         )}
 
-        {/* Load More Trigger */}
         {hasMore && filteredLogs.length > 0 && (
           <div className="p-4 flex justify-center border-t border-[var(--theme-border-secondary)]">
             <button

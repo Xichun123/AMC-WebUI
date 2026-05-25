@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-
-const projectRoot = path.resolve(__dirname, '../../..');
-
-const readProjectFile = (relativePath: string) => fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
+import { projectRoot, readProjectFile } from './projectFiles';
 
 describe('chat input architecture guardrails', () => {
   it('avoids writing input text twice in the chat input change handler', () => {
@@ -20,7 +17,7 @@ describe('chat input architecture guardrails', () => {
     const submissionSource = readProjectFile('src/hooks/chat-input/useChatInputSubmission.ts');
     const chatInputProviderSource = readProjectFile('src/components/chat/input/ChatInputProvider.tsx');
     const chatTextAreaSource = readProjectFile('src/components/chat/input/area/ChatTextArea.tsx');
-    const chatAreaSource = readProjectFile('src/components/layout/chat-area/useChatArea.ts');
+    const chatAreaSource = readProjectFile('src/components/layout/useChatArea.ts');
 
     expect(source).toContain('useChatInputCore');
     expect(source).toContain('useChatInputFile');
@@ -31,8 +28,8 @@ describe('chat input architecture guardrails', () => {
     expect(source).not.toContain('isComposingRef.current =');
     expect(source.length).toBeLessThan(10000);
     expect(chatInputProviderSource).toContain("from '@/hooks/chat-input/useChatInput'");
-    expect(chatInputProviderSource).toContain("from '@/hooks/chat-input/useChatInputState'");
-    expect(chatTextAreaSource).toContain("from '@/hooks/chat-input/useChatInputState'");
+    expect(chatInputProviderSource).toContain("from './chatInputTextAreaMetrics'");
+    expect(chatTextAreaSource).toContain("from '@/components/chat/input/chatInputTextAreaMetrics'");
     expect(chatAreaSource).toContain("from '@/hooks/chat-input/useChatInputHeight'");
   });
 
@@ -58,7 +55,7 @@ describe('chat input architecture guardrails', () => {
     const chatTypesSource = readProjectFile('src/types/chat.ts');
     const chatInputActionsSource = readProjectFile('src/components/chat/input/ChatInputActions.tsx');
     const toolsMenuSource = readProjectFile('src/components/chat/input/ToolsMenu.tsx');
-    const slashCommandsSource = readProjectFile('src/hooks/useSlashCommands.ts');
+    const slashCommandsSource = readProjectFile('src/hooks/chat-input/useSlashCommands.ts');
     const mainContentViewModelSource = readProjectFile('src/components/layout/useMainContentViewModel.ts');
     const chatAreaSource = readProjectFile('src/components/layout/ChatArea.tsx');
     const chatInputCoreSource = readProjectFile('src/hooks/chat-input/useChatInputCore.ts');
@@ -121,7 +118,9 @@ describe('chat input architecture guardrails', () => {
 
   it('shares composer auxiliary action descriptors between inline controls and overflow menu', () => {
     const chatInputActionsSource = readProjectFile('src/components/chat/input/ChatInputActions.tsx');
-    const utilityControlsSource = readProjectFile('src/components/chat/input/actions/UtilityControls.tsx');
+    const composerAuxiliaryButtonsSource = readProjectFile(
+      'src/components/chat/input/actions/ComposerAuxiliaryButtons.tsx',
+    );
     const composerMoreMenuSource = readProjectFile('src/components/chat/input/actions/ComposerMoreMenu.tsx');
 
     expect(
@@ -130,7 +129,7 @@ describe('chat input architecture guardrails', () => {
     expect(chatInputActionsSource).toContain('useComposerAuxiliaryActions');
 
     for (const [relativePath, source] of [
-      ['src/components/chat/input/actions/UtilityControls.tsx', utilityControlsSource],
+      ['src/components/chat/input/actions/ComposerAuxiliaryButtons.tsx', composerAuxiliaryButtonsSource],
       ['src/components/chat/input/actions/ComposerMoreMenu.tsx', composerMoreMenuSource],
     ] as const) {
       expect(source, relativePath).not.toContain("from '../../../../stores/settingsStore'");
@@ -142,7 +141,7 @@ describe('chat input architecture guardrails', () => {
   });
 
   it('uses shared chat input context fixtures in leaf control tests', () => {
-    const fixturePath = 'src/test/chatInputContextFixtures.ts';
+    const fixturePath = 'src/test/chat-input/contextFixtures.ts';
 
     expect(fs.existsSync(path.join(projectRoot, fixturePath))).toBe(true);
     const fixtureSource = readProjectFile(fixturePath);
@@ -150,9 +149,9 @@ describe('chat input architecture guardrails', () => {
     expect(fixtureSource).toContain('createChatInputComposerStatusContextValue');
 
     for (const [relativePath, expectedImport] of [
-      ['src/components/chat/input/AttachmentMenu.test.tsx', "from '@/test/chatInputContextFixtures'"],
-      ['src/components/chat/input/actions/SendControls.test.tsx', "from '@/test/chatInputContextFixtures'"],
-      ['src/components/chat/input/ChatInputActions.test.tsx', "from '@/test/chatInputContextFixtures'"],
+      ['src/components/chat/input/AttachmentMenu.test.tsx', "from '@/test/chat-input/contextFixtures'"],
+      ['src/components/chat/input/actions/SendControls.test.tsx', "from '@/test/chat-input/contextFixtures'"],
+      ['src/components/chat/input/ChatInputActions.test.tsx', "from '@/test/chat-input/contextFixtures'"],
     ] as const) {
       const source = readProjectFile(relativePath);
 
@@ -164,11 +163,11 @@ describe('chat input architecture guardrails', () => {
   });
 
   it('keeps full composer behavior tests on the shared chat input harness', () => {
-    const harnessPath = 'src/test/chatInputHarness.tsx';
+    const harnessPath = 'src/test/chat-input/harness.tsx';
     const chatInputTestSource = readProjectFile('src/components/chat/input/ChatInput.test.tsx');
 
     expect(fs.existsSync(path.join(projectRoot, harnessPath))).toBe(true);
-    expect(chatInputTestSource).toContain("from '@/test/chatInputHarness'");
+    expect(chatInputTestSource).toContain("from '@/test/chat-input/harness'");
     expect(chatInputTestSource).not.toContain("vi.mock('./ChatInputArea'");
     expect(chatInputTestSource).not.toContain('const mockChatStoreState = vi.hoisted');
   });
@@ -224,15 +223,15 @@ describe('chat input architecture guardrails', () => {
   });
 
   it('shares chat tool toggle defaults across test fixtures', () => {
-    const toolFixtureSource = readProjectFile('src/test/chatToolFixtures.ts');
-    const chatAreaFixtureSource = readProjectFile('src/test/chatAreaFixtures.tsx');
-    const chatInputFixtureSource = readProjectFile('src/test/chatInputContextFixtures.ts');
+    const toolFixtureSource = readProjectFile('src/test/chat-tools/fixtures.ts');
+    const chatAreaFixtureSource = readProjectFile('src/test/chat-area/fixtures.tsx');
+    const chatInputFixtureSource = readProjectFile('src/test/chat-input/contextFixtures.ts');
     const toolsMenuTestSource = readProjectFile('src/components/chat/input/ToolsMenu.test.tsx');
 
     expect(toolFixtureSource).toContain('createChatToolToggleStates');
-    expect(chatAreaFixtureSource).toContain("from './chatToolFixtures'");
-    expect(chatInputFixtureSource).toContain("from './chatToolFixtures'");
-    expect(toolsMenuTestSource).toContain("from '@/test/chatToolFixtures'");
+    expect(chatAreaFixtureSource).toContain("from '@/test/chat-tools/fixtures'");
+    expect(chatInputFixtureSource).toContain("from '@/test/chat-tools/fixtures'");
+    expect(toolsMenuTestSource).toContain("from '@/test/chat-tools/fixtures'");
     expect(chatAreaFixtureSource).not.toContain('const createToolStates');
     expect(chatInputFixtureSource).not.toContain('const createChatToolToggleStates');
     expect(toolsMenuTestSource).not.toContain('const createToolStates');

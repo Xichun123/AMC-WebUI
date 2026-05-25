@@ -1,7 +1,7 @@
 import { act } from 'react';
-import { setupProviderTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer } from '@/test/render/providerRenderer';
 import { describe, expect, it, vi } from 'vitest';
-import { createChatInputActionsContextValue } from '@/test/chatInputContextFixtures';
+import { createChatInputActionsContextValue } from '@/test/chat-input/contextFixtures';
 import { ChatInputActionsContext } from '@/components/chat/input/ChatInputContext';
 
 import { RecordControls } from './RecordControls';

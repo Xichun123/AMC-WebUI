@@ -1,8 +1,8 @@
 import { type MutableRefObject, useCallback } from 'react';
 import { type AppSettings, type ChatSettings as IndividualChatSettings, type SavedChatSession } from '@/types';
-import { DEFAULT_CHAT_SETTINGS } from '@/constants/appConstants';
-import { CHAT_INPUT_TEXTAREA_SELECTOR } from '@/constants/storageKeys';
+import { DEFAULT_CHAT_SETTINGS } from '@/constants/settingsDefaults';
 import { createNewSession } from '@/utils/chat/session';
+import { focusChatInput } from '@/utils/chat-input/focus';
 import { resolveModelSwitchSettings } from '@/utils/modelSwitchSettings';
 
 interface UseModelSelectionProps {
@@ -21,6 +21,13 @@ interface UseModelSelectionProps {
   userScrolledUpRef: MutableRefObject<boolean>;
 }
 
+const hasResolvedModelSettingChanges = (
+  currentSettings: IndividualChatSettings,
+  resolvedModelSettings: Partial<IndividualChatSettings>,
+): boolean =>
+  currentSettings.thinkingBudget !== resolvedModelSettings.thinkingBudget ||
+  currentSettings.thinkingLevel !== resolvedModelSettings.thinkingLevel;
+
 export const useModelSelection = ({
   appSettings,
   activeSessionId,
@@ -35,16 +42,15 @@ export const useModelSelection = ({
 }: UseModelSelectionProps) => {
   const handleSelectModelInHeader = useCallback(
     (modelId: string) => {
-      // Resolve target settings based on context (Session vs Global)
       const sourceSettings = activeSessionId ? currentChatSettings : appSettings;
-      const newSettingsPartial: Partial<IndividualChatSettings> = resolveModelSwitchSettings({
+      const resolvedModelSettings: Partial<IndividualChatSettings> = resolveModelSwitchSettings({
         currentSettings: currentChatSettings,
         sourceSettings,
         targetModelId: modelId,
       });
 
       if (!activeSessionId) {
-        const sessionSettings = { ...DEFAULT_CHAT_SETTINGS, ...appSettings, ...newSettingsPartial };
+        const sessionSettings = { ...DEFAULT_CHAT_SETTINGS, ...appSettings, ...resolvedModelSettings };
         const newSession = createNewSession(sessionSettings);
 
         updateAndPersistSessions((prev) => [newSession, ...prev]);
@@ -55,32 +61,19 @@ export const useModelSelection = ({
           setIsSwitchingModel(true);
           updateAndPersistSessions((prev) =>
             prev.map((s) =>
-              s.id === activeSessionId ? { ...s, settings: { ...s.settings, ...newSettingsPartial } } : s,
+              s.id === activeSessionId ? { ...s, settings: { ...s.settings, ...resolvedModelSettings } } : s,
             ),
           );
-        } else {
-          // If model is same but somehow we are updating params (rare here)
-          if (
-            currentChatSettings.thinkingBudget !== newSettingsPartial.thinkingBudget ||
-            currentChatSettings.thinkingLevel !== newSettingsPartial.thinkingLevel
-          ) {
-            setCurrentChatSettings((prev) => ({
-              ...prev,
-              thinkingBudget: newSettingsPartial.thinkingBudget ?? prev.thinkingBudget,
-              thinkingLevel: newSettingsPartial.thinkingLevel,
-            }));
-          }
+        } else if (hasResolvedModelSettingChanges(currentChatSettings, resolvedModelSettings)) {
+          setCurrentChatSettings((prev) => ({
+            ...prev,
+            thinkingBudget: resolvedModelSettings.thinkingBudget ?? prev.thinkingBudget,
+            thinkingLevel: resolvedModelSettings.thinkingLevel,
+          }));
         }
       }
       userScrolledUpRef.current = false;
-
-      // Auto-focus input after model selection
-      setTimeout(() => {
-        const textarea = document.querySelector(CHAT_INPUT_TEXTAREA_SELECTOR) as HTMLTextAreaElement;
-        if (textarea) {
-          textarea.focus();
-        }
-      }, 50);
+      focusChatInput();
     },
     [
       isLoading,

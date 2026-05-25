@@ -1,48 +1,22 @@
 import { createManagedObjectUrl, releaseManagedObjectUrl } from '@/services/objectUrlManager';
+import { SUPPORTED_AUDIO_MIME_TYPES } from '@/constants/fileTypeSupport';
+import { audioCompressionWorkerCode } from './audioCompressionWorkerCode';
 
-// Web Worker code embedded as string to avoid extra file management
-const WORKER_CODE = `
-importScripts('/lame.min.js');
+const BYTES_PER_KIB = 1024;
+const MIN_COMPRESSIBLE_AUDIO_BYTES = 50 * BYTES_PER_KIB;
+const MIN_COMPRESSIBLE_DURATION_SECONDS = 1.5;
+const LOW_BITRATE_AUDIO_BPS = 80_000;
+const MP3_TARGET_SAMPLE_RATE = 16_000;
+const MP3_TARGET_CHANNELS = 1;
+const MP3_TARGET_KBPS = 64;
 
-self.onmessage = function(e) {
-    try {
-        const { pcmData, sampleRate, kbps } = e.data;
-        
-        // 1. Convert Float32 to Int16
-        const samples = new Int16Array(pcmData.length);
-        for (let i = 0; i < pcmData.length; i++) {
-            const s = Math.max(-1, Math.min(1, pcmData[i]));
-            samples[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-        }
+const normalizeAudioMimeType = (mimeType: string): string => mimeType.trim().toLowerCase().split(';')[0];
 
-        // 2. Encode
-        if (typeof lamejs === 'undefined') {
-            throw new Error('lamejs not loaded in worker');
-        }
+const isGeminiSupportedAudioMimeType = (file: File | Blob): boolean =>
+  SUPPORTED_AUDIO_MIME_TYPES.includes(normalizeAudioMimeType(file.type));
 
-        const mp3encoder = new lamejs.Mp3Encoder(1, sampleRate, kbps);
-        const mp3Data = [];
-        const sampleBlockSize = 1152; 
-
-        for (let i = 0; i < samples.length; i += sampleBlockSize) {
-            const chunk = samples.subarray(i, i + sampleBlockSize);
-            const mp3buf = mp3encoder.encodeBuffer(chunk);
-            if (mp3buf.length > 0) {
-                mp3Data.push(mp3buf);
-            }
-        }
-
-        const mp3buf = mp3encoder.flush();
-        if (mp3buf.length > 0) {
-            mp3Data.push(mp3buf);
-        }
-
-        self.postMessage({ type: 'success', buffers: mp3Data });
-    } catch (err) {
-        self.postMessage({ type: 'error', error: err.message });
-    }
-};
-`;
+const canKeepOriginalAudio = (file: File | Blob): file is File =>
+  file instanceof File && isGeminiSupportedAudioMimeType(file);
 
 interface EncodeMp3WithWorkerOptions {
   pcmData: Float32Array;
@@ -50,12 +24,7 @@ interface EncodeMp3WithWorkerOptions {
   kbps: number;
   file: File | Blob;
   signal?: AbortSignal;
-  createWorker?: (url: string) => Worker;
-  createObjectUrl?: (blob: Blob) => string;
-  revokeObjectUrl?: (url: string) => void;
 }
-
-const createAudioCompressionWorkerCode = () => WORKER_CODE;
 
 const encodeMp3WithWorker = async ({
   pcmData,
@@ -63,18 +32,15 @@ const encodeMp3WithWorker = async ({
   kbps,
   file,
   signal,
-  createWorker,
-  createObjectUrl,
-  revokeObjectUrl,
 }: EncodeMp3WithWorkerOptions): Promise<File> => {
   return new Promise((resolve, reject) => {
-    const workerBlob = new Blob([createAudioCompressionWorkerCode()], { type: 'application/javascript' });
-    const workerUrl = (createObjectUrl ?? createManagedObjectUrl)(workerBlob);
-    const worker = (createWorker ?? ((url: string) => new Worker(url)))(workerUrl);
+    const workerBlob = new Blob([audioCompressionWorkerCode], { type: 'application/javascript' });
+    const workerUrl = createManagedObjectUrl(workerBlob);
+    const worker = new Worker(workerUrl);
 
     const cleanup = () => {
       worker.terminate();
-      (revokeObjectUrl ?? releaseManagedObjectUrl)(workerUrl);
+      releaseManagedObjectUrl(workerUrl);
     };
 
     if (signal) {
@@ -93,9 +59,9 @@ const encodeMp3WithWorker = async ({
       );
     }
 
-    worker.onmessage = (e) => {
-      if (e.data.type === 'success') {
-        const mp3Blob = new Blob(e.data.buffers, { type: 'audio/mpeg' });
+    worker.onmessage = (event) => {
+      if (event.data.type === 'success') {
+        const mp3Blob = new Blob(event.data.buffers, { type: 'audio/mpeg' });
         const originalName = (file as File).name || `audio-${Date.now()}`;
         const newName = originalName.replace(/\.[^/.]+$/, '') + '.mp3';
         cleanup();
@@ -122,10 +88,8 @@ export const compressAudioToMp3 = async (file: File | Blob, signal?: AbortSignal
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
   };
 
-  // 优化：如果文件极其微小 (小于 50KB)，很有可能是极短的语音，直接返回原始文件
-  if (file.size < 50 * 1024) {
-    if (file instanceof File) return file;
-    return new File([file], `recording-${Date.now()}.webm`, { type: file.type || 'audio/webm' });
+  if (file.size < MIN_COMPRESSIBLE_AUDIO_BYTES) {
+    if (canKeepOriginalAudio(file)) return file;
   }
 
   try {
@@ -139,10 +103,8 @@ export const compressAudioToMp3 = async (file: File | Blob, signal?: AbortSignal
     const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
     checkAbort();
 
-    // 优化：如果时长小于 1.5 秒，没必要压缩
-    if (audioBuffer.duration < 1.5) {
-      if (file instanceof File) return file;
-      return new File([file], `recording-${Date.now()}.webm`, { type: file.type || 'audio/webm' });
+    if (audioBuffer.duration < MIN_COMPRESSIBLE_DURATION_SECONDS) {
+      if (canKeepOriginalAudio(file)) return file;
     }
 
     const duration = audioBuffer.duration;
@@ -154,16 +116,14 @@ export const compressAudioToMp3 = async (file: File | Blob, signal?: AbortSignal
       file.type === 'audio/mp3' ||
       ('name' in file && (file as File).name.toLowerCase().endsWith('.mp3'));
 
-    if (isMp3 && bitrate > 0 && bitrate < 80000) {
+    if (isMp3 && bitrate > 0 && bitrate < LOW_BITRATE_AUDIO_BPS) {
       if (file instanceof File) return file;
       return new File([file], `audio-${Date.now()}.mp3`, { type: 'audio/mpeg' });
     }
 
-    const targetSampleRate = 16000;
-    const targetChannels = 1;
-    const frameCount = Math.ceil(audioBuffer.duration * targetSampleRate);
+    const frameCount = Math.ceil(audioBuffer.duration * MP3_TARGET_SAMPLE_RATE);
 
-    const offlineCtx = new OfflineAudioContext(targetChannels, frameCount, targetSampleRate);
+    const offlineCtx = new OfflineAudioContext(MP3_TARGET_CHANNELS, frameCount, MP3_TARGET_SAMPLE_RATE);
     const source = offlineCtx.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(offlineCtx.destination);
@@ -175,8 +135,8 @@ export const compressAudioToMp3 = async (file: File | Blob, signal?: AbortSignal
 
     return encodeMp3WithWorker({
       pcmData,
-      sampleRate: targetSampleRate,
-      kbps: 64,
+      sampleRate: MP3_TARGET_SAMPLE_RATE,
+      kbps: MP3_TARGET_KBPS,
       file,
       signal,
     });

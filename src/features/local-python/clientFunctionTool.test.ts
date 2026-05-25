@@ -1,6 +1,6 @@
 import { Type } from '@google/genai';
 import { describe, expect, it, vi } from 'vitest';
-import { createUploadedFile } from '@/test/factories';
+import { createUploadedFile } from '@/test/data/factories';
 import { createLocalPythonToolDeclaration, createLocalPythonToolHandler } from './clientFunctionTool';
 
 describe('local Python client function tool helpers', () => {

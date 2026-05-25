@@ -1,7 +1,7 @@
-import { act, type FormEvent } from 'react';
+import { act } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createChatSettings } from '@/test/factories';
-import { renderHook } from '@/test/testUtils';
+import { createAppSettings, createChatSettings } from '@/test/data/factories';
+import { renderHook } from '@/test/render/renderer';
 import { useChatInputSubmission } from './useChatInputSubmission';
 
 const createSubmissionParams = () => {
@@ -9,6 +9,7 @@ const createSubmissionParams = () => {
 
   return {
     activeSessionId: 'session-1',
+    appSettings: createAppSettings(),
     currentChatSettings: createChatSettings(),
     selectedFiles: [],
     setSelectedFiles: vi.fn(),
@@ -60,7 +61,7 @@ describe('useChatInputSubmission', () => {
     const { result, unmount } = renderHook(() => useChatInputSubmission(params));
 
     act(() => {
-      result.current.handleSubmit({ preventDefault: vi.fn() } as unknown as FormEvent);
+      result.current.handleSubmit();
     });
 
     expect(params.submissionState.startSendAnimation).toHaveBeenCalledTimes(1);

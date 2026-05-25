@@ -1,5 +1,5 @@
 import { logService } from '@/services/logService';
-import { decodeBase64ToArrayBuffer } from '@/utils/fileHelpers';
+import { decodeBase64ToArrayBuffer } from '@/utils/fileEncoding';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
 
 export { decodeBase64ToArrayBuffer };
@@ -30,53 +30,52 @@ export const decodeAudioData = async (
  * Encodes Float32 audio data (from AudioWorklet) into a PCM16 Base64 string.
  */
 export const float32ToPCM16Base64 = (data: Float32Array): string => {
-  const l = data.length;
-  const int16 = new Int16Array(l);
-  for (let i = 0; i < l; i++) {
+  const sampleCount = data.length;
+  const int16 = new Int16Array(sampleCount);
+  for (let i = 0; i < sampleCount; i++) {
     int16[i] = Math.max(-1, Math.min(1, data[i])) * 32768;
   }
   let binary = '';
   const bytes = new Uint8Array(int16.buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
+  const byteLength = bytes.byteLength;
+  for (let i = 0; i < byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
 };
 
-/**
- * Helper to write WAV header and data to an ArrayBuffer
- */
 const createWavBuffer = (pcmData: Uint8Array, sampleRate: number, numChannels: number): ArrayBuffer => {
   const bytesPerSample = 2; // 16-bit
   const blockAlign = numChannels * bytesPerSample;
   const wav = new ArrayBuffer(44 + pcmData.length);
-  const dv = new DataView(wav);
+  const wavView = new DataView(wav);
 
-  let p = 0;
-  const writeStr = (s: string) => [...s].forEach((ch) => dv.setUint8(p++, ch.charCodeAt(0)));
+  let writeOffset = 0;
+  const writeString = (value: string) => {
+    [...value].forEach((character) => wavView.setUint8(writeOffset++, character.charCodeAt(0)));
+  };
 
-  writeStr('RIFF');
-  dv.setUint32(p, 36 + pcmData.length, true);
-  p += 4;
-  writeStr('WAVEfmt ');
-  dv.setUint32(p, 16, true);
-  p += 4; // fmt length
-  dv.setUint16(p, 1, true);
-  p += 2; // PCM
-  dv.setUint16(p, numChannels, true);
-  p += 2;
-  dv.setUint32(p, sampleRate, true);
-  p += 4;
-  dv.setUint32(p, sampleRate * blockAlign, true);
-  p += 4;
-  dv.setUint16(p, blockAlign, true);
-  p += 2;
-  dv.setUint16(p, bytesPerSample * 8, true);
-  p += 2;
-  writeStr('data');
-  dv.setUint32(p, pcmData.length, true);
-  p += 4;
+  writeString('RIFF');
+  wavView.setUint32(writeOffset, 36 + pcmData.length, true);
+  writeOffset += 4;
+  writeString('WAVEfmt ');
+  wavView.setUint32(writeOffset, 16, true);
+  writeOffset += 4;
+  wavView.setUint16(writeOffset, 1, true);
+  writeOffset += 2;
+  wavView.setUint16(writeOffset, numChannels, true);
+  writeOffset += 2;
+  wavView.setUint32(writeOffset, sampleRate, true);
+  writeOffset += 4;
+  wavView.setUint32(writeOffset, sampleRate * blockAlign, true);
+  writeOffset += 4;
+  wavView.setUint16(writeOffset, blockAlign, true);
+  writeOffset += 2;
+  wavView.setUint16(writeOffset, bytesPerSample * 8, true);
+  writeOffset += 2;
+  writeString('data');
+  wavView.setUint32(writeOffset, pcmData.length, true);
+  writeOffset += 4;
 
   new Uint8Array(wav, 44).set(pcmData);
   return wav;
@@ -97,7 +96,6 @@ export function pcmBase64ToWavUrl(base64: string, sampleRate = 24_000, numChanne
 export const createWavBlobFromPCMChunks = (chunks: string[], sampleRate = 24000): string | null => {
   if (chunks.length === 0) return null;
 
-  // 1. Calculate total length
   let totalLen = 0;
   const decodedChunks: Uint8Array[] = [];
 
@@ -107,7 +105,6 @@ export const createWavBlobFromPCMChunks = (chunks: string[], sampleRate = 24000)
     totalLen += decoded.length;
   }
 
-  // 2. Merge chunks
   const merged = new Uint8Array(totalLen);
   let offset = 0;
   for (const chunk of decodedChunks) {
@@ -115,10 +112,7 @@ export const createWavBlobFromPCMChunks = (chunks: string[], sampleRate = 24000)
     offset += chunk.length;
   }
 
-  // 3. Create WAV Buffer using shared helper
   const wavBuffer = createWavBuffer(merged, sampleRate, 1);
-
-  // 4. Create Blob and URL
   const blob = new Blob([wavBuffer], { type: 'audio/wav' });
   return createManagedObjectUrl(blob);
 };
@@ -160,7 +154,7 @@ export const getMixedAudioStream = async (
     const displayStream = await navigator.mediaDevices.getDisplayMedia({
       video: {
         width: 1,
-        height: 1, // Request minimal video size as we only need audio
+        height: 1,
       },
       audio: {
         echoCancellation: false,
@@ -171,38 +165,37 @@ export const getMixedAudioStream = async (
       selfBrowserSurface: 'include',
     } as ExtendedDisplayMediaStreamOptions);
 
-    // Check if audio track exists (user might have unchecked "Share Audio")
-    if (displayStream.getAudioTracks().length === 0) {
+    const didShareSystemAudio = displayStream.getAudioTracks().length > 0;
+    if (!didShareSystemAudio) {
       logService.warn("System audio not shared (user might have unchecked 'Share Audio').");
       displayStream.getTracks().forEach((t) => t.stop());
       return { stream: micStream, cleanup: () => {}, warning: SYSTEM_AUDIO_NOT_SHARED_WARNING };
     }
 
     const AudioContextClass = window.AudioContext || (window as WindowWithWebkitAudioContext).webkitAudioContext;
-    const ctx = new AudioContextClass();
-    const dest = ctx.createMediaStreamDestination();
+    const audioContext = new AudioContextClass();
+    const mixedDestination = audioContext.createMediaStreamDestination();
 
-    const micSource = ctx.createMediaStreamSource(micStream);
-    const sysSource = ctx.createMediaStreamSource(displayStream);
+    const microphoneSource = audioContext.createMediaStreamSource(micStream);
+    const systemAudioSource = audioContext.createMediaStreamSource(displayStream);
 
-    micSource.connect(dest);
-    sysSource.connect(dest);
+    microphoneSource.connect(mixedDestination);
+    systemAudioSource.connect(mixedDestination);
 
     const cleanup = () => {
       try {
-        micSource.disconnect();
-        sysSource.disconnect();
+        microphoneSource.disconnect();
+        systemAudioSource.disconnect();
         displayStream.getTracks().forEach((t) => t.stop());
-        ctx.close().catch(() => {});
+        audioContext.close().catch(() => {});
       } catch (e) {
         logService.error('Error cleaning up mixed stream:', e);
       }
     };
 
-    return { stream: dest.stream, cleanup };
+    return { stream: mixedDestination.stream, cleanup };
   } catch (error) {
     logService.warn('System audio capture cancelled or failed:', error);
-    // Fallback to mic only
     return { stream: micStream, cleanup: () => {}, warning: SYSTEM_AUDIO_CAPTURE_FAILED_WARNING };
   }
 };

@@ -1,8 +1,8 @@
 import { act } from 'react';
-import { setupProviderTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MessageText } from './MessageText';
-import { createAppSettings } from '@/test/factories';
+import { createAppSettings } from '@/test/data/factories';
 
 const { mockUseMessageStream } = vi.hoisted(() => ({
   mockUseMessageStream: vi.fn(() => ({

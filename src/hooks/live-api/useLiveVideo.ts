@@ -77,12 +77,12 @@ export const useLiveVideo = () => {
       canvasRef.current = document.createElement('canvas');
     }
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
+    const canvasContext = canvas.getContext('2d');
+    if (!canvasContext) return null;
 
     canvas.width = videoEl.videoWidth;
     canvas.height = videoEl.videoHeight;
-    ctx.drawImage(videoEl, 0, 0);
+    canvasContext.drawImage(videoEl, 0, 0);
 
     const dataUrl = canvas.toDataURL('image/jpeg', FRAME_JPEG_QUALITY);
     return dataUrl.split(',')[1];

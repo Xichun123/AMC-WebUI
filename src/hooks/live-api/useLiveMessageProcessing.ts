@@ -3,7 +3,7 @@ import type { LiveServerMessage, Session as LiveSession } from '@google/genai';
 import { useLiveTools } from './useLiveTools';
 import type { LiveClientFunctions, LiveTranscriptHandler, ThoughtSupportingPart, UploadedFile } from '@/types';
 import { createWavBlobFromPCMChunks } from '@/features/audio/audioProcessing';
-import { getContentDeltaFromPart } from '@/features/chat-streaming/messageStreamReducer';
+import { getContentDeltaFromPart } from '@/features/chat-streaming/messageStreamParts';
 
 interface UseLiveMessageProcessingProps {
   playAudioChunk: (data: string) => Promise<void>;

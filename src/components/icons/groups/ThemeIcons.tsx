@@ -1,5 +1,5 @@
 import React from 'react';
-import { type IconProps, defaultSize, defaultStroke, defaultColor } from '@/components/icons/iconUtils';
+import { type IconProps, defaultSize, defaultStroke, defaultColor } from '@/components/icons/iconPrimitives';
 
 export const IconThemeSystem: React.FC<IconProps> = ({
   size = defaultSize,

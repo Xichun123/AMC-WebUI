@@ -104,7 +104,6 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, autoPlay = false,
       />
 
       <div className="flex items-center justify-between p-3 gap-3">
-        {/* Play/Pause Button */}
         <button
           onClick={togglePlay}
           className="flex items-center justify-center w-9 h-9 rounded-full bg-[var(--theme-bg-accent)] text-[var(--theme-text-accent)] hover:bg-[var(--theme-bg-accent-hover)] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--theme-border-focus)] flex-shrink-0"
@@ -117,15 +116,12 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, autoPlay = false,
           )}
         </button>
 
-        {/* Progress & Time */}
         <div className="flex-grow flex flex-col justify-center gap-1 min-w-0">
-          {/* Progress Bar */}
           <div className="relative w-full h-1 bg-[var(--theme-border-secondary)] rounded-full cursor-pointer group">
             <div
               className="absolute top-0 left-0 h-full bg-[var(--theme-text-link)] transition-all duration-100 ease-linear rounded-full"
               style={{ width: `${progressPercent}%` }}
             />
-            {/* Thumb/Handle - visible on hover */}
             <div
               className="absolute top-1/2 -mt-1.5 h-3 w-3 bg-[var(--theme-text-link)] rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none transform -translate-x-1/2"
               style={{ left: `${progressPercent}%` }}
@@ -147,9 +143,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, autoPlay = false,
           </div>
         </div>
 
-        {/* Controls Group */}
         <div className="flex items-center gap-1 flex-shrink-0">
-          {/* Speed Toggle */}
           <button
             onClick={toggleSpeed}
             className="px-1.5 py-1 rounded text-[10px] font-bold text-[var(--theme-text-secondary)] hover:bg-[var(--theme-bg-tertiary)] hover:text-[var(--theme-text-primary)] transition-colors min-w-[2rem]"
@@ -158,7 +152,6 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ src, autoPlay = false,
             {playbackRate}x
           </button>
 
-          {/* Download */}
           <button
             onClick={handleDownload}
             className="p-1.5 rounded text-[var(--theme-text-tertiary)] hover:text-[var(--theme-text-primary)] hover:bg-[var(--theme-bg-tertiary)] transition-colors"

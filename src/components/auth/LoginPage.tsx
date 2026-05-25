@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { AVAILABLE_THEMES } from '@/constants/themeConstants';
+import { AVAILABLE_THEMES } from '@/constants/themeRegistry';
 import { applyThemeToDocument } from '@/utils/themeDom';
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 
 type LoginState = 'idle' | 'loading';
 

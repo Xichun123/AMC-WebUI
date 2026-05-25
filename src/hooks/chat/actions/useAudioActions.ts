@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { type AppSettings, type ChatSettings as IndividualChatSettings, type UploadedFile } from '@/types';
 import { logService } from '@/services/logService';
-import { getApiKeyErrorTranslationKey, getGeminiKeyForRequest } from '@/utils/apiUtils';
+import { getApiKeyErrorTranslationKey, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
 import { transcribeAudioApi } from '@/services/api/generation/audioApi';
 import { useI18n } from '@/contexts/I18nContext';
 import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';

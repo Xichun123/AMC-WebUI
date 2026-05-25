@@ -20,8 +20,8 @@ vi.mock('@/features/audio/audioProcessing', () => ({
 }));
 
 import { useLiveMessageProcessing } from './useLiveMessageProcessing';
-import { createLiveServerMessage } from '@/test/liveApiFixtures';
-import { renderHook } from '@/test/testUtils';
+import { createLiveServerMessage } from '@/test/live-api/fixtures';
+import { renderHook } from '@/test/render/renderer';
 
 describe('useLiveMessageProcessing', () => {
   beforeEach(() => {

@@ -76,7 +76,6 @@ export const LiveStatusBanner: React.FC<LiveStatusBannerProps> = ({
           ) : (
             <Mic size={16} className={volume > 0.05 ? 'animate-pulse' : ''} />
           )}
-          {/* Visualizer Ring */}
           <div
             className="absolute inset-0 rounded-full border-2 border-current opacity-30 transition-transform duration-75"
             style={{ transform: `scale(${1 + Math.min(volume * 2, 0.5)})` }}

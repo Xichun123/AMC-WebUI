@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
-import { KeyRound, LayoutPanelLeft, SlidersHorizontal, X } from 'lucide-react';
+import { KeyRound, LayoutPanelLeft, Network, SlidersHorizontal, X } from 'lucide-react';
 import { type SettingsTab, type SettingsTabDescriptor } from '@/stores/settingsUiStore';
 import { IconAbout, IconData, IconKeyboard } from '@/components/icons';
 
@@ -8,6 +8,7 @@ const SETTINGS_TAB_ICONS: Record<SettingsTab, React.ElementType> = {
   models: SlidersHorizontal,
   interface: LayoutPanelLeft,
   api: KeyRound,
+  mcp: Network,
   data: IconData,
   shortcuts: IconKeyboard,
   about: IconAbout,
@@ -24,7 +25,7 @@ interface SettingsSidebarProps {
 const SIDEBAR_GROUPS: Array<{ id: string; tabIds: SettingsTab[] }> = [
   {
     id: 'primary',
-    tabIds: ['models', 'api', 'interface', 'data'],
+    tabIds: ['models', 'api', 'mcp', 'interface', 'data'],
   },
   {
     id: 'shortcuts',
@@ -83,7 +84,6 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
 
   return (
     <aside className="flex-shrink-0 w-full md:w-64 bg-[var(--theme-bg-secondary)] border-b md:border-b-0 md:border-r border-[var(--theme-border-primary)] flex flex-col">
-      {/* Sidebar Header */}
       <div className="flex items-center justify-between px-4 py-3 md:px-5 md:py-5 flex-shrink-0">
         <button
           ref={closeButtonRef}
@@ -93,12 +93,10 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
         >
           <X size={20} strokeWidth={2} />
         </button>
-        {/* Mobile Title */}
         <span className="md:hidden font-semibold text-[var(--theme-text-primary)]">{t('settingsTitle')}</span>
         <div className="w-8 md:hidden"></div>
       </div>
 
-      {/* Navigation List */}
       <nav
         className="flex-1 overflow-x-auto md:overflow-y-auto md:overflow-x-hidden custom-scrollbar px-2 pb-2 md:px-3 md:pb-3 flex md:flex-col gap-1 md:gap-1.5"
         role="tablist"

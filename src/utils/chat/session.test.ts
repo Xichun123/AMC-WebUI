@@ -10,8 +10,8 @@ import {
   stripSessionFilePayloads,
 } from './session';
 import { type ChatMessage, type SavedChatSession, type ChatSettings, type PersistedSessionFileRecord } from '@/types';
-import { DEFAULT_CHAT_SETTINGS } from '@/constants/appConstants';
-import { createUploadedFile } from '@/test/factories';
+import { DEFAULT_CHAT_SETTINGS } from '@/constants/settingsDefaults';
+import { createUploadedFile } from '@/test/data/factories';
 
 const makeMessage = (role: 'user' | 'model' | 'error', content: string, extra?: Partial<ChatMessage>): ChatMessage => ({
   id: `msg-${Math.random().toString(36).slice(2, 8)}`,

@@ -1,6 +1,6 @@
 import { fireEvent, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { renderWithProviders } from '@/test/providerTestUtils';
+import { renderWithProviders } from '@/test/render/providerRenderer';
 import { AudioRecorder } from './AudioRecorder';
 
 const { mockUseAudioRecorder } = vi.hoisted(() => ({

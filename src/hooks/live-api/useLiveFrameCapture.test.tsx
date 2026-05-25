@@ -1,8 +1,8 @@
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useLiveFrameCapture } from './useLiveFrameCapture';
-import { createLiveSessionRef, createLiveSessionStub } from '@/test/liveApiFixtures';
-import { renderHook } from '@/test/testUtils';
+import { createLiveSessionRef, createLiveSessionStub } from '@/test/live-api/fixtures';
+import { renderHook } from '@/test/render/renderer';
 
 describe('useLiveFrameCapture', () => {
   beforeEach(() => {

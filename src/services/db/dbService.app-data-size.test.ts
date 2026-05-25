@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createChatSettings } from '@/test/factories';
+import { createChatSettings } from '@/test/data/factories';
 
 const createSession = () => {
   const rawFile = new Blob(['hello world from indexeddb'], { type: 'text/plain' });

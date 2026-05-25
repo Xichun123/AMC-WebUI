@@ -5,7 +5,6 @@ import type { SessionItem } from './SessionItem';
 import { GroupItemMenu } from './GroupItemMenu';
 import { LimitedSessionList } from './LimitedSessionList';
 
-// Define a type for the props that are passed down to SessionItem
 export type SessionItemPassedProps = Omit<React.ComponentProps<typeof SessionItem>, 'session'>;
 
 interface GroupItemProps extends SessionItemPassedProps {

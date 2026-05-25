@@ -27,13 +27,13 @@ Object.defineProperty(window, 'location', {
 });
 
 vi.mock('@/services/db/dbService', async () => {
-  const { createDbServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createDbServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createDbServiceMockModule();
 });
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });
@@ -57,7 +57,7 @@ vi.mock('@/utils/modelSorting', () => ({
 import { useChatStore } from './chatStore';
 import { dbService } from '@/services/db/dbService';
 import { type SavedChatSession, type ChatGroup } from '@/types';
-import { createChatSettings, createUploadedFile } from '@/test/factories';
+import { createChatSettings, createUploadedFile } from '@/test/data/factories';
 
 const makeSession = (overrides: Partial<SavedChatSession> = {}): SavedChatSession => ({
   id: `sess-${Math.random().toString(36).slice(2, 8)}`,

@@ -1,9 +1,9 @@
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AppSettings, ChatMessage, ModelOption, SavedChatSession } from '@/types';
-import { createAppSettings, createChatSettings } from '@/test/chatAreaFixtures';
+import { createAppSettings, createChatSettings } from '@/test/chat-area/fixtures';
 import { useApp } from './useApp';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 
 const mockSetIsHistorySidebarOpen = vi.fn();
 const mockSetIsLogViewerOpen = vi.fn();
@@ -97,11 +97,12 @@ vi.mock('@/hooks/chat/useChat', () => ({
   }),
 }));
 
-vi.mock('@/constants/promptHelpers', () => ({
+vi.mock('@/features/prompts/promptRegistry', () => ({
   isLiveArtifactsSystemInstruction: (instruction?: string | null) =>
     !!instruction && instruction.includes('[Live Artifacts Protocol - zh]'),
   isBboxSystemInstruction: () => false,
   isHdGuideSystemInstruction: () => false,
+  resolveLiveArtifactsPromptTheme: vi.fn(() => 'light'),
   loadLiveArtifactsSystemPrompt: vi.fn(async () => LIVE_ARTIFACTS_PROMPT),
   loadBboxSystemPrompt: vi.fn(async () => 'bbox prompt'),
   loadHdGuideSystemPrompt: vi.fn(async () => 'guide prompt'),
@@ -175,7 +176,7 @@ vi.mock('@/utils/themeDom', () => ({
 }));
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });

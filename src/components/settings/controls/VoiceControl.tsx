@@ -29,7 +29,6 @@ export const VoiceControl: React.FC<VoiceControlProps> = ({
       </h4>
 
       <div className="space-y-3">
-        {/* Input Transcription Model */}
         <Select
           id="transcription-model-select"
           label=""
@@ -52,7 +51,6 @@ export const VoiceControl: React.FC<VoiceControlProps> = ({
           ))}
         </Select>
 
-        {/* TTS Voice Selector */}
         {ttsVoice && setTtsVoice && (
           <Select
             id="tts-voice-select"

@@ -1,6 +1,6 @@
 import { act } from 'react';
-import { setupTestRenderer } from '@/test/testUtils';
-import { renderWithProviders } from '@/test/providerTestUtils';
+import { setupTestRenderer } from '@/test/render/renderer';
+import { renderWithProviders } from '@/test/render/providerRenderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToolbarContainer } from './ToolbarContainer';
 

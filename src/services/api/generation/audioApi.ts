@@ -1,16 +1,28 @@
 import type { GenerateContentConfig, Part, ThinkingConfig, ThinkingLevel, UsageMetadata } from '@google/genai';
 import { executeConfiguredApiRequest } from '@/services/api/apiExecutor';
 import { logService } from '@/services/logService';
-import { blobToBase64 } from '@/utils/fileHelpers';
+import { blobToBase64 } from '@/utils/fileEncoding';
 import { getModelCapabilities } from '@/utils/modelCapabilities';
 import { calculateTokenStats } from '@/utils/modelUsageStats';
 import { buildExactPricingFromUsageMetadata } from '@/utils/usagePricingTelemetry';
 import { AVAILABLE_TTS_VOICES } from '@/constants/voiceOptions';
+import { SUPPORTED_AUDIO_MIME_TYPES } from '@/constants/fileTypeSupport';
 
 const SUPPORTED_TTS_VOICE_NAMES = new Set(AVAILABLE_TTS_VOICES.map((voice) => voice.id));
 const SPEAKER_VOICES_HEADER_REGEX = /^#{1,6}\s*SPEAKER VOICES(?:\s*\(.*\))?\s*$/i;
 const MARKDOWN_HEADER_REGEX = /^#{1,6}\s+\S/;
 const SPEAKER_VOICE_LINE_REGEX = /^(?:[-*]\s*)?([^:]+?)\s*:\s*([A-Za-z][\w-]*)\s*$/;
+
+const normalizeAudioMimeType = (mimeType: string): string => mimeType.trim().toLowerCase().split(';')[0];
+
+const getSupportedTranscriptionMimeType = (audioFile: File): string => {
+  const mimeType = normalizeAudioMimeType(audioFile.type);
+  if (SUPPORTED_AUDIO_MIME_TYPES.includes(mimeType)) {
+    return mimeType;
+  }
+
+  throw new Error(`Unsupported audio MIME type for Gemini transcription: ${audioFile.type || 'unknown'}.`);
+};
 
 const buildSingleSpeakerSpeechConfig = (voice: string) => ({
   voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } },
@@ -157,11 +169,12 @@ export const transcribeAudioApi = async (apiKey: string, audioFile: File, modelI
     errorLabel: 'Error during audio transcription:',
     run: async ({ client: ai }) => {
       logService.debug('Audio transcription request file details', { fileName: audioFile.name, size: audioFile.size });
+      const mimeType = getSupportedTranscriptionMimeType(audioFile);
       const audioBase64 = await blobToBase64(audioFile);
 
       const audioPart: Part = {
         inlineData: {
-          mimeType: audioFile.type,
+          mimeType,
           data: audioBase64,
         },
       };

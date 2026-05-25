@@ -6,7 +6,7 @@ import {
   type VideoMetadata,
   type MediaResolution,
 } from '@/types';
-import { isMarkdownFile } from '@/utils/fileTypeUtils';
+import { isMarkdownFile } from '@/utils/fileTypeClassification';
 import { lazyNamedComponent } from '@/utils/lazyNamedComponent';
 
 const LazyFileConfigurationModal = lazyNamedComponent(
@@ -38,11 +38,11 @@ interface ChatInputFileModalsProps {
   isGemini3: boolean;
   isPreviewEditable?: boolean;
   onSaveTextFile?: (fileId: string, content: string, newName: string) => void;
-  handlers: {
-    handleSaveFileConfig: (
-      fileId: string,
-      updates: { videoMetadata?: VideoMetadata; mediaResolution?: MediaResolution },
-    ) => void;
+  onSaveFileConfig: (
+    fileId: string,
+    updates: { videoMetadata?: VideoMetadata; mediaResolution?: MediaResolution },
+  ) => void;
+  previewNavigation: {
     handlePrevImage: () => void;
     handleNextImage: () => void;
     currentImageIndex: number;
@@ -65,7 +65,8 @@ export const ChatInputFileModals: React.FC<ChatInputFileModalsProps> = ({
   isGemini3,
   isPreviewEditable,
   onSaveTextFile,
-  handlers,
+  onSaveFileConfig,
+  previewNavigation,
 }) => {
   const markdownPreviewFile = previewFile && isMarkdownFile(previewFile) ? previewFile : null;
   const genericPreviewFile = previewFile && !isMarkdownFile(previewFile) ? previewFile : null;
@@ -78,7 +79,7 @@ export const ChatInputFileModals: React.FC<ChatInputFileModalsProps> = ({
             isOpen={!!configuringFile}
             onClose={() => setConfiguringFile(null)}
             file={configuringFile}
-            onSave={handlers.handleSaveFileConfig}
+            onSave={onSaveFileConfig}
             isGemini3={isGemini3}
           />
         </Suspense>
@@ -100,10 +101,13 @@ export const ChatInputFileModals: React.FC<ChatInputFileModalsProps> = ({
         <LazyFilePreviewModal
           file={genericPreviewFile}
           onClose={onClosePreview}
-          onPrev={handlers.handlePrevImage}
-          onNext={handlers.handleNextImage}
-          hasPrev={handlers.currentImageIndex > 0}
-          hasNext={handlers.currentImageIndex !== -1 && handlers.currentImageIndex < handlers.inputImages.length - 1}
+          onPrev={previewNavigation.handlePrevImage}
+          onNext={previewNavigation.handleNextImage}
+          hasPrev={previewNavigation.currentImageIndex > 0}
+          hasNext={
+            previewNavigation.currentImageIndex !== -1 &&
+            previewNavigation.currentImageIndex < previewNavigation.inputImages.length - 1
+          }
           onSaveText={onSaveTextFile}
           initialEditMode={isPreviewEditable}
         />

@@ -4,12 +4,12 @@ import { Modal } from '@/components/shared/Modal';
 import { type UploadedFile, type AppSettings, type ModelOption } from '@/types';
 import { ChevronDown, X, Calculator } from 'lucide-react';
 import { ModelPicker } from '@/components/shared/ModelPicker';
-import { getModelIcon } from '@/components/shared/modelIcons';
+import { getModelIcon } from '@/components/shared/ModelIcon';
 import { useTokenCountLogic } from '@/hooks/token-count/useTokenCountLogic';
 import { TokenCountInput } from './token-count/TokenCountInput';
 import { TokenCountFiles } from './token-count/TokenCountFiles';
 import { TokenCountFooter } from './token-count/TokenCountFooter';
-import { MODAL_CLOSE_BUTTON_CLASS } from '@/constants/styleClasses';
+import { MODAL_CLOSE_BUTTON_CLASS } from '@/constants/buttonClasses';
 
 interface TokenCountModalProps {
   isOpen: boolean;
@@ -51,7 +51,6 @@ export const TokenCountModal: React.FC<TokenCountModalProps> = (props) => {
       contentClassName="w-full max-w-2xl bg-[var(--theme-bg-primary)] rounded-xl shadow-2xl flex flex-col overflow-hidden border border-[var(--theme-border-primary)] max-h-[85vh]"
       noPadding
     >
-      {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--theme-border-secondary)] bg-[var(--theme-bg-secondary)]/50">
         <h2 className="text-lg font-semibold text-[var(--theme-text-primary)] flex items-center gap-2">
           <Calculator size={20} className="text-[var(--theme-text-link)]" />
@@ -63,7 +62,6 @@ export const TokenCountModal: React.FC<TokenCountModalProps> = (props) => {
       </div>
 
       <div className="flex-grow flex flex-col min-h-0 overflow-y-auto custom-scrollbar p-5 space-y-5">
-        {/* Model Selection */}
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase text-[var(--theme-text-tertiary)] tracking-wider">
             {t('tokenModal_model')}
@@ -73,10 +71,15 @@ export const TokenCountModal: React.FC<TokenCountModalProps> = (props) => {
             selectedId={selectedModelId}
             onSelect={handleModelSelect}
             dropdownClassName="w-full max-h-60"
-            renderTrigger={({ isOpen, setIsOpen, selectedModel }) => (
+            renderTrigger={({ isOpen, setIsOpen, selectedModel, listboxId, activeDescendantId }) => (
               <button
+                type="button"
                 onClick={() => setIsOpen(!isOpen)}
                 className="w-full flex items-center justify-between gap-3 px-3 py-2.5 bg-[var(--theme-bg-input)] border border-[var(--theme-border-secondary)] rounded-lg text-sm text-[var(--theme-text-primary)] hover:border-[var(--theme-border-focus)] transition-colors focus:ring-2 focus:ring-[var(--theme-border-focus)] outline-none"
+                aria-haspopup="listbox"
+                aria-expanded={isOpen}
+                aria-controls={isOpen ? listboxId : undefined}
+                aria-activedescendant={isOpen ? activeDescendantId : undefined}
               >
                 <div className="flex items-start gap-2.5 min-w-0 text-left">
                   <div className="mt-0.5 flex-shrink-0">{getModelIcon(selectedModel)}</div>
@@ -112,7 +115,6 @@ export const TokenCountModal: React.FC<TokenCountModalProps> = (props) => {
           onRemoveFile={removeFile}
         />
 
-        {/* Error Display */}
         {error && (
           <div className="p-3 rounded-lg bg-[var(--theme-bg-danger)]/10 border border-[var(--theme-bg-danger)]/20 text-sm text-[var(--theme-text-danger)] animate-in fade-in slide-in-from-top-1">
             {error}

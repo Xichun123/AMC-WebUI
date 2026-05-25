@@ -68,11 +68,11 @@ export const Header: React.FC<HeaderProps> = ({
     'text-[var(--theme-text-link)] bg-[var(--theme-bg-accent)]/10 hover:bg-[var(--theme-bg-accent)]/20';
 
   const liveArtifactsPromptAriaLabel = isLiveArtifactsPromptActive
-    ? t('liveArtifactsHelperActive_aria')
-    : t('liveArtifactsHelperInactive_aria');
+    ? t('liveArtifactsPromptActive_aria')
+    : t('liveArtifactsPromptInactive_aria');
   const liveArtifactsPromptTitle = isLiveArtifactsPromptActive
-    ? t('liveArtifactsHelperActive_title')
-    : t('liveArtifactsHelperInactive_title');
+    ? t('liveArtifactsPromptActive_title')
+    : t('liveArtifactsPromptInactive_title');
 
   const iconSize = 18;
   const strokeWidth = 2;

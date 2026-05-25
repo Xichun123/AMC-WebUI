@@ -103,7 +103,6 @@ export const DataManagementSection: React.FC<DataManagementSectionProps> = ({
   const btnClass =
     'px-3 py-1.5 text-xs font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--theme-bg-secondary)] border flex items-center gap-1.5';
   const outlineBtnClass = `${btnClass} bg-transparent border-[var(--theme-border-secondary)] text-[var(--theme-text-secondary)] hover:bg-[var(--theme-bg-tertiary)] hover:text-[var(--theme-text-primary)]`;
-  // Updated white button class for Danger Zone
   const whiteDangerBtnClass = `${btnClass} border-white/30 bg-white/10 text-white hover:bg-white/20 focus:ring-white/50 focus:ring-offset-red-600`;
   const isInstallDisabled = installState === 'installed';
   const installDescription =
@@ -202,7 +201,6 @@ export const DataManagementSection: React.FC<DataManagementSectionProps> = ({
         </ActionRow>
       </DataCard>
 
-      {/* DANGER ZONE */}
       <div className="p-5 rounded-xl bg-gradient-to-br from-red-600 to-red-700 text-white shadow-lg border border-red-800/50">
         <div className="flex items-center gap-2 mb-4 pb-2 border-b border-white/10">
           <AlertTriangle size={16} strokeWidth={2} className="text-white" />

@@ -16,7 +16,7 @@ const {
   generateSpeechMock: vi.fn(),
 }));
 
-vi.mock('@/utils/apiUtils', () => ({
+vi.mock('@/utils/apiKeySelection', () => ({
   getKeyForRequest: getKeyForRequestMock,
   getGeminiKeyForRequest: getGeminiKeyForRequestMock,
 }));
@@ -26,7 +26,7 @@ vi.mock('@/features/audio/audioProcessing', () => ({
 }));
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule({ info: logInfoMock, error: logErrorMock });
 });
@@ -35,10 +35,10 @@ vi.mock('@/services/api/generation/audioApi', () => ({
   generateSpeechApi: generateSpeechMock,
 }));
 
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import type { ChatSettings } from '@/types';
 import { useTextToSpeechHandler } from './useTextToSpeechHandler';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 
 const createChatSettings = (modelId: string): ChatSettings => ({
   ...DEFAULT_APP_SETTINGS,

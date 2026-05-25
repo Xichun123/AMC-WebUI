@@ -3,7 +3,7 @@ import { Download, Check, FileOutput } from 'lucide-react';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
 import { triggerDownload } from '@/utils/export/core';
 import { extractTextFromNode } from '@/utils/reactNodeText';
-import { MESSAGE_BLOCK_BUTTON_CLASS } from '@/constants/styleClasses';
+import { MESSAGE_BLOCK_BUTTON_CLASS } from '@/constants/buttonClasses';
 import { type UploadedFile } from '@/types';
 import { FileDisplay } from '@/components/message/FileDisplay';
 import { useI18n } from '@/contexts/I18nContext';

@@ -12,13 +12,13 @@ import {
 import { logService } from '@/services/logService';
 import { createNewSession, createMessage } from '@/utils/chat/session';
 import { updateFileInMessage, updateMessageInSession, updateSessionById } from '@/utils/chat/sessionMutations';
-import { DEFAULT_CHAT_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_CHAT_SETTINGS } from '@/constants/settingsDefaults';
 import {
   createMessageStreamState,
-  mergeUniqueFiles,
   reduceMessageStreamEvent,
   type MessageStreamState,
 } from '@/features/chat-streaming/messageStreamReducer';
+import { mergeUniqueFiles } from '@/features/chat-streaming/messageStreamParts';
 
 interface UseMessageUpdatesProps {
   activeSessionId: string | null;

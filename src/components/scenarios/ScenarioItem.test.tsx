@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { renderWithProviders } from '@/test/providerTestUtils';
+import { renderWithProviders } from '@/test/render/providerRenderer';
 import type { SavedScenario } from '@/types';
 import { ScenarioItem } from './ScenarioItem';
 

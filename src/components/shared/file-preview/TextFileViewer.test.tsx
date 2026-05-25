@@ -1,5 +1,5 @@
 import { act } from 'react';
-import { setupProviderTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer } from '@/test/render/providerRenderer';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UploadedFile } from '@/types';
 import { TextFileViewer } from './TextFileViewer';

@@ -1,17 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-
-const projectRoot = path.resolve(__dirname, '../../..');
-
-const readProjectFile = (relativePath: string) => fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
+import { projectRoot, readProjectFile } from './projectFiles';
 
 describe('project documentation structure', () => {
   it('keeps the shared chat input selector in the focused storage constants module', () => {
-    const appConstants = readProjectFile('src/constants/appConstants.ts');
+    const settingsDefaults = readProjectFile('src/constants/settingsDefaults.ts');
     const storageKeys = readProjectFile('src/constants/storageKeys.ts');
 
-    expect(appConstants).not.toContain("export * from './storageKeys';");
+    expect(settingsDefaults).not.toContain("export * from './storageKeys';");
     expect(storageKeys).toContain('export const CHAT_INPUT_TEXTAREA_SELECTOR');
     expect(fs.existsSync(path.join(projectRoot, 'src/constants/domSelectors.ts'))).toBe(false);
   });

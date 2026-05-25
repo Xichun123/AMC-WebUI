@@ -69,7 +69,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/test/chatInputHarness.tsx'],
+    files: ['src/test/chat-input/harness.tsx'],
     rules: {
       'react-hooks/immutability': 'off',
       'react-hooks/purity': 'off',
@@ -97,9 +97,9 @@ export default tseslint.config(
       'server/**/*.ts',
       'src/services/logService.ts',
       'src/services/db/dbService.ts',
+      'src/services/db/indexedDbAccess.ts',
       'src/features/local-python/pyodideWorkerTemplate.ts',
       'src/utils/chat/session.ts',
-      'src/utils/htmlPreviewScripts.ts',
     ],
     rules: {
       // These files either run outside the browser UI thread or provide diagnostics that feed logService.

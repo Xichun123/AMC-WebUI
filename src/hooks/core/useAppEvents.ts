@@ -1,7 +1,7 @@
 import { useState, useEffect, type Dispatch, type SetStateAction } from 'react';
 import { type AppSettings, type ChatSettings, type ModelOption } from '@/types';
 import { logService } from '@/services/logService';
-import { isShortcutPressed } from '@/utils/shortcutUtils';
+import { isShortcutPressed } from '@/utils/keyboardShortcuts';
 import { useFullscreen } from '@/hooks/ui/useFullscreen';
 import { getManualInstallMessage, getPwaInstallState } from '@/pwa/install';
 import { registerPwa, type UpdateServiceWorker } from '@/pwa/register';

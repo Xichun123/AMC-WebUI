@@ -1,8 +1,8 @@
 import { act, type RefObject } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useSelectionPosition } from './useSelectionPosition';
-import { renderHook } from '@/test/testUtils';
-import { renderHookWithProviders } from '@/test/providerTestUtils';
+import { renderHook } from '@/test/render/renderer';
+import { renderHookWithProviders } from '@/test/render/providerRenderer';
 
 const createRect = (overrides: Partial<DOMRect> = {}): DOMRect =>
   ({

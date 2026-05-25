@@ -1,8 +1,8 @@
 import { act, type MouseEvent } from 'react';
-import { setupProviderTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MessageThoughts } from './MessageThoughts';
-import { createAppSettings } from '@/test/factories';
+import { createAppSettings } from '@/test/data/factories';
 
 const { mockUseMessageStream, mockTranslateText } = vi.hoisted(() => ({
   mockUseMessageStream: vi.fn(() => ({
@@ -12,7 +12,7 @@ const { mockUseMessageStream, mockTranslateText } = vi.hoisted(() => ({
   mockTranslateText: vi.fn(),
 }));
 
-vi.mock('@/utils/apiUtils', () => ({
+vi.mock('@/utils/apiKeySelection', () => ({
   getKeyForRequest: vi.fn(() => ({ key: 'api-key', isNewKey: false })),
   getGeminiKeyForRequest: vi.fn(() => ({ key: 'api-key', isNewKey: false })),
 }));
@@ -196,5 +196,40 @@ describe('MessageThoughts', () => {
     expect(renderer.container.querySelector('[data-testid="thought-content"]')?.textContent).toBe(
       'Drafting the answer',
     );
+  });
+
+  it('expands and collapses the thought panel from keyboard activation', () => {
+    act(() => {
+      renderer.render(
+        <MessageThoughts
+          message={{
+            id: 'message-keyboard-thoughts',
+            role: 'model',
+            content: '',
+            thoughts: 'Plan carefully.',
+            timestamp: new Date('2026-04-21T00:00:00.000Z'),
+          }}
+          showThoughts={true}
+          appSettings={createAppSettings()}
+          themeId="pearl"
+          onImageClick={vi.fn()}
+          onOpenHtmlPreview={vi.fn()}
+          expandCodeBlocksByDefault={false}
+          isMermaidRenderingEnabled={true}
+          isGraphvizRenderingEnabled={true}
+          onOpenSidePanel={vi.fn()}
+        />,
+      );
+    });
+
+    const thoughtToggle = renderer.container.querySelector<HTMLElement>('[role="button"][aria-expanded="false"]');
+    expect(thoughtToggle).not.toBeNull();
+    expect(thoughtToggle?.getAttribute('tabindex')).toBe('0');
+
+    act(() => {
+      thoughtToggle?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    });
+
+    expect(thoughtToggle?.getAttribute('aria-expanded')).toBe('true');
   });
 });

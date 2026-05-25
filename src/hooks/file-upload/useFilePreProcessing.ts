@@ -2,7 +2,7 @@ import { useCallback, type Dispatch, type SetStateAction } from 'react';
 import { type AppSettings, type UploadedFile } from '@/types';
 import { logService } from '@/services/logService';
 import { generateUniqueId } from '@/utils/chat/ids';
-import { isAudioMimeType, isTextFile } from '@/utils/fileTypeUtils';
+import { isAudioMimeType } from '@/utils/fileTypeClassification';
 import { compressAudioToMp3 } from '@/features/audio/audioCompression';
 import { extractDocxText, isDocxFile } from '@/utils/docxPreview';
 import { useI18n } from '@/contexts/I18nContext';
@@ -36,8 +36,6 @@ export const useFilePreProcessing = ({ appSettings, setSelectedFiles }: UseFileP
               fileNameLower.endsWith(ext),
             ));
 
-        const isText = isTextFile(file);
-
         if (fileNameLower.endsWith('.zip')) {
           const tempId = generateUniqueId();
           writeSelectedFiles((prev) => [
@@ -52,8 +50,7 @@ export const useFilePreProcessing = ({ appSettings, setSelectedFiles }: UseFileP
 
           try {
             logService.info(`Auto-converting ZIP file: ${file.name}`);
-            // generateZipContext now internally offloads to a Web Worker
-            const { generateZipContext } = await import('@/utils/folderImportUtils');
+            const { generateZipContext } = await import('@/utils/import-context/loaders');
             const contextFile = await generateZipContext(file);
             processedFiles.push(contextFile);
           } catch (error) {
@@ -127,11 +124,6 @@ export const useFilePreProcessing = ({ appSettings, setSelectedFiles }: UseFileP
           } else {
             processedFiles.push(file);
           }
-        } else if (isText) {
-          // Ensure text files have their content read early for editing support
-          // We don't block the UI here, but we ensure it's available.
-          // Note: useFileUpload will also handle reading this if it's sent inline.
-          processedFiles.push(file);
         } else {
           processedFiles.push(file);
         }

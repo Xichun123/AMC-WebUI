@@ -10,6 +10,42 @@ import { useStateWithRef } from '@/hooks/useStateWithRef';
 const MAX_RECONNECT_RETRIES = 5;
 const RECONNECT_BASE_DELAY_MS = 1000;
 
+type LiveRealtimeInput = Parameters<LiveSession['sendRealtimeInput']>[0];
+
+const isGemini31FlashLiveModel = (modelId: string): boolean => modelId.toLowerCase().includes('gemini-3.1-flash-live');
+
+const toGemini31FlashLiveRealtimeInput = (part: Part): LiveRealtimeInput | null => {
+  if (typeof part.text === 'string' && Object.keys(part).every((key) => key === 'text')) {
+    return { text: part.text };
+  }
+
+  const inlineData = part.inlineData;
+  if (!inlineData?.data || !inlineData.mimeType) {
+    return null;
+  }
+
+  const mimeType = inlineData.mimeType.toLowerCase();
+  if (mimeType === 'image/jpeg' || mimeType === 'image/png') {
+    return {
+      video: {
+        mimeType: inlineData.mimeType,
+        data: inlineData.data,
+      },
+    };
+  }
+
+  if (mimeType.startsWith('audio/pcm')) {
+    return {
+      audio: {
+        mimeType: inlineData.mimeType,
+        data: inlineData.data,
+      },
+    };
+  }
+
+  return null;
+};
+
 interface UseLiveConnectionProps {
   appSettings: AppSettings;
   modelId: string;
@@ -160,8 +196,7 @@ export const useLiveConnection = ({
     const shouldAbortConnect = () => isUserDisconnectRef.current || !isConnectingRef.current;
 
     try {
-      // Specify API version v1alpha for Live API support
-      const ai = await getLiveApiClient(appSettings, { apiVersion: 'v1alpha' }, liveApiKeyForConnection);
+      const ai = await getLiveApiClient(appSettings, undefined, liveApiKeyForConnection);
       if (shouldAbortConnect()) {
         return false;
       }
@@ -375,6 +410,25 @@ export const useLiveConnection = ({
       try {
         const session = await sessionRef.current;
         if (!isConnectedRef.current) return false;
+        if (isGemini31FlashLiveModel(modelId)) {
+          const realtimeInputs: LiveRealtimeInput[] = [];
+
+          for (const part of parts) {
+            const realtimeInput = toGemini31FlashLiveRealtimeInput(part);
+            if (!realtimeInput) {
+              logService.warn('Gemini 3.1 Flash Live content cannot be represented as realtime input.', {
+                partCount: parts.length,
+              });
+              return false;
+            }
+            realtimeInputs.push(realtimeInput);
+          }
+
+          realtimeInputs.forEach((realtimeInput) => session.sendRealtimeInput(realtimeInput));
+          logService.info('Sent realtime content to Gemini 3.1 Flash Live', { partCount: parts.length });
+          return true;
+        }
+
         session.sendClientContent({
           turns: {
             role: 'user',
@@ -389,7 +443,7 @@ export const useLiveConnection = ({
         return false;
       }
     },
-    [isConnectedRef, sessionRef],
+    [isConnectedRef, modelId, sessionRef],
   );
 
   const disconnect = useCallback(() => {
@@ -438,15 +492,16 @@ export const useLiveConnection = ({
     disconnectRef.current = disconnect;
   }, [disconnect]);
 
-  useEffect(() => {
-    return () => {
-      isUserDisconnectRef.current = true;
-      // eslint-disable-next-line react-hooks/exhaustive-deps -- Unmount cleanup needs the latest connection flags from stable refs.
-      if (isConnectedRef.current || isReconnectingRef.current || isConnectingRef.current) {
-        disconnectRef.current();
-      }
-    };
+  const disconnectOnUnmount = useCallback(() => {
+    isUserDisconnectRef.current = true;
+    if (isConnectedRef.current || isReconnectingRef.current || isConnectingRef.current) {
+      disconnectRef.current();
+    }
   }, [isConnectedRef, isReconnectingRef]);
+
+  useEffect(() => {
+    return disconnectOnUnmount;
+  }, [disconnectOnUnmount]);
 
   return {
     isConnected,

@@ -1,7 +1,8 @@
 import React from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { ChevronLeft, Settings2, Save } from 'lucide-react';
-import { ICON_BUTTON_CLASS, FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS } from '@/constants/styleClasses';
+import { ICON_BUTTON_CLASS } from '@/constants/buttonClasses';
+import { FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS } from '@/constants/focusClasses';
 
 interface ScenarioEditorHeaderProps {
   title: string;
@@ -40,11 +41,9 @@ export const ScenarioEditorHeader: React.FC<ScenarioEditorHeaderProps> = ({
           onChange={(e) => !readOnly && setTitle(e.target.value)}
           placeholder={t('scenarios_editor_title_placeholder')}
           className="flex-1 bg-transparent text-lg sm:text-xl font-bold text-[var(--theme-text-primary)] placeholder-[var(--theme-text-tertiary)] outline-none min-w-0"
-          // Auto-focus logic handled by parent or just removed for simplicity as specific field auto-focus can be annoying
           readOnly={readOnly}
         />
 
-        {/* Mobile System Prompt Trigger */}
         <button
           onClick={onOpenSystemPrompt}
           className={`md:hidden ${ICON_BUTTON_CLASS}`}

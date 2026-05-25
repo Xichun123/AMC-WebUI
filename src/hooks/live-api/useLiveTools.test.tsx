@@ -2,12 +2,12 @@ import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useLiveTools } from './useLiveTools';
 import type { LiveClientFunctions } from '@/types';
-import { createUploadedFile } from '@/test/factories';
-import { createLiveSessionRef, createLiveSessionStub, createLiveToolCall } from '@/test/liveApiFixtures';
-import { renderHook } from '@/test/testUtils';
+import { createUploadedFile } from '@/test/data/factories';
+import { createLiveSessionRef, createLiveSessionStub, createLiveToolCall } from '@/test/live-api/fixtures';
+import { renderHook } from '@/test/render/renderer';
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });

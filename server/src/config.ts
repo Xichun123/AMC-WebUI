@@ -9,6 +9,8 @@ export interface ApiServerConfig {
   gcs?: GcsConfig;
   allowedOrigins: string[];
   siteAuth: SiteAuthConfig;
+  enableMcpStdio: boolean;
+  enableMcpPrivateHttp: boolean;
 }
 
 export interface VertexBackendConfig {
@@ -67,6 +69,10 @@ function parseAllowedOrigins(rawOrigins: string | undefined): string[] {
     .split(',')
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0);
+}
+
+function parseBooleanFlag(value: string | undefined): boolean {
+  return ['1', 'true', 'yes', 'on'].includes(value?.trim().toLowerCase() ?? '');
 }
 
 function parseBackendFlavor(value: string | undefined): GeminiBackendFlavor {
@@ -208,6 +214,8 @@ export function loadConfig(env: EnvLike = process.env): ApiServerConfig {
     geminiApiKey: env.GEMINI_API_KEY?.trim() || undefined,
     allowedOrigins: parseAllowedOrigins(env.ALLOWED_ORIGINS),
     siteAuth: loadSiteAuthConfig(env),
+    enableMcpStdio: parseBooleanFlag(env.ENABLE_MCP_STDIO),
+    enableMcpPrivateHttp: parseBooleanFlag(env.ENABLE_MCP_PRIVATE_HTTP),
   };
 
   if (backendFlavor === 'vertex') {

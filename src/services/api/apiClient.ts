@@ -9,6 +9,7 @@ import {
   resolveConfiguredGeminiBaseUrl,
 } from './geminiApiBaseUrl';
 import type { GeminiClientHttpOptions } from './geminiApiVersion';
+import type { InternalGeminiApiClient } from './geminiResumableUpload';
 
 type ClientConfig = {
   apiKey: string;
@@ -26,14 +27,22 @@ type ConfiguredApiRouting = {
 
 type ConfiguredApiClientContext = {
   client: GoogleGenAI;
+  uploadApiClient: InternalGeminiApiClient;
   apiBaseUrl: string;
   proxyBaseUrl: string | null;
+};
+
+type GoogleGenAIUploadClient = GoogleGenAI & {
+  readonly apiClient: InternalGeminiApiClient;
 };
 
 const loadGoogleGenAI = async () => {
   const { GoogleGenAI } = await import('@google/genai');
   return GoogleGenAI;
 };
+
+const getUploadApiClient = (client: GoogleGenAI): InternalGeminiApiClient =>
+  (client as GoogleGenAIUploadClient).apiClient;
 
 export const getClient = async (
   apiKey: string,
@@ -138,9 +147,11 @@ export const getConfiguredApiClientContext = async (
   httpOptions?: GeminiClientHttpOptions,
 ): Promise<ConfiguredApiClientContext> => {
   const { settings, apiProxyUrl } = await loadConfiguredApiRouting();
+  const client = await getClient(apiKey, apiProxyUrl, httpOptions);
 
   return {
-    client: await getClient(apiKey, apiProxyUrl, httpOptions),
+    client,
+    uploadApiClient: getUploadApiClient(client),
     apiBaseUrl: getGeminiApiBaseUrlForSettings(settings),
     proxyBaseUrl: getGeminiProxyBaseUrlForSettings(settings),
   };

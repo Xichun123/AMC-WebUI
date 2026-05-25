@@ -1,8 +1,8 @@
 import React from 'react';
 import { AlertCircle, ArrowRight, RotateCcw } from 'lucide-react';
 import { Toggle } from '@/components/shared/Toggle';
-import { SETTINGS_INPUT_CLASS } from '@/constants/styleClasses';
-import { DEFAULT_MODEL_ID } from '@/constants/modelConstants';
+import { SETTINGS_INPUT_CLASS } from '@/constants/formClasses';
+import { DEFAULT_MODEL_ID } from '@/constants/modelConfiguration';
 import { useI18n } from '@/contexts/I18nContext';
 import {
   buildGeminiRequestPreviewUrl,

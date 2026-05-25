@@ -1,12 +1,12 @@
 import { act } from 'react';
-import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { describe, expect, it, vi } from 'vitest';
-import { setupStoreStateReset } from '@/test/storeTestUtils';
-import { createChatInputActionsContextValue } from '@/test/chatInputContextFixtures';
+import { setupStoreStateReset } from '@/test/stores/reset';
+import { createChatInputActionsContextValue } from '@/test/chat-input/contextFixtures';
 import { ChatInputActionsContext } from './ChatInputContext';
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });
@@ -59,7 +59,7 @@ describe('AttachmentMenu', () => {
   it('shows only image-relevant actions for Gemini image models', () => {
     act(() => {
       renderer.root.render(
-        <ChatInputActionsContext.Provider value={createChatInputActionsContextValue({ isImageModel: true })}>
+        <ChatInputActionsContext.Provider value={createChatInputActionsContextValue({ isImageGenerationModel: true })}>
           <AttachmentMenu />
         </ChatInputActionsContext.Provider>,
       );

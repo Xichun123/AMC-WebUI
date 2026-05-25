@@ -10,6 +10,9 @@ import { getCorsHeaders, sendJson } from './cors.js';
 import type { GcsFilesAdapter } from './gcsFilesAdapter.js';
 import { GEMINI_PROXY_PREFIX, proxyGeminiRequest } from './geminiProxy.js';
 import { IMAGE_PROXY_PATH, proxyExternalImage } from './imageProxy.js';
+import { createMcpClientBridge } from './mcpClient.js';
+import { handleMcpRequest } from './mcpRoutes.js';
+import type { McpClientBridge } from './mcpTypes.js';
 import { handleSiteAuthRequest } from './siteAuth.js';
 import type { VertexAccessTokenProvider } from './vertexAuth.js';
 
@@ -20,15 +23,23 @@ interface CreateServerDependencies {
   readLocalClipboardImage?: () => Promise<LocalClipboardImage | null>;
   vertexAuth?: VertexAccessTokenProvider;
   gcsFilesAdapter?: GcsFilesAdapter;
+  mcpClient?: McpClientBridge;
 }
 
 type CreateServerConfig = Pick<ApiServerConfig, 'geminiApiBase' | 'geminiApiKey'> &
-  Partial<Pick<ApiServerConfig, 'allowedOrigins' | 'backendFlavor' | 'vertex' | 'gcs' | 'siteAuth'>>;
+  Partial<
+    Pick<
+      ApiServerConfig,
+      'allowedOrigins' | 'backendFlavor' | 'vertex' | 'gcs' | 'siteAuth' | 'enableMcpStdio' | 'enableMcpPrivateHttp'
+    >
+  >;
 
 interface ResolvedServerConfig extends CreateServerConfig {
   allowedOrigins: string[];
   backendFlavor: NonNullable<ApiServerConfig['backendFlavor']>;
   siteAuth: ApiServerConfig['siteAuth'];
+  enableMcpStdio: boolean;
+  enableMcpPrivateHttp: boolean;
 }
 
 export function createServer(config: CreateServerConfig, dependencies: CreateServerDependencies = {}): http.Server {
@@ -37,12 +48,15 @@ export function createServer(config: CreateServerConfig, dependencies: CreateSer
     allowedOrigins: config.allowedOrigins ?? [],
     backendFlavor: config.backendFlavor ?? 'aistudio',
     siteAuth: config.siteAuth ?? { enabled: false, users: [], sessionDays: 7 },
+    enableMcpStdio: config.enableMcpStdio ?? false,
+    enableMcpPrivateHttp: config.enableMcpPrivateHttp ?? false,
   };
 
   const fetchImpl = dependencies.fetchImpl ?? fetch;
   const readLocalClipboardImage = dependencies.readLocalClipboardImage ?? readMacOsClipboardPng;
   const vertexAuth = dependencies.vertexAuth;
   const gcsFilesAdapter = dependencies.gcsFilesAdapter;
+  const mcpClient = dependencies.mcpClient ?? createMcpClientBridge();
 
   return http.createServer(async (request, response) => {
     try {
@@ -94,6 +108,15 @@ export function createServer(config: CreateServerConfig, dependencies: CreateSer
           resolvedConfig.allowedOrigins,
           readLocalClipboardImage,
         );
+        return;
+      }
+
+      if (
+        await handleMcpRequest(request, response, path, resolvedConfig.allowedOrigins, mcpClient, {
+          enableStdio: resolvedConfig.enableMcpStdio,
+          enablePrivateHttp: resolvedConfig.enableMcpPrivateHttp,
+        })
+      ) {
         return;
       }
 

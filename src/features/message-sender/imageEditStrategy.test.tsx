@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getTranslator } from '@/i18n/translations';
-import { createAppSettings, createChatSettings } from '@/test/factories';
+import { createAppSettings, createChatSettings } from '@/test/data/factories';
 
 const {
   handleApiErrorMock,
@@ -37,10 +37,12 @@ vi.mock('@/services/api/generation/imageEditApi', () => ({
 vi.mock('@/utils/chat/builder', () => ({
   buildContentParts: buildContentPartsMock,
   createChatHistoryForApi: createChatHistoryForApiMock,
+  GEMINI_IMAGE_HISTORY_REHYDRATION_ERROR:
+    'A previously generated image is missing from this image edit history. Please reattach the image or start a new image edit turn.',
 }));
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });
@@ -65,7 +67,7 @@ vi.mock('@/utils/modelCapabilities', () => ({
   shouldStripThinkingFromContext: vi.fn(() => false),
 }));
 
-vi.mock('@/utils/completionFeedback', () => ({
+vi.mock('@/utils/browserCompletionFeedback', () => ({
   playCompletionSound: vi.fn(),
 }));
 
@@ -240,5 +242,56 @@ describe('imageEditStrategy', () => {
     expect(finalState[0].messages[0].content).toContain(
       '*[提示：4 张图片中仅 1 张生成成功。部分图片可能因安全策略被拦截。]*',
     );
+  });
+
+  it('translates missing generated image history errors before the image edit request starts', async () => {
+    createChatHistoryForApiMock.mockRejectedValueOnce(
+      new Error(
+        'A previously generated image is missing from this image edit history. Please reattach the image or start a new image edit turn.',
+      ),
+    );
+
+    const runMessageLifecycle = vi.fn(async ({ execute }) => {
+      try {
+        return await execute();
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toBe(
+          '之前生成的图片已无法从历史记录中恢复。请重新附加这张图片，或开启新的图片编辑回合。',
+        );
+        return undefined;
+      }
+    });
+
+    await act(async () => {
+      await sendImageEditMessage({
+        keyToUse: 'api-key',
+        activeSessionId: 'session-1',
+        messages: [],
+        generationId: 'generation-1',
+        abortController: new AbortController(),
+        appSettings: createAppSettings({
+          generateQuadImages: false,
+          isCompletionSoundEnabled: false,
+        }),
+        currentChatSettings: createChatSettings({
+          modelId: 'gemini-3.1-flash-image-preview',
+          systemInstruction: '',
+        }),
+        text: 'edit this image',
+        files: [],
+        editingMessageId: null,
+        aspectRatio: '1:1',
+        imageSize: '2K',
+        imageOutputMode: 'IMAGE_TEXT',
+        personGeneration: 'ALLOW_ADULT',
+        t: getTranslator('zh'),
+        updateAndPersistSessions: vi.fn(),
+        setActiveSessionId: vi.fn(),
+        runMessageLifecycle,
+      });
+    });
+
+    expect(editImageMock).not.toHaveBeenCalled();
   });
 });

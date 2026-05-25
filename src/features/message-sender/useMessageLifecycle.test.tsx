@@ -23,7 +23,7 @@ vi.mock('@/utils/chat/session', () => ({
 }));
 
 import { useMessageLifecycle } from './useMessageLifecycle';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 
 describe('useMessageLifecycle', () => {
   beforeEach(() => {

@@ -4,19 +4,19 @@ export const headerTranslations = {
   historySidebarClose_short: { en: 'Close History', zh: '关闭历史' },
   historySidebarOpen_short: { en: 'Open History', zh: '打开历史' },
   headerModelSelectorNoModels: { en: 'No models available.', zh: '无可用模型。' },
-  liveArtifactsHelperActive_aria: {
+  liveArtifactsPromptActive_aria: {
     en: 'Live Artifacts prompt is active. Click to remove.',
     zh: 'Live Artifacts 提示已激活。点击移除。',
   },
-  liveArtifactsHelperInactive_aria: {
+  liveArtifactsPromptInactive_aria: {
     en: 'Load Live Artifacts prompt and save settings',
     zh: '加载 Live Artifacts 提示并保存设置',
   },
-  liveArtifactsHelperActive_title: {
+  liveArtifactsPromptActive_title: {
     en: 'Live Artifacts prompt is active. Click to remove.',
     zh: 'Live Artifacts 提示已激活。点击移除。',
   },
-  liveArtifactsHelperInactive_title: {
+  liveArtifactsPromptInactive_title: {
     en: 'Load Live Artifacts Prompt and save',
     zh: '加载 Live Artifacts 提示并保存',
   },

@@ -1,11 +1,23 @@
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import type { LogEntry } from '@/types/logging';
-import { LOG_LEVEL_COLORS, CATEGORY_COLORS } from './constants';
+import { LOG_LEVEL_COLORS, CATEGORY_COLORS } from './logColorClasses';
 
 export const LogRow: React.FC<{ log: LogEntry }> = React.memo(({ log }) => {
   const [isDataExpanded, setIsDataExpanded] = useState(false);
   const hasData = log.data !== undefined;
+  const toggleDataExpanded = () => {
+    if (!hasData) return;
+    setIsDataExpanded((value) => !value);
+  };
+  const handleRowKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!hasData || (event.key !== 'Enter' && event.key !== ' ')) {
+      return;
+    }
+
+    event.preventDefault();
+    toggleDataExpanded();
+  };
 
   const timeString = log.timestamp.toLocaleTimeString('en-US', {
     hour12: false,
@@ -18,8 +30,12 @@ export const LogRow: React.FC<{ log: LogEntry }> = React.memo(({ log }) => {
   return (
     <div className="border-b border-[var(--theme-border-secondary)] hover:bg-[var(--theme-bg-tertiary)] text-xs group transition-colors">
       <div
-        className={`flex items-start p-2 gap-3 ${hasData ? 'cursor-pointer' : ''}`}
-        onClick={hasData ? () => setIsDataExpanded(!isDataExpanded) : undefined}
+        className={`flex items-start p-2 gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--theme-border-focus)] ${hasData ? 'cursor-pointer' : ''}`}
+        onClick={hasData ? toggleDataExpanded : undefined}
+        onKeyDown={handleRowKeyDown}
+        role={hasData ? 'button' : undefined}
+        tabIndex={hasData ? 0 : undefined}
+        aria-expanded={hasData ? isDataExpanded : undefined}
       >
         <span className="w-20 text-[var(--theme-text-tertiary)] flex-shrink-0 font-mono opacity-70 pt-0.5">
           {timeString}.{ms}

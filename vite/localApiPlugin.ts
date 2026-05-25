@@ -1,5 +1,6 @@
 import { Buffer } from 'node:buffer';
 import { execFile } from 'node:child_process';
+import type { IncomingHttpHeaders } from 'node:http';
 import net from 'node:net';
 import { promisify } from 'node:util';
 import type { Plugin } from 'vite';
@@ -7,6 +8,8 @@ import type { Plugin } from 'vite';
 const IMAGE_PROXY_PATH = '/api/image-proxy';
 const LOCAL_CLIPBOARD_IMAGE_PATH = '/api/local-clipboard-image';
 const AUTH_SESSION_PATH = '/api/auth/session';
+const MCP_API_PREFIX = '/api/mcp';
+const DEFAULT_MCP_API_BASE_URL = 'http://127.0.0.1:3001';
 const MAX_IMAGE_PROXY_BYTES = 25 * 1024 * 1024;
 const MAX_LOCAL_CLIPBOARD_IMAGE_BYTES = 25 * 1024 * 1024;
 const PNG_HEX_PREFIX = '89504e470d0a1a0a';
@@ -23,7 +26,12 @@ const MACOS_CLIPBOARD_PNG_SCRIPT = `
 })()
 `.trim();
 
-type DevServerRequest = { method?: string; url?: string };
+type DevServerRequest = {
+  method?: string;
+  url?: string;
+  headers?: IncomingHttpHeaders;
+  [Symbol.asyncIterator]?: () => AsyncIterator<Buffer | string | Uint8Array>;
+};
 type DevServerResponse = {
   writeHead: (status: number, headers: Record<string, string>) => void;
   end: (body?: string | Uint8Array) => void;
@@ -124,6 +132,83 @@ const writeLocalAuthSession = (response: DevServerResponse) => {
     'cache-control': 'no-store',
   });
   response.end(JSON.stringify({ enabled: false, authenticated: true, username: null, expiresAt: null }));
+};
+
+const getMcpApiBaseUrl = (): string => process.env.MCP_API_BASE_URL?.trim() || DEFAULT_MCP_API_BASE_URL;
+
+const isMcpApiPath = (pathname: string): boolean =>
+  pathname === MCP_API_PREFIX || pathname.startsWith(`${MCP_API_PREFIX}/`);
+
+const createForwardHeaders = (headers: IncomingHttpHeaders | undefined): Headers => {
+  const forwardedHeaders = new Headers();
+
+  for (const [name, value] of Object.entries(headers ?? {})) {
+    if (typeof value === 'string') {
+      forwardedHeaders.set(name, value);
+    } else if (Array.isArray(value)) {
+      forwardedHeaders.set(name, value.join(', '));
+    }
+  }
+
+  forwardedHeaders.delete('connection');
+  forwardedHeaders.delete('host');
+  return forwardedHeaders;
+};
+
+const readRequestBody = async (request: DevServerRequest): Promise<Blob | undefined> => {
+  if (!request[Symbol.asyncIterator]) {
+    return undefined;
+  }
+
+  const chunks: BlobPart[] = [];
+  let totalBytes = 0;
+  for await (const chunk of request as AsyncIterable<Buffer | string | Uint8Array>) {
+    const blobPart = typeof chunk === 'string' ? chunk : new Uint8Array(chunk);
+    totalBytes += typeof blobPart === 'string' ? Buffer.byteLength(blobPart) : blobPart.byteLength;
+    chunks.push(blobPart);
+  }
+
+  if (totalBytes === 0) {
+    return undefined;
+  }
+
+  return new Blob(chunks);
+};
+
+const writeMcpProxyJson = (response: DevServerResponse, statusCode: number, body: Record<string, unknown>) => {
+  response.writeHead(statusCode, { 'content-type': 'application/json; charset=utf-8' });
+  response.end(JSON.stringify(body));
+};
+
+const proxyMcpApiRequest = async (
+  request: DevServerRequest,
+  response: DevServerResponse,
+  requestUrl: URL,
+): Promise<void> => {
+  const method = request.method ?? 'GET';
+  const upstreamUrl = new URL(`${requestUrl.pathname}${requestUrl.search}`, getMcpApiBaseUrl());
+  let upstreamResponse: Response;
+
+  try {
+    upstreamResponse = await fetch(upstreamUrl.toString(), {
+      method,
+      headers: createForwardHeaders(request.headers),
+      body: method === 'GET' || method === 'HEAD' ? undefined : await readRequestBody(request),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown upstream error';
+    writeMcpProxyJson(response, 502, { error: `MCP API proxy request failed: ${message}` });
+    return;
+  }
+
+  const responseHeaders: Record<string, string> = {};
+  upstreamResponse.headers.forEach((value, name) => {
+    responseHeaders[name] = value;
+  });
+
+  const body = new Uint8Array(await upstreamResponse.arrayBuffer());
+  response.writeHead(upstreamResponse.status, responseHeaders);
+  response.end(method === 'HEAD' ? undefined : body);
 };
 
 const proxyImageRequest = async (request: DevServerRequest, response: DevServerResponse) => {
@@ -228,6 +313,14 @@ const handleLocalApiRequest = (request: DevServerRequest, response: DevServerRes
     void localClipboardImageRequest(request, response).catch((error) => {
       const message = error instanceof Error ? error.message : 'Unknown local clipboard image error';
       writeImageProxyJson(response, 500, { error: message });
+    });
+    return;
+  }
+
+  if (isMcpApiPath(requestUrl.pathname)) {
+    void proxyMcpApiRequest(request, response, requestUrl).catch((error) => {
+      const message = error instanceof Error ? error.message : 'Unknown MCP API proxy error';
+      writeMcpProxyJson(response, 500, { error: message });
     });
     return;
   }

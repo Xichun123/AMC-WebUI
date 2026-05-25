@@ -2,7 +2,7 @@ import { useCallback, type MutableRefObject } from 'react';
 import { type SavedChatSession } from '@/types';
 import { logService } from '@/services/logService';
 import { cloneMessagesWithFreshIds, createNewSession } from '@/utils/chat/session';
-import { cleanupFilePreviewUrls } from '@/utils/fileHelpers';
+import { cleanupFilePreviewUrls } from '@/utils/filePreviewUrls';
 import { dbService } from '@/services/db/dbService';
 import { removeSessionScopedLocalStorageEntries } from '@/utils/sessionLocalStorage';
 import { useI18n } from '@/contexts/I18nContext';
@@ -21,25 +21,20 @@ export const useSessionActions = ({ updateAndPersistSessions, activeJobs }: UseS
     (sessionId: string) => {
       logService.info(`Deleting session: ${sessionId}`);
 
-      // --- Fix: LocalStorage fragmentation & infinite growth ---
-      // 精准清理特定 session 的 LocalStorage 缓存
       try {
         removeSessionScopedLocalStorageEntries([sessionId]);
       } catch (e) {
         logService.error('Failed to clean up session localStorage:', e);
       }
-      // ---------------------------------------------------------
 
       updateAndPersistSessions((prev) => {
         const sessionToDelete = prev.find((s) => s.id === sessionId);
         if (sessionToDelete) {
-          // Abort active jobs for this session
           sessionToDelete.messages.forEach((msg) => {
             if (msg.isLoading && activeJobs.current.has(msg.id)) {
               activeJobs.current.get(msg.id)?.abort();
               activeJobs.current.delete(msg.id);
             }
-            // Explicitly cleanup file blobs to prevent leaks
             cleanupFilePreviewUrls(msg.files);
           });
         }

@@ -220,7 +220,6 @@ const ImageViewerContent: React.FC<ImageViewerProps> = ({ file }) => {
         />
       </div>
 
-      {/* Bottom Controls */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
         <FloatingToolbar className="p-1.5">
           <ToolbarButton

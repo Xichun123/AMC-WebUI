@@ -45,12 +45,13 @@ const setSliceValue = <T extends ChatUiSlice, K extends keyof ChatUiSliceState>(
   key: K,
   value: UpdaterOrValue<ChatUiSliceState[K]>,
 ) => {
-  set(
-    (state) =>
-      ({
-        [key]: resolveUpdater(value, state[key]),
-      }) as unknown as Partial<T>,
-  );
+  set((state) => {
+    const nextState = {
+      [key]: resolveUpdater(value, state[key]),
+    } as Pick<ChatUiSliceState, K>;
+
+    return nextState as Partial<T>;
+  });
 };
 
 export const createChatUiSlice = <T extends ChatUiSlice>(set: SliceSet<T>): ChatUiSlice => ({

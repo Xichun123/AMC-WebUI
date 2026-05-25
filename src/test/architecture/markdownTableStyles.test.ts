@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import { projectRoot } from './projectFiles';
 
-const projectRoot = path.resolve(__dirname, '../../..');
 const markdownCssPath = path.join(projectRoot, 'src/styles/markdown.css');
 
 describe('markdown table styling', () => {

@@ -24,7 +24,6 @@ export const ThinkingActions: React.FC<ThinkingActionsProps> = ({
 
   return (
     <div className="flex items-center gap-1 mr-1">
-      {/* Translate Button */}
       <button
         onClick={onTranslate}
         className={`
@@ -42,7 +41,6 @@ export const ThinkingActions: React.FC<ThinkingActionsProps> = ({
         )}
       </button>
 
-      {/* Copy Button */}
       <button
         onClick={onCopy}
         className={`

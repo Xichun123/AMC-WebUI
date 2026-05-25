@@ -1,21 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import { listProjectSourceFiles, projectRoot, readProjectFile } from './projectFiles';
 
-const projectRoot = path.resolve(__dirname, '../../..');
 const thisTestFile = 'src/test/architecture/testInfrastructure.test.ts';
-
-const readProjectFile = (relativePath: string) => fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
-const listProjectSourceFiles = (relativeDir: string): string[] => {
-  const absoluteDir = path.join(projectRoot, relativeDir);
-  return fs.readdirSync(absoluteDir, { withFileTypes: true }).flatMap((entry) => {
-    const entryPath = path.join(relativeDir, entry.name);
-    if (entry.isDirectory()) {
-      return listProjectSourceFiles(entryPath);
-    }
-    return /\.(ts|tsx)$/.test(entry.name) ? [entryPath] : [];
-  });
-};
 
 describe('test infrastructure guardrails', () => {
   it('keeps targeted Vitest script filters pointed at existing test files', () => {
@@ -98,7 +86,7 @@ describe('test infrastructure guardrails', () => {
     }
   });
 
-  it('keeps core mock modules behind moduleMockDoubles outside the test-double suites', () => {
+  it('keeps core mock modules behind module mock doubles outside the test-double suites', () => {
     const testFiles = listProjectSourceFiles('src').filter(
       (relativePath) =>
         /\.(test|spec)\.(ts|tsx)$/.test(relativePath) &&
@@ -111,6 +99,8 @@ describe('test infrastructure guardrails', () => {
 
       expect(source, relativePath).not.toContain('serviceTestDoubles');
       expect(source, relativePath).not.toContain('i18nTestDoubles');
+      expect(source, relativePath).not.toContain('@/test/doubles/services');
+      expect(source, relativePath).not.toContain('@/test/doubles/i18n');
     }
   });
 

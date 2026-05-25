@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-
-const projectRoot = path.resolve(__dirname, '../../..');
+import { projectRoot } from './projectFiles';
 
 const toolbarSelectorPaths = [
   'src/components/chat/input/toolbar/PersonGenerationSelector.tsx',

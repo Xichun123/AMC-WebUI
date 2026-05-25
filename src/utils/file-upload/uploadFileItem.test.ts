@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import type { UploadedFile } from '@/types';
 
 const { uploadFileMock, generateUniqueIdMock, fileToBlobUrlMock } = vi.hoisted(() => ({
@@ -16,17 +16,14 @@ vi.mock('@/utils/chat/ids', () => ({
   generateUniqueId: generateUniqueIdMock,
 }));
 
-vi.mock('@/utils/fileHelpers', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/utils/fileHelpers')>();
+vi.mock('@/utils/filePreviewUrls', () => {
   return {
-    ...actual,
     fileToBlobUrl: fileToBlobUrlMock,
-    isTextFile: vi.fn(() => false),
   };
 });
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });

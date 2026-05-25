@@ -1,7 +1,7 @@
 import { logService } from '@/services/logService';
 import React, { type RefObject } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
-import { buildHtmlPreviewSrcDoc } from '@/utils/htmlPreview';
+import { buildHtmlPreviewSrcDoc } from '@/utils/html-preview/previewDocument';
 
 interface HtmlPreviewContentProps {
   iframeRef: RefObject<HTMLIFrameElement>;
@@ -17,7 +17,6 @@ export const HtmlPreviewContent: React.FC<HtmlPreviewContentProps> = ({ iframeRe
 
   return (
     <div className="flex-grow relative overflow-auto custom-scrollbar bg-[var(--theme-bg-tertiary)]">
-      {/* Subtle Grid Pattern Background */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.05]"
         style={{

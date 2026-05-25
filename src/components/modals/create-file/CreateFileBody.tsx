@@ -56,7 +56,6 @@ export const CreateFileBody: React.FC<CreateFileBodyProps> = ({
   return (
     <div className="flex-grow flex flex-col p-4 min-h-0 bg-[var(--theme-bg-primary)]">
       <div className="flex-grow flex flex-col lg:flex-row gap-4 min-h-0 h-full">
-        {/* Editor Pane */}
         <div
           className={`
                     relative rounded-lg border overflow-hidden focus-within:ring-2 focus-within:ring-[var(--theme-border-focus)] focus-within:border-transparent transition-all bg-[var(--theme-bg-input)]
@@ -88,7 +87,6 @@ export const CreateFileBody: React.FC<CreateFileBodyProps> = ({
           )}
         </div>
 
-        {/* Preview Pane */}
         {supportsRichPreview && (
           <div
             className={`

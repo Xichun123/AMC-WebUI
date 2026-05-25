@@ -3,7 +3,6 @@ import {
   Archive,
   AlertTriangle,
   FileAudio,
-  FileCode2,
   FileSpreadsheet,
   FileText,
   FileVideo,
@@ -12,7 +11,7 @@ import {
   Youtube,
 } from 'lucide-react';
 import { MediaResolution } from '@/types';
-import type { FileCategory } from './fileTypeUtils';
+import type { FileCategory } from './fileTypeClassification';
 
 export const CATEGORY_STYLES: Record<FileCategory, { Icon: ElementType; colorClass: string; bgClass: string }> = {
   image: {
@@ -52,8 +51,8 @@ export const CATEGORY_STYLES: Record<FileCategory, { Icon: ElementType; colorCla
     colorClass: 'text-yellow-600 dark:text-yellow-500',
     bgClass: 'bg-yellow-600/10 dark:bg-yellow-500/10',
   },
-  code: {
-    Icon: FileCode2,
+  text: {
+    Icon: FileText,
     colorClass: 'text-slate-500 dark:text-slate-400',
     bgClass: 'bg-slate-500/10 dark:bg-slate-400/10',
   },

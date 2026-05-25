@@ -1,61 +1,64 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act } from 'react';
 import type { ChatMessage } from '@/types';
-import { createChatAreaProviderValue, renderWithChatAreaProviders } from '@/test/chatAreaFixtures';
+import { createChatAreaProviderValue, renderWithChatAreaProviders } from '@/test/chat-area/fixtures';
 import { MessageList } from './MessageList';
-import type { VirtuosoMockProps } from '@/test/messageListTestDoubles';
+import type { VirtuosoMockProps } from '@/test/message-list/doubles';
+import { AVAILABLE_THEMES } from '@/constants/themeRegistry';
+import { useSettingsStore } from '@/stores/settingsStore';
 
 const virtuosoPropsSpy = vi.hoisted(() => vi.fn());
 
 vi.mock('react-virtuoso', async () => {
-  const { createVirtuosoMock } = await import('@/test/messageListTestDoubles');
+  const { createVirtuosoMock } = await import('@/test/message-list/doubles');
 
   return createVirtuosoMock<ChatMessage>(virtuosoPropsSpy);
 });
 
 vi.mock('@/components/message/Message', async () => {
-  const { createMessageRowMock } = await import('@/test/messageListTestDoubles');
+  const { createMessageRowMock } = await import('@/test/message-list/doubles');
 
   return createMessageRowMock();
 });
 
 vi.mock('@/components/modals/FileConfigurationModal', async () => {
-  const { createNullComponentMock } = await import('@/test/messageListTestDoubles');
+  const { createNullComponentMock } = await import('@/test/message-list/doubles');
 
   return createNullComponentMock('FileConfigurationModal');
 });
 
-vi.mock('@/hooks/useMessageListUi', async () => {
-  const { createMessageListUiMock } = await import('@/test/messageListTestDoubles');
+vi.mock('./message-list/hooks/useMessageListUi', async () => {
+  const { createMessageListUiMock } = await import('@/test/message-list/doubles');
 
   return createMessageListUiMock();
 });
 
 vi.mock('./message-list/hooks/useMessageListScroll', async () => {
-  const { createMessageListScrollMock } = await import('@/test/messageListTestDoubles');
+  const { createMessageListScrollMock } = await import('@/test/message-list/doubles');
 
   return createMessageListScrollMock({ scrollerRef: null });
 });
 
 vi.mock('./message-list/ScrollNavigation', async () => {
-  const { createNullComponentMock } = await import('@/test/messageListTestDoubles');
+  const { createNullComponentMock } = await import('@/test/message-list/doubles');
 
   return createNullComponentMock('ScrollNavigation');
 });
 
 vi.mock('./message-list/TextSelectionToolbar', async () => {
-  const { createNullComponentMock } = await import('@/test/messageListTestDoubles');
+  const { createNullComponentMock } = await import('@/test/message-list/doubles');
 
   return createNullComponentMock('TextSelectionToolbar');
 });
 
 vi.mock('./message-list/MessageListFooter', async () => {
-  const { createNullComponentMock } = await import('@/test/messageListTestDoubles');
+  const { createNullComponentMock } = await import('@/test/message-list/doubles');
 
   return createNullComponentMock('MessageListFooter');
 });
 
 vi.mock('./message-list/WelcomeScreen', async () => {
-  const { createNullComponentMock } = await import('@/test/messageListTestDoubles');
+  const { createNullComponentMock } = await import('@/test/message-list/doubles');
 
   return createNullComponentMock('WelcomeScreen');
 });
@@ -111,5 +114,20 @@ describe('MessageList scroll configuration', () => {
     expect(props.followOutput?.(true)).toBe('auto');
     expect(props.followOutput?.(false)).toBe(false);
     expect(props.className).toContain('chat-message-list-scroller');
+  });
+
+  it('keeps Virtuoso structural props stable across unrelated rerenders', () => {
+    ({ unmount } = renderWithChatAreaProviders(<MessageList />, { value: createProviderValue() }));
+
+    const initialProps = virtuosoPropsSpy.mock.calls[0]?.[0] as VirtuosoMockProps<ChatMessage>;
+
+    act(() => {
+      useSettingsStore.setState({ currentTheme: AVAILABLE_THEMES.find((theme) => theme.id !== 'pearl') });
+    });
+
+    const latestProps = virtuosoPropsSpy.mock.calls.at(-1)?.[0] as VirtuosoMockProps<ChatMessage>;
+
+    expect(latestProps.components).toBe(initialProps.components);
+    expect(latestProps.itemContent).toBe(initialProps.itemContent);
   });
 });

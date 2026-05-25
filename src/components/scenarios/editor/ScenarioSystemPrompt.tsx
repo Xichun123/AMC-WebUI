@@ -1,7 +1,7 @@
 import React from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { Bot, Maximize2 } from 'lucide-react';
-import { SMALL_ICON_BUTTON_CLASS } from '@/constants/styleClasses';
+import { SMALL_ICON_BUTTON_CLASS } from '@/constants/buttonClasses';
 
 interface ScenarioSystemPromptProps {
   value: string;

@@ -2,8 +2,8 @@ import { act, type PropsWithChildren, type SetStateAction } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AppViewModel } from '@/hooks/app/useApp';
 import type { AppSettings } from '@/types';
-import { renderHook } from '@/test/testUtils';
-import { createAppSettings, createChatSettings, createTheme } from '@/test/factories';
+import { renderHook } from '@/test/render/renderer';
+import { createAppSettings, createChatSettings, createTheme } from '@/test/data/factories';
 import { ChatRuntimeProvider, useChatHeaderRuntime } from './chat-runtime/ChatRuntimeContext';
 import { CHAT_INPUT_TEXTAREA_SELECTOR } from '@/constants/storageKeys';
 
@@ -38,7 +38,7 @@ vi.mock('@/stores/chatStore', () => ({
   useChatStore: mockStores.useChatStoreMock,
 }));
 
-vi.mock('@/utils/shortcutUtils', () => ({
+vi.mock('@/utils/keyboardShortcuts', () => ({
   getShortcutDisplay: vi.fn(() => 'shortcut'),
 }));
 

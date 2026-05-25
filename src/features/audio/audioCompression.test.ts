@@ -45,12 +45,44 @@ const createOfflineAudioContextMock = (pcmData: Float32Array) =>
   });
 
 describe('compressAudioToMp3', () => {
-  it('returns tiny source files without spinning up the worker pipeline', async () => {
-    const file = new File([new Uint8Array(32)], 'tiny.webm', { type: 'audio/webm' });
+  it('returns tiny supported source files without spinning up the worker pipeline', async () => {
+    const file = new File([new Uint8Array(32)], 'tiny.mp3', { type: 'audio/mpeg' });
 
     const result = await compressAudioToMp3(file);
 
     expect(result).toBe(file);
+  });
+
+  it('transcodes tiny unsupported source files instead of returning Gemini-unsupported MIME types', async () => {
+    const worker = new FakeWorker();
+    vi.spyOn(URL, 'createObjectURL').mockImplementation(() => 'blob:audio-worker');
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+    const pcmData = new Float32Array([0.25, -0.25, 0.5]);
+    vi.stubGlobal('AudioContext', createAudioContextMock({ duration: 2 }));
+    vi.stubGlobal('OfflineAudioContext', createOfflineAudioContextMock(pcmData));
+    vi.stubGlobal(
+      'Worker',
+      vi.fn(function WorkerMock() {
+        return worker;
+      }),
+    );
+    const sourceFile = new File([new Uint8Array(32)], 'voice.webm', { type: 'audio/webm' });
+
+    const promise = compressAudioToMp3(sourceFile);
+
+    await flushAudioCompressionPipeline();
+
+    expect(worker.postMessage).toHaveBeenCalledWith({ pcmData, sampleRate: 16_000, kbps: 64 }, [pcmData.buffer]);
+
+    worker.emitSuccess([new Uint8Array([7, 8, 9])]);
+
+    const result = await promise;
+
+    expect(result.name).toBe('voice.mp3');
+    expect(result.type).toBe('audio/mpeg');
+
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('returns an mp3 file when the worker reports success', async () => {

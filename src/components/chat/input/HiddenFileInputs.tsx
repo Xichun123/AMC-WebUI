@@ -1,5 +1,5 @@
 import React, { type RefObject } from 'react';
-import { ALL_SUPPORTED_MIME_TYPES, SUPPORTED_IMAGE_MIME_TYPES } from '@/constants/fileConstants';
+import { SUPPORTED_IMAGE_MIME_TYPES, SUPPORTED_UPLOAD_MIME_TYPES } from '@/constants/fileTypeSupport';
 
 interface ChatInputFileInputs {
   fileInputRef: RefObject<HTMLInputElement>;
@@ -22,7 +22,7 @@ export const HiddenFileInputs: React.FC<HiddenFileInputsProps> = ({ fileInputs }
       type="file"
       ref={fileInputs.fileInputRef}
       onChange={fileInputs.handleFileChange}
-      accept={ALL_SUPPORTED_MIME_TYPES.join(',')}
+      accept={SUPPORTED_UPLOAD_MIME_TYPES.join(',')}
       className="hidden"
       aria-hidden="true"
       multiple

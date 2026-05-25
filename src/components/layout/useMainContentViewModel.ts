@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 
 import type { AppViewModel } from '@/hooks/app/useApp';
 import { useUIStore } from '@/stores/uiStore';
-import { getShortcutDisplay } from '@/utils/shortcutUtils';
+import { getShortcutDisplay } from '@/utils/keyboardShortcuts';
 import { buildSidePanelKey } from './mainContentModels';
 
 interface UseMainContentViewModelOptions {
@@ -125,6 +125,7 @@ export const useMainContentViewModel = ({ app }: UseMainContentViewModelOptions)
       isSettingsModalOpen,
       setIsSettingsModalOpen,
       appSettings,
+      currentThemeId: currentTheme.id,
       availableModels: chatState.apiModels,
       handleSaveSettings,
       handleSaveCurrentChatSettings,
@@ -176,6 +177,7 @@ export const useMainContentViewModel = ({ app }: UseMainContentViewModelOptions)
       setIsSettingsModalOpen,
       appSettings,
       chatState.activeSessionId,
+      currentTheme.id,
     ],
   );
 

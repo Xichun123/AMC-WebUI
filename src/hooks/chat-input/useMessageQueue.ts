@@ -8,7 +8,7 @@ import {
   type PendingChatInputSubmission,
   type QueuedChatInputSubmission,
   shouldFlushPendingSubmission,
-} from '@/utils/chat-input/pendingSubmissionUtils';
+} from '@/utils/chat-input/pendingSubmission';
 
 type SetSelectedFiles = (files: UploadedFile[] | ((prevFiles: UploadedFile[]) => UploadedFile[])) => void;
 

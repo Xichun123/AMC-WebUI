@@ -1,15 +1,14 @@
-import { type RefObject, useCallback } from 'react';
+import { useCallback } from 'react';
 import { type SavedChatSession, type Theme } from '@/types';
 import { logService } from '@/services/logService';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
+import { createChatExportElement } from '@/features/chat-export/chatExportRenderer';
 import { serializeSessionForPortableExport } from '@/utils/chat/session';
 import { triggerDownload } from '@/utils/export/core';
-import { createChatExportElement } from '@/utils/export/conversation';
 import { buildChatExportFilename, createExportDateMeta, loadExportRuntime } from '@/utils/export/runtime';
 
 interface UseChatSessionExportProps {
   activeChat: SavedChatSession | undefined;
-  scrollContainerRef: RefObject<HTMLDivElement>;
   currentTheme: Theme;
   language: 'en' | 'zh';
   t: (key: string) => string;
@@ -30,9 +29,6 @@ export const useChatSessionExport = ({ activeChat, currentTheme, language, t }: 
         const { exportHtmlStringAsFile, prepareElementForExport, generateSnapshotPng, buildHtmlDocument } =
           await loadExportRuntime();
 
-        // Use unified helper to clone, clean, and embed images.
-        // For PNG, force expand details to ensure visibility in static image.
-        // For HTML, allow details to be collapsed by default (interactive).
         const { element: exportElement, cleanup } = await createChatExportElement(activeChat, currentTheme.id);
         const chatClone = await prepareElementForExport(exportElement, { expandDetails: format === 'png' });
 
@@ -48,7 +44,7 @@ export const useChatSessionExport = ({ activeChat, currentTheme, language, t }: 
                 metaRight: activeChat.settings.modelId,
               },
               {
-                scale: 2, // Standard 2x scale for full chat
+                scale: 2,
                 messages: {
                   imageTooLarge: t('export_image_too_large'),
                   exportFailed: (message) => t('export_failed_with_message').replace('{message}', message),
@@ -59,7 +55,6 @@ export const useChatSessionExport = ({ activeChat, currentTheme, language, t }: 
               return false;
             }
           } else {
-            // HTML Export
             const chatHtml = chatClone.innerHTML;
 
             const fullHtml = await buildHtmlDocument({

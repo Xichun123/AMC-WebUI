@@ -2,18 +2,18 @@ import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });
 
-vi.mock('@/utils/fileHelpers', () => ({
+vi.mock('@/utils/filePreviewUrls', () => ({
   cleanupFilePreviewUrls: vi.fn(),
 }));
 
 import { useChatEffects } from './useChatEffects';
-import { renderHook } from '@/test/testUtils';
-import { createChatSettings } from '@/test/factories';
+import { renderHook } from '@/test/render/renderer';
+import { createChatSettings } from '@/test/data/factories';
 
 const createProps = (overrides: Partial<Parameters<typeof useChatEffects>[0]> = {}) => ({
   activeSessionId: null,

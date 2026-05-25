@@ -154,8 +154,6 @@ const startResumableUploadSession = async (
     body: JSON.stringify({
       file: {
         displayName,
-        mimeType,
-        sizeBytes: String(file.size),
       },
     }),
     httpMethod: 'POST',

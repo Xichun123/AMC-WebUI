@@ -2,13 +2,15 @@ import { create } from 'zustand';
 import { type AppSettings } from '@/types';
 import type { SyncMessage } from '@/types/sync';
 import { type Theme } from '@/types/theme';
-import { DEFAULT_FILES_API_CONFIG, getDefaultAppSettings } from '@/constants/appConstants';
-import { AVAILABLE_THEMES, DEFAULT_THEME_ID } from '@/constants/themeConstants';
+import { DEFAULT_FILES_API_CONFIG, getDefaultAppSettings } from '@/constants/settingsDefaults';
+import { AVAILABLE_THEMES, DEFAULT_THEME_ID } from '@/constants/themeRegistry';
 import { logService } from '@/services/logService';
 import { resolveSupportedModelId, sanitizeModelOptions } from '@/utils/modelSorting';
 import { dbService } from '@/services/db/dbService';
 import { normalizeLiveArtifactsSystemPrompts } from '@/utils/liveArtifactsPromptSettings';
 import { getBackendFlavor, getRuntimeConfigAppSettingsOverrides } from '@/runtime/runtimeConfig';
+
+const LEGACY_DEFAULT_TRANSCRIPTION_MODEL_ID = 'gemini-3-flash-preview';
 
 interface SettingsState {
   appSettings: AppSettings;
@@ -131,9 +133,14 @@ function buildLoadedAppSettings(
   storedSettings: AppSettings | null | undefined,
   preloadOverrides: Partial<AppSettings> | null,
 ) {
+  const defaultSettings = getDefaultAppSettings();
+  const shouldMigrateLegacyTranscriptionDefault =
+    storedSettings?.transcriptionModelId === LEGACY_DEFAULT_TRANSCRIPTION_MODEL_ID &&
+    preloadOverrides?.transcriptionModelId === undefined;
   const appSettings = sanitizeAppSettings({
-    ...getDefaultAppSettings(),
+    ...defaultSettings,
     ...(storedSettings ?? {}),
+    ...(shouldMigrateLegacyTranscriptionDefault ? { transcriptionModelId: defaultSettings.transcriptionModelId } : {}),
     ...(preloadOverrides ?? {}),
   });
 

@@ -4,7 +4,7 @@ import { useModels } from '@/hooks/core/useModels';
 import { useChatHistory } from './useChatHistory';
 import { useFileHandling } from '@/hooks/file-upload/useFileHandling';
 import { useFileDragDrop } from '@/hooks/file-upload/useFileDragDrop';
-import { usePreloadedScenarios } from '@/hooks/usePreloadedScenarios';
+import { usePreloadedScenarios } from '@/hooks/scenarios/usePreloadedScenarios';
 import { useMessageSender } from '@/features/message-sender/useMessageSender';
 import { useChatScroll } from './useChatScroll';
 import { useAutoTitling } from './useAutoTitling';

@@ -13,7 +13,7 @@ import { useI18n } from '@/contexts/I18nContext';
 import {
   FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS,
   FOCUS_VISIBLE_RING_SECONDARY_OFFSET_CLASS,
-} from '@/constants/styleClasses';
+} from '@/constants/focusClasses';
 
 export interface LogViewerProps {
   isOpen: boolean;
@@ -122,7 +122,6 @@ export const LogViewer: React.FC<LogViewerProps> = ({
         contentClassName="w-full max-w-6xl h-[95vh]"
       >
         <div className="bg-[var(--theme-bg-primary)] w-full h-full shadow-2xl flex flex-col overflow-hidden rounded-xl border border-[var(--theme-border-primary)]">
-          {/* Header */}
           <header className="py-2 px-4 border-b border-[var(--theme-border-secondary)] flex justify-between items-center bg-[var(--theme-bg-secondary)] flex-shrink-0">
             <h2 className="text-lg font-semibold text-[var(--theme-text-link)] flex items-center gap-2">
               <Terminal size={20} /> {t('logViewer_title')}
@@ -135,7 +134,6 @@ export const LogViewer: React.FC<LogViewerProps> = ({
             </button>
           </header>
 
-          {/* Tabs */}
           <div className="border-b border-[var(--theme-border-secondary)] bg-[var(--theme-bg-primary)] px-4 flex-shrink-0">
             <nav className="flex space-x-4">
               <button
@@ -153,7 +151,6 @@ export const LogViewer: React.FC<LogViewerProps> = ({
             </nav>
           </div>
 
-          {/* Content */}
           <div className="flex-grow min-h-0 bg-[var(--theme-bg-secondary)] flex flex-col">
             {activeTab === 'console' && (
               <ConsoleTab

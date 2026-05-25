@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createDeferred, flushPromises, renderHook } from '@/test/testUtils';
+import { createDeferred, flushPromises, renderHook } from '@/test/render/renderer';
 import { useRecorder } from './useRecorder';
 
 const { getMixedAudioStreamMock } = vi.hoisted(() => ({

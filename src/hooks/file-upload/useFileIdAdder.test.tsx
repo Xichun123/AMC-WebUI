@@ -1,7 +1,7 @@
 import { act, type Dispatch, type SetStateAction } from 'react';
-import { renderHookWithProviders } from '@/test/providerTestUtils';
+import { renderHookWithProviders } from '@/test/render/providerRenderer';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import type { UploadedFile } from '@/types';
 
 const { generateUniqueIdMock, getKeyForRequestMock, getFileMetadataMock } = vi.hoisted(() => ({
@@ -14,7 +14,7 @@ vi.mock('@/utils/chat/ids', () => ({
   generateUniqueId: generateUniqueIdMock,
 }));
 
-vi.mock('@/utils/apiUtils', () => ({
+vi.mock('@/utils/apiKeySelection', () => ({
   getKeyForRequest: getKeyForRequestMock,
   getGeminiKeyForRequest: getKeyForRequestMock,
   getApiKeyErrorTranslationKey: vi.fn((error: string) =>
@@ -23,7 +23,7 @@ vi.mock('@/utils/apiUtils', () => ({
 }));
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });

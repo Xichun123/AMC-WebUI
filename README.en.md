@@ -233,15 +233,19 @@ Notes:
 | `SITE_AUTH_USERS_JSON`          | Optional site login user registry; leave empty to disable the login page                         | Server only           | Empty                                       |
 | `SITE_AUTH_SECRET`              | Signing secret for site login sessions; required when site login users are configured            | Server only           | Empty                                       |
 | `SITE_AUTH_SESSION_DAYS`        | Site login session lifetime in days                                                              | Server only           | `7`                                         |
+| `ENABLE_MCP_STDIO`              | Enables `stdio` MCP server calls                                                                 | Server only           | `false`                                     |
+| `ENABLE_MCP_PRIVATE_HTTP`       | Allows the API service to call private or local HTTP MCP URLs                                    | Server only           | `false`                                     |
 | `RUNTIME_SERVER_MANAGED_API`    | Enables server-managed API mode by default in the frontend                                       | Public runtime config | `false`                                     |
 | `RUNTIME_USE_CUSTOM_API_CONFIG` | Enables custom API configuration by default                                                      | Public runtime config | `true`                                      |
 | `RUNTIME_USE_API_PROXY`         | Enables API proxy mode by default                                                                | Public runtime config | `true`                                      |
 | `RUNTIME_API_PROXY_URL`         | Default Gemini proxy URL for the frontend                                                        | Public runtime config | `/api/gemini`                               |
-| `RUNTIME_PYODIDE_BASE_URL`      | Optional Pyodide runtime asset URL; when blank, same-origin `/pyodide/` is used                  | Public runtime config | Empty                                       |
+| `RUNTIME_PYODIDE_BASE_URL`      | Optional Pyodide runtime asset URL; when blank, the built-in full CDN default is used            | Public runtime config | Empty                                       |
 
 The `RUNTIME_*` values are written into `runtime-config.js` at container startup and are readable by the browser. Only put public configuration there. The public/runtime-config.js template is used for static builds and keeps custom API configuration and proxy mode disabled by default; Docker overwrites it through `docker/web-entrypoint.sh` using the defaults above.
 
-Pyodide assets are copied to `dist/pyodide/` during production builds and load from same-origin `/pyodide/` by default. To use a CDN or a separate static host, set `RUNTIME_PYODIDE_BASE_URL` to a full directory URL such as `https://cdn.jsdelivr.net/pyodide/v0.25.1/full/`. The PWA precache excludes large `pyodide/` assets by default, so local Python loads them on demand the first time it runs.
+MCP `stdio` and private/local HTTP access are disabled by default. Enable `ENABLE_MCP_STDIO=true` or `ENABLE_MCP_PRIVATE_HTTP=true` only for trusted self-hosted deployments.
+
+Local Python loads Pyodide full assets from `https://cdn.jsdelivr.net/pyodide/v0.25.1/full/` by default so packages such as `numpy`, `matplotlib`, and `Pillow` can be resolved on demand. Production builds still copy core runtime files to `dist/pyodide/`, but that same-origin directory does not include the full wheel set. For internal or offline deployments, mirror the full Pyodide directory to your own static host and set `RUNTIME_PYODIDE_BASE_URL` to that full directory URL. The PWA precache excludes large `pyodide/` assets by default, so local Python loads them on demand the first time it runs.
 
 Docker defaults to BYOK: after you enter an API key in Settings, regular Gemini proxy requests use the browser-provided key, and Live API uses the browser-local key directly to open the official Live WebSocket connection. AMC no longer mints a backend Live token.
 

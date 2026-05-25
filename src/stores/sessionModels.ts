@@ -1,4 +1,4 @@
-import { DEFAULT_MODEL_ID } from '@/constants/modelConstants';
+import { DEFAULT_MODEL_ID } from '@/constants/modelConfiguration';
 import type { SavedChatSession } from '@/types';
 import { resolveSupportedModelId } from '@/utils/modelSorting';
 

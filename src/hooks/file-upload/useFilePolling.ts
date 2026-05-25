@@ -1,6 +1,6 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import { type AppSettings, type ChatSettings as IndividualChatSettings, type UploadedFile } from '@/types';
-import { getApiKeyErrorTranslationKey, getGeminiKeyForRequest } from '@/utils/apiUtils';
+import { getApiKeyErrorTranslationKey, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
 import { logService } from '@/services/logService';
 import { POLLING_INTERVAL_MS, MAX_POLLING_DURATION_MS } from '@/services/api/filePollingConfig';
 import { getFileMetadataApi } from '@/services/api/fileApi';

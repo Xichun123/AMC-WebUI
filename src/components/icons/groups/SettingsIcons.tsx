@@ -1,5 +1,5 @@
 import React from 'react';
-import { type IconProps, StrokeIcon } from '@/components/icons/iconUtils';
+import { type IconProps, StrokeIcon } from '@/components/icons/iconPrimitives';
 
 // Data Management Icon (Database Stack)
 export const IconData: React.FC<IconProps> = (props) => (

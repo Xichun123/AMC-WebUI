@@ -35,8 +35,8 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ stream }) => {
       if (!analyserRef.current || !canvasRef.current) return;
 
       const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      const canvasContext = canvas.getContext('2d');
+      if (!canvasContext) return;
 
       const bufferLength = analyserRef.current.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
@@ -52,22 +52,22 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ stream }) => {
         const width = canvas.width;
         const height = canvas.height;
 
-        ctx.clearRect(0, 0, width, height);
+        canvasContext.clearRect(0, 0, width, height);
 
-        ctx.fillStyle = accentColor;
+        canvasContext.fillStyle = accentColor;
 
         const effectiveSlice = Math.floor(bufferLength * 0.7);
         const barWidth = (width / bufferLength) * 2.5;
-        let x = (width - effectiveSlice * (barWidth + 1)) / 2;
+        let barX = (width - effectiveSlice * (barWidth + 1)) / 2;
 
         for (let i = 0; i < effectiveSlice; i++) {
           const barHeight = (dataArray[i] / 255) * height * 0.9;
           if (barHeight > 2) {
-            ctx.beginPath();
-            ctx.roundRect(x, (height - barHeight) / 2, barWidth, barHeight, 2);
-            ctx.fill();
+            canvasContext.beginPath();
+            canvasContext.roundRect(barX, (height - barHeight) / 2, barWidth, barHeight, 2);
+            canvasContext.fill();
           }
-          x += barWidth + 1;
+          barX += barWidth + 1;
         }
       };
       draw();

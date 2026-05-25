@@ -923,6 +923,38 @@ describe('createServer', () => {
       expect(response.headers.get('x-goog-upload-url')).toContain('/__gcs-upload-chunk__/video-session');
     });
 
+    it('accepts AI Studio resumable upload metadata split between body and headers', async () => {
+      const vertexAuth = { getAccessToken: vi.fn(async () => 'tok') };
+      const adapter = createInMemoryAdapter();
+      const app = createServer(
+        {
+          geminiApiBase: 'https://example.test',
+          geminiApiKey: '',
+          backendFlavor: 'vertex',
+          vertex: { projectId: 'p', location: 'us-central1' },
+        },
+        { vertexAuth, gcsFilesAdapter: adapter },
+      );
+      const started = await startHttpServer(app);
+      cleanupCallbacks.push(started.close);
+
+      const response = await fetch(`${started.baseUrl}/api/gemini/upload/v1beta/files`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-goog-upload-header-content-length': '12345',
+          'x-goog-upload-header-content-type': 'video/mp4',
+        },
+        body: JSON.stringify({
+          file: { displayName: 'large.mp4' },
+        }),
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get('x-goog-upload-status')).toBe('active');
+      expect(response.headers.get('x-goog-upload-url')).toContain('/__gcs-upload-chunk__/test-id');
+    });
+
     it('rewrites AI Studio file URIs in generateContent body to gs:// URIs', async () => {
       const capturedRequests: Array<{ url: string; body: string }> = [];
       const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {

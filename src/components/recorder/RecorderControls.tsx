@@ -32,7 +32,6 @@ export const RecorderControls: React.FC<RecorderControlsProps> = ({
 
   return (
     <div className="px-5 py-4 bg-[var(--theme-bg-primary)] flex justify-center gap-3">
-      {/* Idle Controls */}
       {viewState === 'idle' && onStart && (
         <button
           onClick={onStart}
@@ -44,7 +43,6 @@ export const RecorderControls: React.FC<RecorderControlsProps> = ({
         </button>
       )}
 
-      {/* Recording Controls */}
       {viewState === 'recording' && (
         <>
           <button
@@ -67,7 +65,6 @@ export const RecorderControls: React.FC<RecorderControlsProps> = ({
         </>
       )}
 
-      {/* Review Controls */}
       {viewState === 'review' && (
         <>
           <button

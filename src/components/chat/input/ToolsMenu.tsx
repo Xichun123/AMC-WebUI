@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { SlidersHorizontal, Globe, Check, Terminal, Link, X, Telescope, Calculator, AlertTriangle } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
 import { IconPython } from '@/components/icons';
-import { CHAT_INPUT_BUTTON_CLASS } from '@/constants/styleClasses';
+import { CHAT_INPUT_BUTTON_CLASS } from '@/constants/buttonClasses';
 import { usePortaledMenu } from '@/hooks/ui/usePortaledMenu';
 import { getCachedModelCapabilities } from '@/stores/modelCapabilitiesStore';
 import {
@@ -28,11 +28,11 @@ const ActiveToolBadge: React.FC<{
 }> = ({ label, onRemove, removeAriaLabel, icon }) => (
   <>
     <div className="h-4 w-px bg-[var(--theme-border-secondary)] mx-1.5"></div>
-    <div
-      className="group flex items-center gap-1.5 bg-blue-500/10 text-[var(--theme-text-link)] text-sm px-2.5 py-1 rounded-full transition-all select-none hover:bg-[var(--theme-bg-tertiary)] hover:text-[var(--theme-text-primary)] cursor-pointer"
+    <button
+      type="button"
+      className="group flex items-center gap-1.5 bg-blue-500/10 text-[var(--theme-text-link)] text-sm px-2.5 py-1 rounded-full transition-all select-none hover:bg-[var(--theme-bg-tertiary)] hover:text-[var(--theme-text-primary)] cursor-pointer border-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-border-focus)]"
       style={{ animation: `fadeInUp 0.3s ease-out both` }}
       onClick={onRemove}
-      role="button"
       aria-label={removeAriaLabel}
     >
       <div className="relative flex items-center justify-center w-3.5 h-3.5">
@@ -44,7 +44,7 @@ const ActiveToolBadge: React.FC<{
         </span>
       </div>
       <span className="font-medium">{label}</span>
-    </div>
+    </button>
   </>
 );
 

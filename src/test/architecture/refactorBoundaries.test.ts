@@ -1,37 +1,24 @@
 import fs from 'fs';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
-
-const projectRoot = path.resolve(__dirname, '../../..');
-
-const readProjectFile = (relativePath: string) => fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
-const listProjectSourceFiles = (relativeDir: string): string[] => {
-  const absoluteDir = path.join(projectRoot, relativeDir);
-  return fs.readdirSync(absoluteDir, { withFileTypes: true }).flatMap((entry) => {
-    const entryPath = path.join(relativeDir, entry.name);
-    if (entry.isDirectory()) {
-      return listProjectSourceFiles(entryPath);
-    }
-    return /\.(ts|tsx)$/.test(entry.name) ? [entryPath] : [];
-  });
-};
+import { listProjectSourceFiles, projectRoot, readProjectFile } from './projectFiles';
 
 describe('refactor boundary guardrails', () => {
   it('keeps constants imports tied to focused constant modules', () => {
-    const appConstantsSource = readProjectFile('src/constants/appConstants.ts');
-
-    for (const reExport of [
-      "export * from './modelConstants';",
-      "export * from './shortcuts';",
-      "export * from './storageKeys';",
-      "export * from './styleClasses';",
-    ]) {
-      expect(appConstantsSource).not.toContain(reExport);
-    }
-
-    expect(fs.existsSync(path.join(projectRoot, 'src/constants/modelConstants.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/constants/appConstants.ts'))).toBe(false);
+    expect(fs.existsSync(path.join(projectRoot, 'src/constants/styleClasses.ts'))).toBe(false);
+    expect(fs.existsSync(path.join(projectRoot, 'src/constants/settingsDefaults.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/constants/buttonClasses.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/constants/focusClasses.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/constants/menuClasses.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/constants/formClasses.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/constants/fileTypeSupport.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/constants/modelConfiguration.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/constants/themeRegistry.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/constants/fileConstants.ts'))).toBe(false);
+    expect(fs.existsSync(path.join(projectRoot, 'src/constants/modelConstants.ts'))).toBe(false);
+    expect(fs.existsSync(path.join(projectRoot, 'src/constants/themeConstants.ts'))).toBe(false);
     expect(fs.existsSync(path.join(projectRoot, 'src/constants/storageKeys.ts'))).toBe(true);
-    expect(fs.existsSync(path.join(projectRoot, 'src/constants/styleClasses.ts'))).toBe(true);
   });
 
   it('imports shared settings types through the central types barrel', () => {
@@ -42,15 +29,18 @@ describe('refactor boundary guardrails', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('routes completion feedback through focused helpers', () => {
+  it('routes completion feedback through focused business and browser helpers', () => {
     const messagePipelineSource = readProjectFile('src/features/message-sender/messagePipeline.ts');
     const chatStreamHandlerSource = readProjectFile('src/features/message-sender/useChatStreamHandler.ts');
+    const messageSenderFeedbackSource = readProjectFile('src/features/message-sender/completionFeedback.ts');
     const assetsSource = readProjectFile('src/constants/assets.ts');
 
-    expect(fs.existsSync(path.join(projectRoot, 'src/utils/completionFeedback.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/utils/browserCompletionFeedback.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/utils/completionFeedback.ts'))).toBe(false);
     expect(fs.existsSync(path.join(projectRoot, 'src/features/message-sender/completionFeedback.ts'))).toBe(true);
     expect(messagePipelineSource).toContain("from './completionFeedback'");
     expect(chatStreamHandlerSource).toContain("from './completionFeedback'");
+    expect(messageSenderFeedbackSource).toContain("from '@/utils/browserCompletionFeedback'");
     expect(chatStreamHandlerSource).not.toContain('showNotification');
     expect(chatStreamHandlerSource).not.toContain('playCompletionSound');
     expect(assetsSource).toContain('APP_NOTIFICATION_ICON_URL');

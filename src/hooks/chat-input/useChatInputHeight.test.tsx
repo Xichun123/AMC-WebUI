@@ -1,6 +1,6 @@
 import { act, useEffect, useLayoutEffect } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { setupTestRenderer } from '@/test/testUtils';
+import { setupTestRenderer } from '@/test/render/renderer';
 import { useChatInputHeight } from './useChatInputHeight';
 
 const createRect = (height: number): DOMRect =>

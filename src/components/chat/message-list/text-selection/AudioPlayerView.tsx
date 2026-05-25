@@ -1,6 +1,7 @@
 import React, { useState, type RefObject } from 'react';
-import { GripVertical, X, Loader2, Pause, Play } from 'lucide-react';
+import { GripVertical, X, Pause, Play } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
+import { GoogleSpinner } from '@/components/icons/GoogleSpinner';
 
 interface AudioPlayerViewProps {
   audioUrl: string | null;
@@ -55,8 +56,8 @@ export const AudioPlayerView: React.FC<AudioPlayerViewProps> = ({
   if (isLoading) {
     return (
       <div className="flex h-11 items-center gap-2.5 rounded-full border border-[var(--theme-border-secondary)] bg-[var(--theme-bg-primary)]/95 px-3 py-1.5 text-xs font-medium text-[var(--theme-text-primary)] shadow-[0_10px_28px_rgba(0,0,0,0.16)] backdrop-blur-xl">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--theme-border-secondary)] bg-[var(--theme-bg-secondary)] text-[var(--theme-text-link)] shadow-sm">
-          <Loader2 size={14} className="animate-spin" />
+        <span data-audio-loading-spinner className="flex h-8 w-8 items-center justify-center">
+          <GoogleSpinner size={20} />
         </span>
         <span className="pr-1 text-[var(--theme-text-secondary)]">{t('generating_audio')}</span>
       </div>
@@ -110,11 +111,14 @@ export const AudioPlayerView: React.FC<AudioPlayerViewProps> = ({
         )}
       </button>
 
-      <div className="flex min-w-0 flex-1 items-center gap-2.5 rounded-full border border-[var(--theme-border-secondary)] bg-[var(--theme-bg-secondary)]/60 px-2.5 py-1.5">
+      <div
+        data-audio-progress-shell
+        className="flex min-w-0 flex-1 items-center gap-2.5 rounded-full bg-[var(--theme-bg-secondary)]/60 px-2.5 py-1.5"
+      >
         <div className="relative h-5 min-w-24 flex-1">
           <div
             data-audio-progress-track
-            className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-[var(--theme-bg-tertiary)] shadow-inner"
+            className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-[var(--theme-bg-tertiary)]"
           >
             <div
               data-audio-progress-fill
@@ -124,7 +128,7 @@ export const AudioPlayerView: React.FC<AudioPlayerViewProps> = ({
           </div>
           <div
             data-audio-progress-thumb
-            className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[var(--theme-bg-primary)] bg-[var(--theme-text-link)] opacity-90 shadow-[0_1px_5px_rgba(0,0,0,0.28)] transition-[left] duration-100 ease-linear"
+            className="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--theme-text-link)] opacity-95 transition-[left] duration-100 ease-linear"
             style={{ left: `${progressPercent}%` }}
           />
           <input
@@ -139,7 +143,10 @@ export const AudioPlayerView: React.FC<AudioPlayerViewProps> = ({
           />
         </div>
 
-        <div className="flex w-12 flex-shrink-0 flex-col items-end gap-0.5 border-l border-[var(--theme-border-secondary)] pl-2 font-mono text-[10px] leading-none tabular-nums">
+        <div
+          data-audio-time-group
+          className="flex w-12 flex-shrink-0 flex-col items-end gap-0.5 pl-1.5 font-mono text-[10px] leading-none tabular-nums"
+        >
           <span data-audio-time-readout className="text-[var(--theme-text-primary)]">
             {formatTime(currentTime)}
           </span>

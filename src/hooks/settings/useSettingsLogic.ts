@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useLayoutEffect, useMemo } from 'react';
 import { type AppSettings } from '@/types';
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import { logService } from '@/services/logService';
 import { resolveModelSwitchSettings } from '@/utils/modelSwitchSettings';
 import { type translations } from '@/i18n/translations';
@@ -157,6 +157,7 @@ export const useSettingsLogic = ({
       { id: 'models', labelKey: 'settingsTabModels' },
       { id: 'interface', labelKey: 'settingsTabInterface' },
       { id: 'api', labelKey: 'settingsTabApi' },
+      { id: 'mcp', labelKey: 'settingsTabMcp' },
       { id: 'data', labelKey: 'settingsTabData' },
       { id: 'shortcuts', labelKey: 'settingsTabShortcuts' },
       { id: 'about', labelKey: 'settingsTabAbout' },

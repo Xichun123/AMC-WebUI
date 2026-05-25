@@ -1,12 +1,12 @@
 import { act } from 'react';
-import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { describe, expect, it, vi } from 'vitest';
-import { setupStoreStateReset } from '@/test/storeTestUtils';
+import { setupStoreStateReset } from '@/test/stores/reset';
 import { ToolsMenu } from './ToolsMenu';
-import { createChatToolToggleStatesFromFlags } from '@/test/chatToolFixtures';
+import { createChatToolToggleStatesFromFlags } from '@/test/chat-tools/fixtures';
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });
@@ -127,5 +127,36 @@ describe('ToolsMenu', () => {
     expect(document.body.textContent).not.toContain(
       "This model can't combine built-in tools with Pyodide in one request.",
     );
+  });
+
+  it('renders enabled tool badges as native buttons', () => {
+    const onToggleGoogleSearch = vi.fn();
+
+    act(() => {
+      renderer.root.render(
+        <ToolsMenu
+          currentModelId="gemini-3.1-pro-preview"
+          toolStates={{
+            ...createChatToolToggleStatesFromFlags({ googleSearch: true }),
+            googleSearch: {
+              isEnabled: true,
+              onToggle: onToggleGoogleSearch,
+            },
+          }}
+          toolUtilityActions={toolUtilityActions}
+          disabled={false}
+        />,
+      );
+    });
+
+    const activeBadge = document.body.querySelector<HTMLButtonElement>('button[aria-label="Disable Web Search"]');
+    expect(activeBadge).not.toBeNull();
+    expect(document.body.querySelector('[role="button"][aria-label="Disable Web Search"]')).toBeNull();
+
+    act(() => {
+      activeBadge?.click();
+    });
+
+    expect(onToggleGoogleSearch).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,5 +1,5 @@
 import { act } from 'react';
-import { setupTestRenderer } from '@/test/testUtils';
+import { setupTestRenderer } from '@/test/render/renderer';
 import { describe, expect, it } from 'vitest';
 import { ThinkingHeader } from './ThinkingHeader';
 

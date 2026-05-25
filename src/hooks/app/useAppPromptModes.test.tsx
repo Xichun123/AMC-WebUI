@@ -2,14 +2,16 @@ import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { AppSettings, ChatSettings, InputCommand, SavedChatSession } from '@/types';
-import { createAppSettings, createChatSettings, createSavedChatSession } from '@/test/factories';
+import { createAppSettings, createChatSettings, createSavedChatSession } from '@/test/data/factories';
 
 const { mockLoadLiveArtifactsSystemPrompt } = vi.hoisted(() => ({
   mockLoadLiveArtifactsSystemPrompt: vi.fn(),
 }));
 
-vi.mock('@/constants/promptHelpers', async () => {
-  const actual = await vi.importActual<typeof import('@/constants/promptHelpers')>('@/constants/promptHelpers');
+vi.mock('@/features/prompts/promptRegistry', async () => {
+  const actual = await vi.importActual<typeof import('@/features/prompts/promptRegistry')>(
+    '@/features/prompts/promptRegistry',
+  );
 
   return {
     ...actual,
@@ -17,11 +19,21 @@ vi.mock('@/constants/promptHelpers', async () => {
   };
 });
 
-import { focusChatInput, useAppPromptModes } from './useAppPromptModes';
-import { createDeferred, renderHook } from '@/test/testUtils';
+import { focusChatInput } from '@/utils/chat-input/focus';
+import { useAppPromptModes } from './useAppPromptModes';
+import { createDeferred, renderHook } from '@/test/render/renderer';
 
 const LIVE_ARTIFACTS_PROMPT = '[Live Artifacts Protocol - zh]\nLive Artifacts prompt';
 const LIVE_ARTIFACTS_PROMPT_EN = '[Live Artifacts Protocol - en]\nLive Artifacts prompt';
+
+type UseAppPromptModesTestOptions = Omit<Parameters<typeof useAppPromptModes>[0], 'currentThemeId'> & {
+  currentThemeId?: string;
+};
+
+const createSetCommandedInputMock = () => vi.fn<(command: InputCommand) => void>();
+
+const useAppPromptModesWithDefaultTheme = (options: UseAppPromptModesTestOptions) =>
+  useAppPromptModes({ currentThemeId: 'pearl', ...options });
 
 const createLiveArtifactsChatSettings = (overrides: Partial<ChatSettings> = {}) =>
   createChatSettings({
@@ -46,6 +58,8 @@ const createLiveArtifactsSession = (
 describe('useAppPromptModes', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLoadLiveArtifactsSystemPrompt.mockReset();
+    mockLoadLiveArtifactsSystemPrompt.mockResolvedValue(LIVE_ARTIFACTS_PROMPT);
   });
 
   afterEach(() => {
@@ -71,7 +85,7 @@ describe('useAppPromptModes', () => {
     const setAppSettings = vi.fn();
     const setCurrentChatSettings = vi.fn();
     const { result, unmount } = renderHook(() =>
-      useAppPromptModes({
+      useAppPromptModesWithDefaultTheme({
         appSettings: createAppSettings(),
         setAppSettings,
         activeChat: createLiveArtifactsSession(),
@@ -79,7 +93,7 @@ describe('useAppPromptModes', () => {
         currentChatSettings: createLiveArtifactsChatSettings(),
         setCurrentChatSettings,
         handleSendMessage: vi.fn(),
-        setCommandedInput: vi.fn() as unknown as (command: InputCommand) => void,
+        setCommandedInput: createSetCommandedInputMock(),
       }),
     );
 
@@ -107,7 +121,7 @@ describe('useAppPromptModes', () => {
     const setAppSettings = vi.fn();
     const setCurrentChatSettings = vi.fn();
     const { result, unmount } = renderHook(() =>
-      useAppPromptModes({
+      useAppPromptModesWithDefaultTheme({
         appSettings: createAppSettings(),
         setAppSettings,
         activeChat: createLiveArtifactsSession(),
@@ -115,7 +129,7 @@ describe('useAppPromptModes', () => {
         currentChatSettings: createLiveArtifactsChatSettings(),
         setCurrentChatSettings,
         handleSendMessage: vi.fn(),
-        setCommandedInput: vi.fn() as unknown as (command: InputCommand) => void,
+        setCommandedInput: createSetCommandedInputMock(),
         language: 'en',
       }),
     );
@@ -124,7 +138,7 @@ describe('useAppPromptModes', () => {
       await result.current.handleLoadLiveArtifactsPromptAndSave();
     });
 
-    expect(mockLoadLiveArtifactsSystemPrompt).toHaveBeenCalledWith('en', 'inline');
+    expect(mockLoadLiveArtifactsSystemPrompt).toHaveBeenCalledWith('en', 'inline', 'light');
     expect(setAppSettings).toHaveBeenCalledWith(expect.any(Function));
     const appSettingsUpdater = setAppSettings.mock.calls.at(-1)?.[0] as (prev: AppSettings) => AppSettings;
     expect(appSettingsUpdater(createAppSettings()).systemInstruction).toBe(LIVE_ARTIFACTS_PROMPT_EN);
@@ -136,7 +150,7 @@ describe('useAppPromptModes', () => {
     mockLoadLiveArtifactsSystemPrompt.mockResolvedValue(LIVE_ARTIFACTS_PROMPT_EN);
 
     const { result, unmount } = renderHook(() =>
-      useAppPromptModes({
+      useAppPromptModesWithDefaultTheme({
         appSettings: createAppSettings({ liveArtifactsPromptMode: 'full' }),
         setAppSettings: vi.fn(),
         activeChat: createLiveArtifactsSession(),
@@ -144,7 +158,7 @@ describe('useAppPromptModes', () => {
         currentChatSettings: createLiveArtifactsChatSettings(),
         setCurrentChatSettings: vi.fn(),
         handleSendMessage: vi.fn(),
-        setCommandedInput: vi.fn() as unknown as (command: InputCommand) => void,
+        setCommandedInput: createSetCommandedInputMock(),
         language: 'en',
       }),
     );
@@ -153,7 +167,75 @@ describe('useAppPromptModes', () => {
       await result.current.handleLoadLiveArtifactsPromptAndSave();
     });
 
-    expect(mockLoadLiveArtifactsSystemPrompt).toHaveBeenCalledWith('en', 'full');
+    expect(mockLoadLiveArtifactsSystemPrompt).toHaveBeenCalledWith('en', 'full', 'light');
+
+    unmount();
+  });
+
+  it('passes the current page theme to the built-in Live Artifacts prompt loader', async () => {
+    mockLoadLiveArtifactsSystemPrompt.mockResolvedValue(`${LIVE_ARTIFACTS_PROMPT_EN}\nCurrent Page Theme: dark`);
+
+    const setAppSettings = vi.fn();
+    const { result, unmount } = renderHook(() =>
+      useAppPromptModesWithDefaultTheme({
+        appSettings: createAppSettings(),
+        currentThemeId: 'onyx',
+        setAppSettings,
+        activeChat: createLiveArtifactsSession(),
+        activeSessionId: 'session-1',
+        currentChatSettings: createLiveArtifactsChatSettings(),
+        setCurrentChatSettings: vi.fn(),
+        handleSendMessage: vi.fn(),
+        setCommandedInput: createSetCommandedInputMock(),
+        language: 'en',
+      }),
+    );
+
+    await act(async () => {
+      await result.current.handleLoadLiveArtifactsPromptAndSave();
+    });
+
+    expect(mockLoadLiveArtifactsSystemPrompt).toHaveBeenCalledWith('en', 'inline', 'dark');
+    const appSettingsUpdater = setAppSettings.mock.calls.at(-1)?.[0] as (prev: AppSettings) => AppSettings;
+    expect(appSettingsUpdater(createAppSettings()).systemInstruction).toContain('Current Page Theme: dark');
+
+    unmount();
+  });
+
+  it('refreshes an active built-in Live Artifacts prompt for the current page theme', async () => {
+    const themedPrompt = `${LIVE_ARTIFACTS_PROMPT_EN}\nCurrent Page Theme: light`;
+    mockLoadLiveArtifactsSystemPrompt.mockResolvedValue(themedPrompt);
+
+    const setAppSettings = vi.fn();
+    const setCurrentChatSettings = vi.fn();
+    const { unmount } = renderHook(() =>
+      useAppPromptModesWithDefaultTheme({
+        appSettings: createAppSettings({ systemInstruction: LIVE_ARTIFACTS_PROMPT_EN }),
+        currentThemeId: 'pearl',
+        setAppSettings,
+        activeChat: createLiveArtifactsSession({ title: 'Session 1' }, { systemInstruction: LIVE_ARTIFACTS_PROMPT_EN }),
+        activeSessionId: 'session-1',
+        currentChatSettings: createLiveArtifactsChatSettings({ systemInstruction: LIVE_ARTIFACTS_PROMPT_EN }),
+        setCurrentChatSettings,
+        handleSendMessage: vi.fn(),
+        setCommandedInput: createSetCommandedInputMock(),
+        language: 'en',
+      }),
+    );
+
+    await vi.waitFor(() => {
+      expect(mockLoadLiveArtifactsSystemPrompt).toHaveBeenCalledWith('en', 'inline', 'light');
+    });
+
+    const appSettingsUpdater = setAppSettings.mock.calls.at(-1)?.[0] as (prev: AppSettings) => AppSettings;
+    const chatSettingsUpdater = setCurrentChatSettings.mock.calls.at(-1)?.[0] as (prev: ChatSettings) => ChatSettings;
+    expect(
+      appSettingsUpdater(createAppSettings({ systemInstruction: LIVE_ARTIFACTS_PROMPT_EN })).systemInstruction,
+    ).toBe(themedPrompt);
+    expect(
+      chatSettingsUpdater(createLiveArtifactsChatSettings({ systemInstruction: LIVE_ARTIFACTS_PROMPT_EN }))
+        .systemInstruction,
+    ).toBe(themedPrompt);
 
     unmount();
   });
@@ -164,15 +246,15 @@ describe('useAppPromptModes', () => {
     const setCurrentChatSettings = vi.fn();
 
     const { result, unmount } = renderHook(() =>
-      useAppPromptModes({
-        appSettings: createAppSettings({ liveArtifactsSystemPrompt: customPrompt } as unknown as Partial<AppSettings>),
+      useAppPromptModesWithDefaultTheme({
+        appSettings: createAppSettings({ liveArtifactsSystemPrompt: customPrompt }),
         setAppSettings,
         activeChat: createLiveArtifactsSession(),
         activeSessionId: 'session-1',
         currentChatSettings: createLiveArtifactsChatSettings(),
         setCurrentChatSettings,
         handleSendMessage: vi.fn(),
-        setCommandedInput: vi.fn() as unknown as (command: InputCommand) => void,
+        setCommandedInput: createSetCommandedInputMock(),
         language: 'en',
       }),
     );
@@ -194,7 +276,7 @@ describe('useAppPromptModes', () => {
     const setCurrentChatSettings = vi.fn();
 
     const { result, unmount } = renderHook(() =>
-      useAppPromptModes({
+      useAppPromptModesWithDefaultTheme({
         appSettings: createAppSettings({
           liveArtifactsPromptMode: 'fullHtml',
           liveArtifactsSystemPrompts: {
@@ -202,14 +284,14 @@ describe('useAppPromptModes', () => {
             full: 'Full custom prompt',
             fullHtml: 'Complete HTML custom prompt',
           },
-        } as unknown as Partial<AppSettings>),
+        }),
         setAppSettings,
         activeChat: createLiveArtifactsSession(),
         activeSessionId: 'session-1',
         currentChatSettings: createLiveArtifactsChatSettings(),
         setCurrentChatSettings,
         handleSendMessage: vi.fn(),
-        setCommandedInput: vi.fn() as unknown as (command: InputCommand) => void,
+        setCommandedInput: createSetCommandedInputMock(),
         language: 'en',
       }),
     );
@@ -230,7 +312,7 @@ describe('useAppPromptModes', () => {
     mockLoadLiveArtifactsSystemPrompt.mockReturnValue(deferred.promise);
 
     const { result, unmount } = renderHook(() =>
-      useAppPromptModes({
+      useAppPromptModesWithDefaultTheme({
         appSettings: createAppSettings(),
         setAppSettings: vi.fn(),
         activeChat: createLiveArtifactsSession(),
@@ -238,7 +320,7 @@ describe('useAppPromptModes', () => {
         currentChatSettings: createLiveArtifactsChatSettings(),
         setCurrentChatSettings: vi.fn(),
         handleSendMessage: vi.fn(),
-        setCommandedInput: vi.fn() as unknown as (command: InputCommand) => void,
+        setCommandedInput: createSetCommandedInputMock(),
       }),
     );
 
@@ -275,10 +357,10 @@ describe('useAppPromptModes', () => {
       currentChatSettings: createLiveArtifactsChatSettings(),
       setCurrentChatSettings,
       handleSendMessage: vi.fn(),
-      setCommandedInput: vi.fn() as unknown as (command: InputCommand) => void,
+      setCommandedInput: createSetCommandedInputMock(),
     };
 
-    const { result, rerender, unmount } = renderHook(() => useAppPromptModes(options));
+    const { result, rerender, unmount } = renderHook(() => useAppPromptModesWithDefaultTheme(options));
 
     act(() => {
       void result.current.handleLoadLiveArtifactsPromptAndSave();
@@ -320,10 +402,10 @@ describe('useAppPromptModes', () => {
       currentChatSettings: createLiveArtifactsChatSettings(),
       setCurrentChatSettings,
       handleSendMessage: vi.fn(),
-      setCommandedInput: vi.fn() as unknown as (command: InputCommand) => void,
+      setCommandedInput: createSetCommandedInputMock(),
     };
 
-    const { result, rerender, unmount } = renderHook(() => useAppPromptModes(options));
+    const { result, rerender, unmount } = renderHook(() => useAppPromptModesWithDefaultTheme(options));
 
     act(() => {
       void result.current.handleLoadLiveArtifactsPromptAndSave();
@@ -349,7 +431,7 @@ describe('useAppPromptModes', () => {
 
   it('keeps the Live Artifacts button active while app settings already contain the Live Artifacts prompt', () => {
     const { result, unmount } = renderHook(() =>
-      useAppPromptModes({
+      useAppPromptModesWithDefaultTheme({
         appSettings: createAppSettings({ systemInstruction: LIVE_ARTIFACTS_PROMPT }),
         setAppSettings: vi.fn(),
         activeChat: createLiveArtifactsSession({ title: 'Session 1' }),
@@ -357,7 +439,7 @@ describe('useAppPromptModes', () => {
         currentChatSettings: createLiveArtifactsChatSettings(),
         setCurrentChatSettings: vi.fn(),
         handleSendMessage: vi.fn(),
-        setCommandedInput: vi.fn() as unknown as (command: InputCommand) => void,
+        setCommandedInput: createSetCommandedInputMock(),
       }),
     );
 
@@ -375,10 +457,10 @@ describe('useAppPromptModes', () => {
       currentChatSettings: createLiveArtifactsChatSettings({ systemInstruction: LIVE_ARTIFACTS_PROMPT }),
       setCurrentChatSettings: vi.fn(),
       handleSendMessage: vi.fn(),
-      setCommandedInput: vi.fn() as unknown as (command: InputCommand) => void,
+      setCommandedInput: createSetCommandedInputMock(),
     };
 
-    const { result, rerender, unmount } = renderHook(() => useAppPromptModes(options));
+    const { result, rerender, unmount } = renderHook(() => useAppPromptModesWithDefaultTheme(options));
 
     await act(async () => {
       await result.current.handleLoadLiveArtifactsPromptAndSave();
@@ -406,11 +488,11 @@ describe('useAppPromptModes', () => {
   it('fills the Live Artifacts suggestion into the input and activates the prompt without sending', async () => {
     const setAppSettings = vi.fn();
     const setCurrentChatSettings = vi.fn();
-    const setCommandedInput = vi.fn() as unknown as (command: InputCommand) => void;
+    const setCommandedInput = createSetCommandedInputMock();
     const handleSendMessage = vi.fn();
 
     const { result, unmount } = renderHook(() =>
-      useAppPromptModes({
+      useAppPromptModesWithDefaultTheme({
         appSettings: createAppSettings(),
         setAppSettings,
         activeChat: createLiveArtifactsSession({ title: 'Session 1' }),
@@ -421,6 +503,8 @@ describe('useAppPromptModes', () => {
         setCommandedInput,
       }),
     );
+
+    mockLoadLiveArtifactsSystemPrompt.mockClear();
 
     await act(async () => {
       await result.current.handleSuggestionClick('organize', 'Create interactive HTML board.');
@@ -439,11 +523,11 @@ describe('useAppPromptModes', () => {
   });
 
   it('sends follow-up suggestions immediately even when the legacy auto-send preference is false', async () => {
-    const setCommandedInput = vi.fn() as unknown as (command: InputCommand) => void;
+    const setCommandedInput = createSetCommandedInputMock();
     const handleSendMessage = vi.fn();
 
     const { result, unmount } = renderHook(() =>
-      useAppPromptModes({
+      useAppPromptModesWithDefaultTheme({
         appSettings: createAppSettings({ isAutoSendOnSuggestionClick: false }),
         setAppSettings: vi.fn(),
         activeChat: createLiveArtifactsSession({ title: 'Session 1' }),
@@ -466,11 +550,11 @@ describe('useAppPromptModes', () => {
   });
 
   it('fills follow-up suggestions into the input when the fill action is used', async () => {
-    const setCommandedInput = vi.fn() as unknown as (command: InputCommand) => void;
+    const setCommandedInput = createSetCommandedInputMock();
     const handleSendMessage = vi.fn();
 
     const { result, unmount } = renderHook(() =>
-      useAppPromptModes({
+      useAppPromptModesWithDefaultTheme({
         appSettings: createAppSettings(),
         setAppSettings: vi.fn(),
         activeChat: createLiveArtifactsSession({ title: 'Session 1' }),
@@ -498,11 +582,11 @@ describe('useAppPromptModes', () => {
   it('keeps Live Artifacts active and replaces the input when the suggestion is clicked while already active', async () => {
     const setAppSettings = vi.fn();
     const setCurrentChatSettings = vi.fn();
-    const setCommandedInput = vi.fn() as unknown as (command: InputCommand) => void;
+    const setCommandedInput = createSetCommandedInputMock();
     const handleSendMessage = vi.fn();
 
     const { result, unmount } = renderHook(() =>
-      useAppPromptModes({
+      useAppPromptModesWithDefaultTheme({
         appSettings: createAppSettings({ systemInstruction: LIVE_ARTIFACTS_PROMPT }),
         setAppSettings,
         activeChat: createLiveArtifactsSession({ title: 'Session 1' }, { systemInstruction: LIVE_ARTIFACTS_PROMPT }),
@@ -524,7 +608,6 @@ describe('useAppPromptModes', () => {
       id: expect.any(Number),
       mode: 'replace',
     });
-    expect(mockLoadLiveArtifactsSystemPrompt).not.toHaveBeenCalled();
     expect(setAppSettings).not.toHaveBeenCalled();
     expect(setCurrentChatSettings).not.toHaveBeenCalled();
     expect(result.current.isLiveArtifactsPromptActive).toBe(true);

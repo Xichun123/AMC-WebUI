@@ -1,7 +1,7 @@
 import { act } from 'react';
-import { setupTestRenderer } from '@/test/testUtils';
+import { setupTestRenderer } from '@/test/render/renderer';
 import { describe, expect, it } from 'vitest';
-import { setupStoreStateReset } from '@/test/storeTestUtils';
+import { setupStoreStateReset } from '@/test/stores/reset';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { I18nProvider, useI18n } from './I18nContext';
 

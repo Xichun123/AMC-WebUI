@@ -19,6 +19,7 @@ interface SettingsModalProps extends SettingsTransferProps {
   isOpen: boolean;
   onClose: () => void;
   currentSettings: AppSettings;
+  currentThemeId: string;
   currentChatSettings?: ChatSettings;
   hasActiveSession?: boolean;
   availableModels: ModelOption[];
@@ -38,6 +39,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
   currentSettings,
+  currentThemeId,
   currentChatSettings,
   hasActiveSession = false,
   availableModels,
@@ -170,9 +172,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           activeTabRef={activeTabRef}
         />
 
-        {/* Content Area */}
         <main className="flex-1 flex flex-col min-w-0 bg-[var(--theme-bg-primary)] relative overflow-hidden">
-          {/* Scrollable Content */}
           <div
             ref={scrollContainerRef}
             onScroll={handleContentScroll}
@@ -216,6 +216,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <SettingsContent
               activeTab={activeTab}
               currentSettings={scopedSettings}
+              currentThemeId={currentThemeId}
               availableModels={availableModels}
               updateSetting={updateSetting}
               handleModelChange={handleModelChange}

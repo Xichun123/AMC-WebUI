@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { setupTestRenderer } from '@/test/testUtils';
+import { setupTestRenderer } from '@/test/render/renderer';
 import { LiveArtifactInteractionFrame } from './LiveArtifactInteractionFrame';
 import type { LiveArtifactInteractionSpec } from '@/utils/liveArtifactInteraction';
 

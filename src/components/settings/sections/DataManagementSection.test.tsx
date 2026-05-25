@@ -1,8 +1,8 @@
 import { act, type ComponentProps } from 'react';
-import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { setupStoreStateReset } from '@/test/storeTestUtils';
+import { setupStoreStateReset } from '@/test/stores/reset';
 import { DataManagementSection } from './DataManagementSection';
 
 const { estimateAppDataSizeMock } = vi.hoisted(() => ({
@@ -10,7 +10,7 @@ const { estimateAppDataSizeMock } = vi.hoisted(() => ({
 }));
 
 vi.mock('@/services/db/dbService', async () => {
-  const { createDbServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createDbServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createDbServiceMockModule({
     estimateAppDataSize: estimateAppDataSizeMock,

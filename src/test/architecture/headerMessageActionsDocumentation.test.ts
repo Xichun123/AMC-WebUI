@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import fs from 'fs';
-import path from 'path';
-
-const projectRoot = path.resolve(__dirname, '../../..');
-
-const readProjectFile = (relativePath: string) => fs.readFileSync(path.join(projectRoot, relativePath), 'utf8');
+import { readProjectFile } from './projectFiles';
 
 describe('header, message actions, and documentation guardrails', () => {
   it('removes dead Header prop references', () => {

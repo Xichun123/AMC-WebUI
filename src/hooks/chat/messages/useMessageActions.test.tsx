@@ -1,17 +1,17 @@
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ChatMessage, SavedChatSession } from '@/types';
-import { createChatSettings } from '@/test/factories';
+import { createChatSettings } from '@/test/data/factories';
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });
 
 import { useMessageActions } from './useMessageActions';
 import { finishActiveGenerationJob, startActiveGenerationJob } from '@/features/message-sender/activeGenerationJobs';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 
 describe('useMessageActions', () => {
   beforeEach(() => {

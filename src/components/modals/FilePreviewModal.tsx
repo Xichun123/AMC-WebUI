@@ -8,11 +8,12 @@ import { FilePreviewHeader, type FilePreviewHeaderHandle } from '@/components/sh
 import { ImageViewer } from '@/components/shared/file-preview/ImageViewer';
 import { TextFileViewer } from '@/components/shared/file-preview/TextFileViewer';
 import { IconYoutube } from '@/components/icons';
-import { cleanupFilePreviewUrl, copyFileToClipboard, fileToBlobUrl } from '@/utils/fileHelpers';
+import { copyFileToClipboard } from '@/utils/fileClipboard';
+import { cleanupFilePreviewUrl, fileToBlobUrl } from '@/utils/filePreviewUrls';
 import { extractDocxText, isDocxFile } from '@/utils/docxPreview';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { isShortcutPressed } from '@/utils/shortcutUtils';
-import { getFileKindFlags, isMarkdownFile, isTextFile } from '@/utils/fileTypeUtils';
+import { isShortcutPressed } from '@/utils/keyboardShortcuts';
+import { getFileKindFlags, isMarkdownFile, isTextFile } from '@/utils/fileTypeClassification';
 import { lazyNamedComponent } from '@/utils/lazyNamedComponent';
 
 const LazyPdfViewer = lazyNamedComponent(() => import('@/components/shared/file-preview/PdfViewerEntry'), 'PdfViewer');
@@ -186,7 +187,7 @@ const FilePreviewModalContent: React.FC<FilePreviewModalContentProps> = ({
   }, [file, isDocx, t]);
 
   const navButtonClass =
-    'absolute top-1/2 -translate-y-1/2 p-2 bg-black/45 hover:bg-black/70 text-white/70 hover:text-white rounded-full transition-colors z-50 focus:outline-none';
+    'absolute top-1/2 -translate-y-1/2 p-2 bg-black/45 hover:bg-black/70 text-white/70 hover:text-white rounded-full transition-colors z-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70';
 
   const getYoutubeEmbedUrl = (url: string) => {
     if (!url) return null;
@@ -314,9 +315,9 @@ const FilePreviewModalContent: React.FC<FilePreviewModalContentProps> = ({
           ) : isAudio ? (
             <div className="w-full h-full flex items-center justify-center">
               {previewFile.dataUrl && (
-                <div className="bg-white/15 p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col items-center gap-4">
+                <div className="max-w-[calc(100vw-2rem)] bg-white/15 p-4 sm:p-8 rounded-2xl border border-white/10 shadow-2xl flex flex-col items-center gap-4">
                   <FileAudio size={64} className="text-white/50" />
-                  <audio src={previewFile.dataUrl} controls className="w-[300px] sm:w-[400px]" />
+                  <audio src={previewFile.dataUrl} controls className="w-full max-w-full sm:w-[400px]" />
                 </div>
               )}
             </div>

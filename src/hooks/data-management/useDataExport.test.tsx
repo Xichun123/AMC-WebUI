@@ -4,13 +4,13 @@ import type { SavedChatSession, UploadedFile } from '@/types';
 import { extractPersistedSessionFileRecords } from '@/utils/chat/session';
 import { useDataExport } from './useDataExport';
 import { useDataImport } from './useDataImport';
-import { renderHook } from '@/test/testUtils';
-import { createAppSettings, createChatSettings } from '@/test/factories';
+import { renderHook } from '@/test/render/renderer';
+import { createAppSettings, createChatSettings } from '@/test/data/factories';
 
 const mockGetAllSessions = vi.fn();
 
 vi.mock('@/services/db/dbService', async () => {
-  const { createDbServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createDbServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createDbServiceMockModule({
     getAllSessions: vi.fn((...args: unknown[]) => mockGetAllSessions(...args)),
@@ -150,5 +150,69 @@ describe('useDataExport history roundtrip', () => {
 
     exportHook.unmount();
     importHook.unmount();
+  });
+
+  it('redacts MCP secrets when exporting settings', async () => {
+    const exportHook = renderHook(() =>
+      useDataExport({
+        appSettings: createAppSettings({
+          mcpServers: [
+            {
+              id: 'remote',
+              name: 'Remote MCP',
+              enabled: true,
+              transport: 'http',
+              url: 'https://mcp.example.com/mcp',
+              headers: {
+                Authorization: 'Bearer legacy-token',
+                'X-Workspace': 'docs',
+              },
+              auth: {
+                type: 'bearer',
+                token: 'structured-token',
+              },
+            },
+            {
+              id: 'stdio',
+              name: 'Stdio MCP',
+              enabled: true,
+              transport: 'stdio',
+              command: 'npx',
+              env: {
+                API_TOKEN: 'stdio-secret',
+              },
+            },
+          ],
+        }),
+        savedGroups: [],
+        savedScenarios: [],
+        t: (key) => key,
+      }),
+    );
+
+    act(() => {
+      exportHook.result.current.handleExportSettings();
+    });
+
+    const exportedBlob = createObjectURLMock.mock.calls[0][0] as Blob;
+    exportedJson = await exportedBlob.text();
+    const exported = JSON.parse(exportedJson) as {
+      settings: {
+        mcpServers: Array<{
+          headers?: Record<string, string>;
+          env?: Record<string, string>;
+          auth?: { type: string; token?: string };
+        }>;
+      };
+    };
+
+    expect(exportedJson).not.toContain('legacy-token');
+    expect(exportedJson).not.toContain('structured-token');
+    expect(exportedJson).not.toContain('stdio-secret');
+    expect(exported.settings.mcpServers[0].headers).toEqual({ 'X-Workspace': 'docs' });
+    expect(exported.settings.mcpServers[0].auth).toEqual({ type: 'bearer' });
+    expect(exported.settings.mcpServers[1].env).toEqual({});
+
+    exportHook.unmount();
   });
 });

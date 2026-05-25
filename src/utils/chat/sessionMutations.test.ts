@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MediaResolution, type SavedChatSession } from '@/types';
-import { createChatSettings, createUploadedFile } from '@/test/factories';
+import { createChatSettings, createUploadedFile } from '@/test/data/factories';
 import { insertMessageAfter, updateFileInMessage, updateMessageInSession, updateSessionById } from './sessionMutations';
 
 const makeSession = (id: string): SavedChatSession => ({

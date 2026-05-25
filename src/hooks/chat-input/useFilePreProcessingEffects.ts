@@ -3,9 +3,9 @@ import { useCallback, useRef, useState, type MutableRefObject, type RefObject } 
 import type { UploadedFile } from '@/types';
 import { generateUniqueId } from '@/utils/chat/ids';
 import { readDirectoryHandle } from '@/utils/import-context/directoryHandleReader';
-import { captureScreenImage } from '@/utils/mediaUtils';
+import { captureScreenImage } from '@/utils/screenCapture';
 import { useI18n } from '@/contexts/I18nContext';
-import { createProcessingPlaceholderFile } from '@/utils/file-upload/fileUploadPolicy';
+import { createProcessingPlaceholderFile, DIRECTORY_PLACEHOLDER_MIME_TYPE } from '@/utils/file-upload/fileUploadPolicy';
 
 type SetSelectedFiles = (files: UploadedFile[] | ((prevFiles: UploadedFile[]) => UploadedFile[])) => void;
 
@@ -67,7 +67,7 @@ export const useFilePreProcessingEffects = ({
 
   const processFolderImport = useCallback(
     async (files: File[] | FileList, emptyDirectoryPaths: string[] = []) => {
-      const fileCount = Array.isArray(files) ? files.length : files.length;
+      const fileCount = files.length;
       if (fileCount === 0 && emptyDirectoryPaths.length === 0) {
         return;
       }
@@ -80,14 +80,14 @@ export const useFilePreProcessingEffects = ({
         createProcessingPlaceholderFile({
           id: tempId,
           name: t('folder_processing'),
-          type: 'application/x-directory',
+          type: DIRECTORY_PLACEHOLDER_MIME_TYPE,
           size: 0,
         }),
       ]);
 
       try {
         justInitiatedFileOpRef.current = true;
-        const { generateFolderContext } = await import('@/utils/folderImportUtils');
+        const { generateFolderContext } = await import('@/utils/import-context/loaders');
         const contextFile = await generateFolderContext(files, {
           emptyDirectoryPaths,
         });

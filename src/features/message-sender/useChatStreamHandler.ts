@@ -14,12 +14,8 @@ import { streamingStore } from '@/services/streamingStore';
 import { buildExactPricingFromUsageMetadata } from '@/utils/usagePricingTelemetry';
 import { resolveChatExactPricing } from '@/utils/chatPricingEvidence';
 import { updateMessageInSession, updateSessionById } from '@/utils/chat/sessionMutations';
-import {
-  createMessageStreamState,
-  getContentDeltaFromPart,
-  mergeUniqueFiles,
-  reduceMessageStreamEvent,
-} from '@/features/chat-streaming/messageStreamReducer';
+import { createMessageStreamState, reduceMessageStreamEvent } from '@/features/chat-streaming/messageStreamReducer';
+import { getContentDeltaFromPart, mergeUniqueFiles } from '@/features/chat-streaming/messageStreamParts';
 import { finishActiveGenerationJob } from './activeGenerationJobs';
 import { buildCompletionNotificationBody, emitCompletionFeedback } from './completionFeedback';
 

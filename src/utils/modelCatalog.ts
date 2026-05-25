@@ -39,7 +39,7 @@ const getCategory = (model: ModelOption): ModelCatalogCategory => {
     return 'tts';
   }
 
-  if (capabilities.isImagenModel) {
+  if (capabilities.isImageGenerationModel) {
     return 'image';
   }
 
@@ -68,7 +68,7 @@ const getBadgeKeys = (model: ModelOption): ModelBadgeKey[] => {
   if (isGeminiRoboticsModel(id)) {
     badges.push('robotics');
   }
-  if (capabilities.isImagenModel) {
+  if (capabilities.isImageGenerationModel) {
     badges.push('image');
   }
   if (capabilities.isGemmaModel) {

@@ -1,19 +1,19 @@
 import { act } from 'react';
-import { setupProviderTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createChatInputActionsContextValue,
   createChatInputComposerStatusContextValue,
-} from '@/test/chatInputContextFixtures';
+} from '@/test/chat-input/contextFixtures';
 
 const attachmentMenuMock = vi.fn();
 const toolsMenuMock = vi.fn();
 const liveControlsMock = vi.fn();
-const utilityControlsMock = vi.fn();
+const auxiliaryButtonsMock = vi.fn();
 const sendControlsMock = vi.fn();
 const mockCapabilities = vi.hoisted(() => ({
   value: {
-    isImagenModel: false,
+    isImageGenerationModel: false,
     isRealImagenModel: false,
     isNativeAudioModel: false,
   },
@@ -62,11 +62,11 @@ vi.mock('./actions/RecordControls', () => ({
   RecordControls: () => null,
 }));
 
-vi.mock('./actions/UtilityControls', () => ({
-  UtilityControls: ({ actions }: { actions: Array<{ id: string; testId?: string; action: () => void }> }) => {
-    utilityControlsMock({ actions });
+vi.mock('./actions/ComposerAuxiliaryButtons', () => ({
+  ComposerAuxiliaryButtons: ({ actions }: { actions: Array<{ id: string; testId?: string; action: () => void }> }) => {
+    auxiliaryButtonsMock({ actions });
     return (
-      <div data-testid="utility-controls">
+      <div data-testid="composer-auxiliary-buttons">
         {actions.map((action) => (
           <button key={action.id} type="button" data-testid={action.testId} onClick={action.action}>
             {action.id}
@@ -145,7 +145,7 @@ describe('ChatInputActions', () => {
   const renderActions = (props: ActionRenderOverrides = {}) => {
     const { actionOverrides, composerOverrides } = splitRenderOverrides(props);
     const actionsValue = createChatInputActionsContextValue({
-      isImageModel: mockCapabilities.value.isImagenModel,
+      isImageGenerationModel: mockCapabilities.value.isImageGenerationModel,
       isRealImagenModel: mockCapabilities.value.isRealImagenModel,
       isNativeAudioModel: mockCapabilities.value.isNativeAudioModel,
       ...actionOverrides,
@@ -208,7 +208,7 @@ describe('ChatInputActions', () => {
 
   beforeEach(() => {
     mockCapabilities.value = {
-      isImagenModel: false,
+      isImageGenerationModel: false,
       isRealImagenModel: false,
       isNativeAudioModel: false,
     };
@@ -216,7 +216,7 @@ describe('ChatInputActions', () => {
     attachmentMenuMock.mockClear();
     toolsMenuMock.mockClear();
     liveControlsMock.mockClear();
-    utilityControlsMock.mockClear();
+    auxiliaryButtonsMock.mockClear();
     sendControlsMock.mockClear();
   });
 
@@ -228,7 +228,7 @@ describe('ChatInputActions', () => {
   it('disables attachments for Imagen models', () => {
     mockCapabilities.value = {
       ...mockCapabilities.value,
-      isImagenModel: true,
+      isImageGenerationModel: true,
       isRealImagenModel: true,
     };
 
@@ -240,7 +240,7 @@ describe('ChatInputActions', () => {
   it('keeps attachments enabled for Gemini image models that support reference images', () => {
     mockCapabilities.value = {
       ...mockCapabilities.value,
-      isImagenModel: true,
+      isImageGenerationModel: true,
       isRealImagenModel: false,
     };
 
@@ -311,7 +311,7 @@ describe('ChatInputActions', () => {
     });
     await waitForActionRowMeasurement();
 
-    expect(utilityControlsMock).toHaveBeenCalledWith(
+    expect(auxiliaryButtonsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         actions: expect.arrayContaining([
           expect.objectContaining({ id: 'fullscreen', action: lastActionsValue.onToggleFullscreen }),
@@ -347,7 +347,7 @@ describe('ChatInputActions', () => {
     });
     await waitForActionRowMeasurement();
 
-    expect(utilityControlsMock).toHaveBeenCalledWith(
+    expect(auxiliaryButtonsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         actions: expect.arrayContaining([
           expect.objectContaining({ id: 'translate', disabled: false }),

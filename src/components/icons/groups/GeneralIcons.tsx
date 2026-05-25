@@ -1,6 +1,6 @@
 import React from 'react';
-import { FolderPlus, History as HistoryIcon, ScrollText, Square, SquarePen } from 'lucide-react';
-import { type IconProps, defaultSize, defaultStroke, defaultColor } from '@/components/icons/iconUtils';
+import { Folders, History as HistoryIcon, ScrollText, Square, SquarePen } from 'lucide-react';
+import { type IconProps, defaultSize, defaultStroke, defaultColor } from '@/components/icons/iconPrimitives';
 
 export const IconNewChat: React.FC<IconProps> = ({
   size = defaultSize,
@@ -15,7 +15,7 @@ export const IconNewGroup: React.FC<IconProps> = ({
   className,
   color = defaultColor,
 }) => (
-  <FolderPlus
+  <Folders
     size={size}
     strokeWidth={strokeWidth}
     className={className}

@@ -7,12 +7,12 @@ import { useWindowContext } from '@/contexts/WindowContext';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
 import { triggerDownload } from '@/utils/export/core';
 import { useClickOutside } from '@/hooks/useClickOutside';
+import { FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS } from '@/constants/focusClasses';
 import {
-  FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS,
   MENU_ITEM_BUTTON_CLASS,
   MENU_ITEM_COMPACT_BUTTON_CLASS,
   MENU_ITEM_DEFAULT_STATE_CLASS,
-} from '@/constants/styleClasses';
+} from '@/constants/menuClasses';
 
 type HastElementLike = {
   properties?: Record<string, unknown>;
@@ -197,21 +197,18 @@ export const TableBlock: React.FC<TableBlockProps> = ({ children, className, nod
     );
   }
 
-  // Default inline view - Enclosed container with floating top-right actions
   return (
     <div
       className={inlineContainerClassName}
       data-rich-html-table-container={isRichHtmlTable || undefined}
       data-table-actions-scope="true"
     >
-      {/* Scrollable Table Container */}
       <div className="overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-[var(--theme-scrollbar-thumb)] scrollbar-track-transparent w-full">
         <table ref={tableRef} className={tableClassName} {...props}>
           {children}
         </table>
       </div>
 
-      {/* Floating Action Buttons */}
       <div className="absolute top-2 right-2 flex gap-1 z-10 opacity-0 pointer-events-none transition-opacity duration-200 group-hover/table:opacity-100 group-hover/table:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto">
         <button
           onClick={handleCopyMarkdown}

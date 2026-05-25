@@ -274,6 +274,8 @@ docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
 | `SITE_AUTH_USERS_JSON`           | 可选站点登录用户表；为空则不启用登录页                                 | **仅服务端**       | 空                                          |
 | `SITE_AUTH_SECRET`               | 站点登录会话签名密钥；启用站点登录时必填                               | **仅服务端**       | 空                                          |
 | `SITE_AUTH_SESSION_DAYS`         | 站点登录会话有效天数                                                   | 仅服务端           | `7`                                         |
+| `ENABLE_MCP_STDIO`               | 启用 `stdio` MCP 服务调用能力                                          | 仅服务端           | `false`                                     |
+| `ENABLE_MCP_PRIVATE_HTTP`        | 允许 API 服务访问内网/本机 HTTP MCP 地址                               | 仅服务端           | `false`                                     |
 | `RUNTIME_SERVER_MANAGED_API`     | 前端默认启用服务端托管 API                                             | **公开运行时配置** | `false`                                     |
 | `RUNTIME_USE_CUSTOM_API_CONFIG`  | 前端默认启用“自定义 API 配置”                                          | 公开运行时配置     | `true`                                      |
 | `RUNTIME_USE_API_PROXY`          | 前端默认启用 API 代理                                                  | 公开运行时配置     | `true`                                      |
@@ -291,6 +293,7 @@ docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d
 - 默认 BYOK 模式只需要在设置界面填写 API Key：普通 Gemini 代理会使用浏览器请求携带的 key；Live API 会使用浏览器本地 key 直接建立官方 Live WebSocket 连接，不再经过 AMC 后端换取临时 token。
 - 如需服务端统一托管普通 Gemini 请求的 key，可配置 `GEMINI_API_KEY` 并将 `RUNTIME_SERVER_MANAGED_API=true`；Live API 仍需要浏览器中可用的 API Key。
 - Vertex 模式不使用浏览器 API Key。应将 `GEMINI_BACKEND=vertex` 与 `RUNTIME_BACKEND_FLAVOR=vertex` 成对配置，并通过 `GOOGLE_APPLICATION_CREDENTIALS` 指向容器内 Service Account JSON。
+- MCP 的 `stdio` 与内网/本机 HTTP 访问默认关闭；仅在可信自托管环境中按需设置 `ENABLE_MCP_STDIO=true` 或 `ENABLE_MCP_PRIVATE_HTTP=true`。
 - OpenAI 兼容模式当前不读取 `RUNTIME_API_PROXY_URL`、`RUNTIME_USE_API_PROXY` 或 `RUNTIME_SERVER_MANAGED_API`；它会直接使用设置里的 OpenAI 兼容 Base URL 和独立 Key 发起 `chat/completions` 请求。如需走你自己的网关，请直接把该网关地址填为 OpenAI 兼容 Base URL。
 - 浏览器本地 key 适合自用/可信部署。它不会因为“保存在本地”而变成服务器密钥，同一浏览器上下文中的脚本、扩展、XSS 或设备风险仍可能读取它。
 - 前端在部署时默认只依赖后端端点：`/api/gemini/*`；Live API 从浏览器直连官方 Live 服务。

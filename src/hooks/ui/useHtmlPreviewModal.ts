@@ -10,7 +10,7 @@ import {
   HTML_PREVIEW_CLEAR_SELECTION_EVENT,
   HTML_PREVIEW_DIAGNOSTIC_EVENT,
   HTML_PREVIEW_MESSAGE_CHANNEL,
-} from '@/utils/htmlPreview';
+} from '@/utils/html-preview/previewDocument';
 import { useI18n } from '@/contexts/I18nContext';
 import { normalizeLiveArtifactFollowupPayload, type LiveArtifactFollowupPayload } from '@/utils/liveArtifactFollowup';
 import {

@@ -15,12 +15,12 @@ interface ContextUrlsProps {
 }
 
 const getStatusIcon = (status?: string) => {
-  const s = status?.toUpperCase();
-  if (s === 'URL_RETRIEVAL_STATUS_SUCCESS' || s === 'SUCCESS')
+  const normalizedStatus = status?.toUpperCase();
+  if (normalizedStatus === 'URL_RETRIEVAL_STATUS_SUCCESS' || normalizedStatus === 'SUCCESS')
     return <CheckCircle size={12} className="text-green-500" />;
-  if (s === 'URL_RETRIEVAL_STATUS_UNSAFE' || s === 'UNSAFE')
+  if (normalizedStatus === 'URL_RETRIEVAL_STATUS_UNSAFE' || normalizedStatus === 'UNSAFE')
     return <AlertTriangle size={12} className="text-red-500" />;
-  if (s === 'URL_RETRIEVAL_STATUS_FAILED' || s === 'FAILED')
+  if (normalizedStatus === 'URL_RETRIEVAL_STATUS_FAILED' || normalizedStatus === 'FAILED')
     return <AlertTriangle size={12} className="text-orange-500" />;
   return <Globe size={12} className="text-gray-400" />;
 };
@@ -45,14 +45,14 @@ export const ContextUrls: React.FC<ContextUrlsProps> = ({ metadata }) => {
         </h4>
       </div>
       <div className="flex flex-wrap gap-2">
-        {items.map((item, i) => {
+        {items.map((item, itemIndex) => {
           const url = item.retrievedUrl || item.retrieved_url || '';
           const status = item.urlRetrievalStatus || item.url_retrieval_status;
           if (!url) return null;
 
           return (
             <a
-              key={`context-${i}`}
+              key={`context-${itemIndex}`}
               href={url}
               target="_blank"
               rel="noopener noreferrer"

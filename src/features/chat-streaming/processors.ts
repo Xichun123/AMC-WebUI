@@ -3,10 +3,6 @@ import type { UsageMetadata } from '@google/genai';
 import { getTranslator } from '@/i18n/translations';
 import { calculateTokenStats } from '@/utils/modelUsageStats';
 
-import { appendApiPart } from './messageStreamReducer';
-
-export { appendApiPart };
-
 interface FinalizeMessagesOptions {
   messages: ChatMessage[];
   generationStartTime: Date;

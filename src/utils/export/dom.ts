@@ -184,26 +184,21 @@ export const prepareElementForExport = async (
 ): Promise<HTMLElement> => {
   const { expandDetails = true } = options;
 
-  // 1. Clone the container
   const clone = sourceElement.cloneNode(true) as HTMLElement;
 
-  // 2. Fix Layout/Virtualization Artifacts
-  // Ensure the container itself can grow to fit content
+  // Normalize virtualization offsets before snapshotting.
   clone.style.height = 'auto';
   clone.style.overflow = 'visible';
   clone.style.maxHeight = 'none';
 
-  // Locate and fix the inner list wrapper which often has large padding-top from virtualization
   const potentialLists = Array.from(clone.children) as HTMLElement[];
   potentialLists.forEach((child) => {
-    // Reset common virtualization offset techniques to ensure content starts at the top
     if (child.style.paddingTop) child.style.paddingTop = '0px';
     if (child.style.marginTop) child.style.marginTop = '0px';
     if (child.style.transform) child.style.transform = 'none';
     if (child.style.position === 'absolute') child.style.position = 'static';
   });
 
-  // 3. Clean UI elements that shouldn't be in the export
   const selectorsToRemove = [
     'button',
     '.message-actions',
@@ -216,7 +211,6 @@ export const prepareElementForExport = async (
   ];
   clone.querySelectorAll(selectorsToRemove.join(',')).forEach((el) => el.remove());
 
-  // 4. Reset styles that might interfere with static export
   clone.querySelectorAll('[data-message-id]').forEach((el) => {
     (el as HTMLElement).style.animation = 'none';
     (el as HTMLElement).style.opacity = '1';
@@ -224,30 +218,20 @@ export const prepareElementForExport = async (
   });
 
   if (expandDetails) {
-    // Image Export Specifics
-
-    // 5a. Remove thought process blocks entirely (as requested)
     clone.querySelectorAll('.message-thoughts-block').forEach((el) => el.remove());
 
-    // 5b. Remove code block expansion controls
     clone.querySelectorAll('.code-block-expand-overlay').forEach((el) => el.remove());
 
-    // 5c. Force expand all code blocks (show full content)
     clone.querySelectorAll('pre').forEach((el) => {
       (el as HTMLElement).style.maxHeight = 'none';
       (el as HTMLElement).style.height = 'auto';
       (el as HTMLElement).style.overflow = 'visible';
     });
 
-    // 5d. Expand other native details elements so they are visible in snapshot
     clone.querySelectorAll('details').forEach((el) => el.setAttribute('open', 'true'));
   } else {
-    // HTML Export Specifics
-
-    // 5. Ensure native details are collapsed by default (remove 'open' if present from clone)
     clone.querySelectorAll('details').forEach((el) => el.removeAttribute('open'));
 
-    // 6. Convert custom thought accordions to native details for interactive collapse/expand
     clone.querySelectorAll('.thought-process-accordion').forEach((accordion) => {
       const parent = accordion.parentElement;
       if (!parent) return;
@@ -255,33 +239,28 @@ export const prepareElementForExport = async (
       const header = parent.firstElementChild as HTMLElement;
       if (!header || header === accordion) return;
 
-      // Create new <details> structure
       const details = document.createElement('details');
-      details.className = parent.className; // Preserve layout styling
+      details.className = parent.className;
 
       const summary = document.createElement('summary');
       summary.className = header.className;
       summary.style.cursor = 'pointer';
       summary.style.listStyle = 'none';
 
-      // Hide default webkit marker
       const style = document.createElement('style');
       style.textContent = 'summary::-webkit-details-marker { display: none; }';
       summary.appendChild(style);
 
-      // Move header content to summary
       while (header.firstChild) {
         summary.appendChild(header.firstChild);
       }
 
-      // Fix Chevron Rotation logic: Replace fixed state with group-open modifier
       const svg = summary.querySelector('svg');
       if (svg && svg.classList.contains('transition-transform')) {
-        svg.classList.remove('rotate-180'); // Ensure start closed
-        svg.classList.add('group-open:rotate-180'); // Use Tailwind peer/group modifier for native state
+        svg.classList.remove('rotate-180');
+        svg.classList.add('group-open:rotate-180');
       }
 
-      // Move Content
       const inner = accordion.querySelector('.thought-process-inner') || accordion;
       const contentWrapper = document.createElement('div');
       contentWrapper.className = inner.className;

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import { projectRoot } from './projectFiles';
 
-const projectRoot = path.resolve(__dirname, '../../..');
 const animationsPath = path.join(projectRoot, 'src/styles/animations.css');
 const mainCssPath = path.join(projectRoot, 'src/styles/main.css');
 const historySidebarPath = path.join(projectRoot, 'src/components/sidebar/HistorySidebar.tsx');

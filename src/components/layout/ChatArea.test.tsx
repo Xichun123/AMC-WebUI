@@ -1,12 +1,12 @@
 import React, { act } from 'react';
-import { setupTestRenderer } from '@/test/testUtils';
-import { setTestMatchMedia } from '@/test/browserEnvironment';
+import { setupTestRenderer } from '@/test/render/renderer';
+import { setTestMatchMedia } from '@/test/browser/environment';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createChatAreaProviderValue,
   applyChatAreaProviderValue,
   ChatRuntimeTestProvider,
-} from '@/test/chatAreaFixtures';
+} from '@/test/chat-area/fixtures';
 import { useChatStore } from '@/stores/chatStore';
 import { ChatArea } from './ChatArea';
 

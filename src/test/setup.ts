@@ -4,7 +4,7 @@ import 'fake-indexeddb/auto';
 import { afterEach } from 'vitest';
 import { ensureAllFeatureTranslations } from '@/i18n/translations';
 
-import { installBrowserTestEnvironment, resetBrowserTestEnvironment } from './browserEnvironment';
+import { installBrowserTestEnvironment, resetBrowserTestEnvironment } from './browser/environment';
 
 // installBrowserTestEnvironment centralizes IS_REACT_ACT_ENVIRONMENT and browser API shims.
 installBrowserTestEnvironment();

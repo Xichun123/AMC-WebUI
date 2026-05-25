@@ -1,14 +1,14 @@
 import {
   EXTENSION_TO_MIME,
-  ALL_SUPPORTED_MIME_TYPES,
   SUPPORTED_IMAGE_MIME_TYPES,
   SUPPORTED_PDF_MIME_TYPES,
   SUPPORTED_AUDIO_MIME_TYPES,
   SUPPORTED_VIDEO_MIME_TYPES,
-} from '@/constants/fileConstants';
+  SUPPORTED_UPLOAD_MIME_TYPES,
+} from '@/constants/fileTypeSupport';
 import { type AppSettings, type FilesApiConfig, type UploadedFile } from '@/types';
 import { CODE_EXECUTION_TEXT_FILE_LIMIT_BYTES, isServerCodeExecutionMode } from '@/utils/codeExecution';
-import { isTextFile } from '@/utils/fileTypeUtils';
+import { isTextFile } from '@/utils/fileTypeClassification';
 import { getTranslator } from '@/i18n/translations';
 
 type Translator = ReturnType<typeof getTranslator>;
@@ -16,6 +16,8 @@ type Translator = ReturnType<typeof getTranslator>;
 const INLINE_MAX_REQUEST_PAYLOAD_BYTES = 100 * 1024 * 1024;
 const INLINE_MAX_PDF_PAYLOAD_BYTES = 50 * 1024 * 1024;
 const INLINE_PART_JSON_OVERHEAD_BYTES = 512;
+
+export const DIRECTORY_PLACEHOLDER_MIME_TYPE = 'application/x-directory';
 
 const getFileSignature = (file: Pick<File, 'name' | 'size'>) => `${file.name.toLowerCase()}::${file.size}`;
 
@@ -58,7 +60,7 @@ export const getEffectiveMimeType = (file: File): string => {
     return mappedMimeType;
   }
 
-  if (effectiveMimeType && ALL_SUPPORTED_MIME_TYPES.includes(effectiveMimeType)) {
+  if (effectiveMimeType && SUPPORTED_UPLOAD_MIME_TYPES.includes(effectiveMimeType)) {
     return effectiveMimeType;
   }
 
@@ -111,7 +113,7 @@ export const getUploadLifecycleForGeminiState = (
 
 export const shouldUseFileApi = (file: File, appSettings: AppSettings): boolean => {
   const effectiveMimeType = getEffectiveMimeType(file);
-  if (!ALL_SUPPORTED_MIME_TYPES.includes(effectiveMimeType)) return false;
+  if (!SUPPORTED_UPLOAD_MIME_TYPES.includes(effectiveMimeType)) return false;
   const isServerCodeExecutionEnabled = isServerCodeExecutionMode(appSettings);
   const isTextLike = isTextFile(file);
 
@@ -141,7 +143,7 @@ export const getFilesRequiringFileApi = (files: File[], appSettings: AppSettings
 
   for (const file of files) {
     const effectiveMimeType = getEffectiveMimeType(file);
-    if (!ALL_SUPPORTED_MIME_TYPES.includes(effectiveMimeType)) continue;
+    if (!SUPPORTED_UPLOAD_MIME_TYPES.includes(effectiveMimeType)) continue;
 
     if (shouldUseFileApi(file, appSettings)) {
       filesRequiringApi.add(file);
@@ -190,7 +192,7 @@ export const buildFileUploadPreflight = (
     filesToUpload.push(file);
 
     const effectiveMimeType = getEffectiveMimeType(file);
-    if (!ALL_SUPPORTED_MIME_TYPES.includes(effectiveMimeType)) {
+    if (!SUPPORTED_UPLOAD_MIME_TYPES.includes(effectiveMimeType)) {
       unsupportedNames.push(file.name);
     }
   }

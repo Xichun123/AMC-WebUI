@@ -1,9 +1,10 @@
 import { z } from 'zod';
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import {
   type AppSettings,
   type FilesApiConfig,
   type LiveArtifactsSystemPrompts,
+  type McpServerConfig,
   type ModelOption,
   type SafetySetting,
   HarmBlockThreshold,
@@ -156,6 +157,109 @@ const sanitizeTabModelCycleIds = (value: unknown, fallback: string[] | undefined
   return ids.length > 0 ? ids : fallback;
 };
 
+const sanitizeStringRecord = (value: unknown): Record<string, string> | undefined => {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const entries = Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === 'string');
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+};
+
+const sanitizeMcpAuth = (value: unknown): McpServerConfig['auth'] | undefined => {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  if (value.type === 'none' || value.type === 'customHeaders') {
+    return { type: value.type };
+  }
+
+  if (value.type === 'bearer') {
+    const token = typeof value.token === 'string' ? value.token.trim() : '';
+    return {
+      type: 'bearer',
+      ...(token ? { token } : {}),
+    };
+  }
+
+  return undefined;
+};
+
+const sanitizeStringArray = (value: unknown): string[] | undefined => {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+
+  const strings = value.filter((item): item is string => typeof item === 'string');
+  return strings.length > 0 ? strings : undefined;
+};
+
+const isValidMcpHttpUrl = (value: string): boolean => {
+  try {
+    const parsedUrl = new URL(value);
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
+const sanitizeMcpServers = (value: unknown, fallback: McpServerConfig[]): McpServerConfig[] => {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  const servers = value.flatMap((item): McpServerConfig[] => {
+    if (!isRecord(item)) {
+      return [];
+    }
+
+    const id = typeof item.id === 'string' ? item.id.trim() : '';
+    const name = typeof item.name === 'string' ? item.name.trim() : '';
+    const transport = item.transport;
+    if (!id || !name || (transport !== 'stdio' && transport !== 'http')) {
+      return [];
+    }
+
+    const server: McpServerConfig = {
+      id,
+      name,
+      enabled: item.enabled === true,
+      transport,
+    };
+
+    if (transport === 'stdio') {
+      const command = typeof item.command === 'string' ? item.command.trim() : '';
+      if (!command) {
+        return [];
+      }
+
+      server.command = command;
+      const args = sanitizeStringArray(item.args);
+      const env = sanitizeStringRecord(item.env);
+      if (args) server.args = args;
+      if (env) server.env = env;
+    }
+
+    if (transport === 'http') {
+      const url = typeof item.url === 'string' ? item.url.trim() : '';
+      if (!url || !isValidMcpHttpUrl(url)) {
+        return [];
+      }
+
+      server.url = url;
+      const headers = sanitizeStringRecord(item.headers);
+      const auth = sanitizeMcpAuth(item.auth);
+      if (headers) server.headers = headers;
+      if (auth) server.auth = auth;
+    }
+
+    return [server];
+  });
+
+  return servers;
+};
+
 const normalizeLegacyAppSettingsInput = (value: unknown): Record<string, unknown> => {
   const settings = isRecord(value) ? { ...value } : {};
 
@@ -242,6 +346,11 @@ const appSettingsSchema: z.ZodType<AppSettings> = z.object({
   showInputClearButton: optionalBooleanWithDefault(DEFAULT_APP_SETTINGS.showInputClearButton),
   isCopySelectionFormattingEnabled: optionalBooleanWithDefault(DEFAULT_APP_SETTINGS.isCopySelectionFormattingEnabled),
   isSystemAudioRecordingEnabled: optionalBooleanWithDefault(DEFAULT_APP_SETTINGS.isSystemAudioRecordingEnabled),
+  mcpServers: z
+    .unknown()
+    .optional()
+    .transform((value) => sanitizeMcpServers(value, DEFAULT_APP_SETTINGS.mcpServers))
+    .default(DEFAULT_APP_SETTINGS.mcpServers),
   customShortcuts: z
     .unknown()
     .optional()

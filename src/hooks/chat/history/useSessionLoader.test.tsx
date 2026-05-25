@@ -24,13 +24,13 @@ const {
 }));
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });
 
 vi.mock('@/services/db/dbService', async () => {
-  const { createDbServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createDbServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createDbServiceMockModule({ getSession: mockGetSession });
 });
@@ -40,7 +40,7 @@ vi.mock('@/utils/chat/session', () => ({
   rehydrateSessionFiles: mockRehydrateSessionFiles,
 }));
 
-vi.mock('@/utils/fileHelpers', () => ({
+vi.mock('@/utils/filePreviewUrls', () => ({
   cleanupFilePreviewUrls: mockCleanupFilePreviewUrls,
 }));
 
@@ -50,9 +50,9 @@ vi.mock('@/utils/modelSorting', () => ({
 
 import { useSessionLoader } from './useSessionLoader';
 import { dbService } from '@/services/db/dbService';
-import { createChatMessage, createChatSettings, createSavedChatSession } from '@/test/factories';
-import { createSessionLoaderProps, type SessionLoaderPropsOverrides } from '@/test/hookFactories';
-import { createDeferred, flushPromises, renderHook } from '@/test/testUtils';
+import { createChatMessage, createChatSettings, createSavedChatSession } from '@/test/data/factories';
+import { createSessionLoaderProps, type SessionLoaderPropsOverrides } from '@/test/hooks/factories';
+import { createDeferred, flushPromises, renderHook } from '@/test/render/renderer';
 
 const createSession = (id: string, title: string): SavedChatSession =>
   createSavedChatSession({

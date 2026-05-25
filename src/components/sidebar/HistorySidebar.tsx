@@ -8,7 +8,7 @@ import { GroupItem, type SessionItemPassedProps } from './GroupItem';
 import { CollapsedRecentChatsButton } from './CollapsedRecentChatsButton';
 import { Search, Settings } from 'lucide-react';
 import { IconNewChat, IconSidebarToggle } from '@/components/icons';
-import { useHistorySidebarLogic } from '@/hooks/useHistorySidebarLogic';
+import { useHistorySidebarLogic } from './useHistorySidebarLogic';
 import { SIDEBAR_CLICKABLE_ICON_BUTTON_CLASS, SIDEBAR_ICON_LINK_BUTTON_CLASS } from './sidebarStyles';
 import { LimitedSessionList } from './LimitedSessionList';
 

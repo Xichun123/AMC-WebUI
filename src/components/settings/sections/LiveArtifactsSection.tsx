@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { ChevronDown, RotateCcw, Wand2 } from 'lucide-react';
 import { Select } from '@/components/shared/Select';
-import { SETTINGS_INPUT_CLASS } from '@/constants/styleClasses';
-import { loadLiveArtifactsSystemPrompt } from '@/constants/promptHelpers';
+import { SETTINGS_INPUT_CLASS } from '@/constants/formClasses';
+import { loadLiveArtifactsSystemPrompt, resolveLiveArtifactsPromptTheme } from '@/features/prompts/promptRegistry';
 import {
   getLiveArtifactsSystemPromptValue,
   updateLiveArtifactsSystemPromptForMode,
@@ -13,15 +13,21 @@ import type { SettingsUpdateHandler } from '@/components/settings/settingsTypes'
 
 interface LiveArtifactsSectionProps {
   currentSettings: AppSettings;
+  currentThemeId: string;
   onUpdateSetting: SettingsUpdateHandler;
 }
 
-export const LiveArtifactsSection: React.FC<LiveArtifactsSectionProps> = ({ currentSettings, onUpdateSetting }) => {
+export const LiveArtifactsSection: React.FC<LiveArtifactsSectionProps> = ({
+  currentSettings,
+  currentThemeId,
+  onUpdateSetting,
+}) => {
   const { language, t } = useI18n();
   const [isPromptExpanded, setIsPromptExpanded] = useState(false);
   const [builtInPromptState, setBuiltInPromptState] = useState({ key: '', value: '' });
   const liveArtifactsPromptMode = currentSettings.liveArtifactsPromptMode ?? 'inline';
-  const builtInPromptKey = `${language}:${liveArtifactsPromptMode}`;
+  const liveArtifactsPromptTheme = resolveLiveArtifactsPromptTheme(currentThemeId);
+  const builtInPromptKey = `${language}:${liveArtifactsPromptMode}:${liveArtifactsPromptTheme ?? 'default'}`;
   const customLiveArtifactsSystemPrompt = getLiveArtifactsSystemPromptValue(currentSettings, liveArtifactsPromptMode);
   const hasCustomLiveArtifactsSystemPrompt = !!customLiveArtifactsSystemPrompt.trim();
   const builtInPrompt = builtInPromptState.key === builtInPromptKey ? builtInPromptState.value : '';
@@ -32,7 +38,11 @@ export const LiveArtifactsSection: React.FC<LiveArtifactsSectionProps> = ({ curr
   useEffect(() => {
     let isStale = false;
 
-    loadLiveArtifactsSystemPrompt(language, liveArtifactsPromptMode)
+    const promptPromise = liveArtifactsPromptTheme
+      ? loadLiveArtifactsSystemPrompt(language, liveArtifactsPromptMode, liveArtifactsPromptTheme)
+      : loadLiveArtifactsSystemPrompt(language, liveArtifactsPromptMode);
+
+    promptPromise
       .then((prompt) => {
         if (!isStale) {
           setBuiltInPromptState({ key: builtInPromptKey, value: prompt });
@@ -47,7 +57,7 @@ export const LiveArtifactsSection: React.FC<LiveArtifactsSectionProps> = ({ curr
     return () => {
       isStale = true;
     };
-  }, [builtInPromptKey, language, liveArtifactsPromptMode]);
+  }, [builtInPromptKey, language, liveArtifactsPromptMode, liveArtifactsPromptTheme]);
 
   const updatePromptForCurrentMode = (prompt: string) => {
     onUpdateSetting('liveArtifactsSystemPrompt', '');

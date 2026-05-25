@@ -1,10 +1,10 @@
 import { act } from 'react';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { setupStoreStateReset } from '@/test/storeTestUtils';
+import { setupStoreStateReset } from '@/test/stores/reset';
 import { AboutSection } from './AboutSection';
 
 describe('AboutSection', () => {

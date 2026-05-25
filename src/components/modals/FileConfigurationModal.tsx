@@ -5,7 +5,7 @@ import { FileConfigHeader } from './file-config/FileConfigHeader';
 import { ResolutionConfig } from './file-config/ResolutionConfig';
 import { VideoConfig } from './file-config/VideoConfig';
 import { FileConfigFooter } from './file-config/FileConfigFooter';
-import { getFileKindFlags } from '@/utils/fileTypeUtils';
+import { getFileKindFlags } from '@/utils/fileTypeClassification';
 
 interface FileConfigurationModalProps {
   isOpen: boolean;
@@ -29,6 +29,56 @@ const buildDraft = (file: UploadedFile): FileConfigurationDraft => ({
   mediaResolution: file.mediaResolution || '',
 });
 
+const SECONDS_DURATION_PATTERN = /^\d+(?:\.\d{1,9})?s$/;
+const SECONDS_INPUT_PATTERN = /^\d+(?:\.\d{1,9})?$/;
+const TIMESTAMP_SECONDS_PATTERN = /^(\d+)(\.\d{1,9})?$/;
+
+const normalizeTimestampOffset = (value: string): string | undefined => {
+  const segments = value.split(':');
+  if (segments.length !== 2 && segments.length !== 3) {
+    return undefined;
+  }
+
+  const secondsMatch = segments[segments.length - 1].match(TIMESTAMP_SECONDS_PATTERN);
+  if (!secondsMatch) {
+    return undefined;
+  }
+
+  const leadingSegments = segments.slice(0, -1);
+  if (!leadingSegments.every((segment) => /^\d+$/.test(segment))) {
+    return undefined;
+  }
+
+  const boundedSegments = segments.length === 3 ? leadingSegments.slice(1) : [];
+  if (boundedSegments.some((segment) => Number(segment) >= 60)) {
+    return undefined;
+  }
+
+  const secondsWhole = Number(secondsMatch[1]);
+  if (secondsWhole >= 60) {
+    return undefined;
+  }
+
+  const hours = segments.length === 3 ? Number(segments[0]) : 0;
+  const minutes = Number(segments[segments.length - 2]);
+  const wholeSeconds = hours * 3600 + minutes * 60 + secondsWhole;
+
+  return `${wholeSeconds}${secondsMatch[2] || ''}s`;
+};
+
+const normalizeDurationOffset = (value: string): string | undefined => {
+  const trimmedValue = value.trim();
+  if (!trimmedValue) return undefined;
+  if (SECONDS_DURATION_PATTERN.test(trimmedValue)) return trimmedValue;
+  if (SECONDS_INPUT_PATTERN.test(trimmedValue)) return `${trimmedValue}s`;
+  return normalizeTimestampOffset(trimmedValue);
+};
+
+const normalizeVideoFps = (value: string): number | undefined => {
+  const fps = Number(value.trim());
+  return Number.isFinite(fps) && fps > 0 && fps <= 24 ? fps : undefined;
+};
+
 type FileConfigurationModalContentProps = Omit<FileConfigurationModalProps, 'file'> & {
   file: UploadedFile;
 };
@@ -48,16 +98,9 @@ const FileConfigurationModalContent: React.FC<FileConfigurationModalContentProps
     const updates: { videoMetadata?: VideoMetadata; mediaResolution?: MediaResolution } = {};
 
     if (supportsVideoConfiguration) {
-      const normalize = (value: string) => {
-        const trimmedValue = value.trim();
-        if (!trimmedValue) return undefined;
-        if (/^\d+$/.test(trimmedValue)) return `${trimmedValue}s`;
-        return trimmedValue;
-      };
-
       const metadata: VideoMetadata = {};
-      const normalizedStartOffset = normalize(draft.startOffset);
-      const normalizedEndOffset = normalize(draft.endOffset);
+      const normalizedStartOffset = normalizeDurationOffset(draft.startOffset);
+      const normalizedEndOffset = normalizeDurationOffset(draft.endOffset);
 
       if (normalizedStartOffset) {
         metadata.startOffset = normalizedStartOffset;
@@ -67,9 +110,9 @@ const FileConfigurationModalContent: React.FC<FileConfigurationModalContentProps
         metadata.endOffset = normalizedEndOffset;
       }
 
-      const fpsNum = parseFloat(draft.fps);
-      if (!isNaN(fpsNum) && fpsNum > 0) {
-        metadata.fps = fpsNum;
+      const normalizedFps = normalizeVideoFps(draft.fps);
+      if (normalizedFps) {
+        metadata.fps = normalizedFps;
       }
 
       if (Object.keys(metadata).length > 0) {

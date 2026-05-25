@@ -1,16 +1,17 @@
 import { logService } from '@/services/logService';
-import React, { Suspense, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Virtuoso } from 'react-virtuoso';
 import { Message } from '@/components/message/Message';
 import { WelcomeScreen } from './message-list/WelcomeScreen';
 import { ScrollNavigation } from './message-list/ScrollNavigation';
 import { TextSelectionToolbar } from './message-list/TextSelectionToolbar';
-import { useMessageListUi } from '@/hooks/useMessageListUi';
+import { useMessageListUi } from './message-list/hooks/useMessageListUi';
 import { useMessageListScroll } from './message-list/hooks/useMessageListScroll';
 import { MessageListFooter } from './message-list/MessageListFooter';
+import { MessageListModals } from './message-list/MessageListModals';
 import { isGemini3Model } from '@/utils/modelCapabilities';
 import { getVisibleChatMessages } from '@/utils/chat/visibility';
-import { isMarkdownFile } from '@/utils/fileTypeUtils';
+import { isMarkdownFile } from '@/utils/fileTypeClassification';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useChatStore } from '@/stores/chatStore';
 import { useUIStore } from '@/stores/uiStore';
@@ -18,24 +19,6 @@ import { useChatState } from '@/hooks/chat/useChatState';
 import { useChatInputRuntime, useChatMessageListRuntime } from '@/components/layout/chat-runtime/ChatRuntimeContext';
 import { useI18n } from '@/contexts/I18nContext';
 import { formatLiveArtifactFollowupPrompt, type LiveArtifactFollowupPayload } from '@/utils/liveArtifactFollowup';
-import { lazyNamedComponent } from '@/utils/lazyNamedComponent';
-
-const LazyHtmlPreviewModal = lazyNamedComponent(
-  () => import('@/components/modals/HtmlPreviewModal'),
-  'HtmlPreviewModal',
-);
-const LazyFilePreviewModal = lazyNamedComponent(
-  () => import('@/components/modals/FilePreviewModal'),
-  'FilePreviewModal',
-);
-const LazyMarkdownPreviewModal = lazyNamedComponent(
-  () => import('@/components/modals/MarkdownPreviewModal'),
-  'MarkdownPreviewModal',
-);
-const LazyFileConfigurationModal = lazyNamedComponent(
-  () => import('@/components/modals/FileConfigurationModal'),
-  'FileConfigurationModal',
-);
 
 const MessageListComponent: React.FC = () => {
   const appSettings = useSettingsStore((state) => state.appSettings);
@@ -123,6 +106,61 @@ const MessageListComponent: React.FC = () => {
   const markdownPreviewFile = previewFile && isMarkdownFile(previewFile) ? previewFile : null;
   const genericPreviewFile = previewFile && !isMarkdownFile(previewFile) ? previewFile : null;
   const followOutput = React.useCallback((isAtBottom: boolean) => (isAtBottom ? 'auto' : false), []);
+  const VirtuosoFooter = React.useCallback(
+    () => <MessageListFooter messages={visibleMessages} chatInputHeight={chatInputHeight} />,
+    [chatInputHeight, visibleMessages],
+  );
+  const virtuosoComponents = React.useMemo(
+    () => ({
+      Footer: VirtuosoFooter,
+    }),
+    [VirtuosoFooter],
+  );
+  const renderMessageItem = React.useCallback(
+    (index: number, msg: (typeof visibleMessages)[number]) => (
+      <div className="px-1.5 sm:px-2 md:px-3 max-w-7xl mx-auto w-full">
+        <Message
+          key={msg.id}
+          message={msg}
+          sessionTitle={sessionTitle}
+          prevMessage={index > 0 ? visibleMessages[index - 1] : undefined}
+          messageIndex={index}
+          onEditMessage={onEditMessage}
+          onDeleteMessage={onDeleteMessage}
+          onRetryMessage={onRetryMessage}
+          onImageClick={handleFileClick}
+          onOpenHtmlPreview={handleOpenHtmlPreview}
+          onLiveArtifactFollowUp={handleLiveArtifactFollowUp}
+          showThoughts={currentChatSettings.showThoughts}
+          onContinueGeneration={onContinueGeneration}
+          onForkMessage={onForkMessage}
+          onSuggestionClick={onFollowUpSuggestionClick}
+          onSuggestionFill={onFollowUpSuggestionFill}
+          onOpenSidePanel={onOpenSidePanel}
+          onConfigureFile={msg.role === 'user' ? handleConfigureFile : undefined}
+          isGemini3={isGemini3}
+        />
+      </div>
+    ),
+    [
+      currentChatSettings.showThoughts,
+      handleConfigureFile,
+      handleFileClick,
+      handleLiveArtifactFollowUp,
+      handleOpenHtmlPreview,
+      isGemini3,
+      onContinueGeneration,
+      onDeleteMessage,
+      onEditMessage,
+      onFollowUpSuggestionClick,
+      onFollowUpSuggestionFill,
+      onForkMessage,
+      onOpenSidePanel,
+      onRetryMessage,
+      sessionTitle,
+      visibleMessages,
+    ],
+  );
 
   return (
     <>
@@ -144,34 +182,8 @@ const MessageListComponent: React.FC = () => {
             increaseViewportBy={{ top: 800, bottom: 800 }}
             className="custom-scrollbar chat-message-list-scroller"
             onScroll={handleScroll}
-            components={{
-              Footer: () => <MessageListFooter messages={visibleMessages} chatInputHeight={chatInputHeight} />,
-            }}
-            itemContent={(index, msg) => (
-              <div className="px-1.5 sm:px-2 md:px-3 max-w-7xl mx-auto w-full">
-                <Message
-                  key={msg.id}
-                  message={msg}
-                  sessionTitle={sessionTitle}
-                  prevMessage={index > 0 ? visibleMessages[index - 1] : undefined}
-                  messageIndex={index}
-                  onEditMessage={onEditMessage}
-                  onDeleteMessage={onDeleteMessage}
-                  onRetryMessage={onRetryMessage}
-                  onImageClick={handleFileClick}
-                  onOpenHtmlPreview={handleOpenHtmlPreview}
-                  onLiveArtifactFollowUp={handleLiveArtifactFollowUp}
-                  showThoughts={currentChatSettings.showThoughts}
-                  onContinueGeneration={onContinueGeneration}
-                  onForkMessage={onForkMessage}
-                  onSuggestionClick={onFollowUpSuggestionClick}
-                  onSuggestionFill={onFollowUpSuggestionFill}
-                  onOpenSidePanel={onOpenSidePanel}
-                  onConfigureFile={msg.role === 'user' ? handleConfigureFile : undefined}
-                  isGemini3={isGemini3}
-                />
-              </div>
-            )}
+            components={virtuosoComponents}
+            itemContent={renderMessageItem}
           />
         )}
 
@@ -193,48 +205,24 @@ const MessageListComponent: React.FC = () => {
         />
       </div>
 
-      {genericPreviewFile && (
-        <Suspense fallback={null}>
-          <LazyFilePreviewModal
-            file={genericPreviewFile}
-            onClose={closeFilePreviewModal}
-            onPrev={handlePrevImage}
-            onNext={handleNextImage}
-            hasPrev={currentImageIndex > 0}
-            hasNext={currentImageIndex !== -1 && currentImageIndex < allImages.length - 1}
-          />
-        </Suspense>
-      )}
-
-      {markdownPreviewFile && (
-        <Suspense fallback={null}>
-          <LazyMarkdownPreviewModal file={markdownPreviewFile} onClose={closeFilePreviewModal} />
-        </Suspense>
-      )}
-
-      {isHtmlPreviewModalOpen && htmlToPreview !== null && (
-        <Suspense fallback={null}>
-          <LazyHtmlPreviewModal
-            isOpen={isHtmlPreviewModalOpen}
-            onClose={handleCloseHtmlPreview}
-            htmlContent={htmlToPreview}
-            initialTrueFullscreenRequest={initialTrueFullscreenRequest}
-            onLiveArtifactFollowUp={handleLiveArtifactFollowUp}
-          />
-        </Suspense>
-      )}
-
-      {configuringFile && (
-        <Suspense fallback={null}>
-          <LazyFileConfigurationModal
-            isOpen={!!configuringFile}
-            onClose={() => setConfiguringFile(null)}
-            file={configuringFile.file}
-            onSave={handleSaveFileConfig}
-            isGemini3={isGemini3}
-          />
-        </Suspense>
-      )}
+      <MessageListModals
+        genericPreviewFile={genericPreviewFile}
+        markdownPreviewFile={markdownPreviewFile}
+        closeFilePreviewModal={closeFilePreviewModal}
+        handlePrevImage={handlePrevImage}
+        handleNextImage={handleNextImage}
+        currentImageIndex={currentImageIndex}
+        imageCount={allImages.length}
+        isHtmlPreviewModalOpen={isHtmlPreviewModalOpen}
+        htmlToPreview={htmlToPreview}
+        initialTrueFullscreenRequest={initialTrueFullscreenRequest}
+        handleCloseHtmlPreview={handleCloseHtmlPreview}
+        handleLiveArtifactFollowUp={handleLiveArtifactFollowUp}
+        configuringFile={configuringFile}
+        setConfiguringFile={setConfiguringFile}
+        handleSaveFileConfig={handleSaveFileConfig}
+        isGemini3={isGemini3}
+      />
     </>
   );
 };

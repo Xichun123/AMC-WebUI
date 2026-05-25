@@ -1,9 +1,9 @@
 import { act } from 'react';
-import { setupTestRenderer } from '@/test/testUtils';
+import { setupTestRenderer } from '@/test/render/renderer';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ChatMessage } from '@/types';
-import { createChatAreaProviderValue } from '@/test/chatAreaFixtures';
-import { createUploadedFile } from '@/test/factories';
+import { createChatAreaProviderValue } from '@/test/chat-area/fixtures';
+import { createUploadedFile } from '@/test/data/factories';
 
 const file = createUploadedFile({
   name: 'demo.png',
@@ -50,7 +50,7 @@ const loadMessageList = async (moduleLoadTracker: { count: number }) => {
     createMessagePreviewButtonMock,
     createNullComponentMock,
     createVirtuosoMock,
-  } = await import('@/test/messageListTestDoubles');
+  } = await import('@/test/message-list/doubles');
 
   vi.doMock('react-virtuoso', () => createVirtuosoMock<ChatMessage>());
 
@@ -77,7 +77,7 @@ const loadMessageList = async (moduleLoadTracker: { count: number }) => {
   vi.doMock('./message-list/WelcomeScreen', () => createNullComponentMock('WelcomeScreen'));
 
   const module = await import('./MessageList');
-  const fixtureModule = await import('@/test/chatAreaFixtures');
+  const fixtureModule = await import('@/test/chat-area/fixtures');
   const i18nModule = await import('@/contexts/I18nContext');
 
   return {

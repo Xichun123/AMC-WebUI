@@ -1,5 +1,5 @@
 import React, { act } from 'react';
-import { setupTestRenderer } from '@/test/testUtils';
+import { setupTestRenderer } from '@/test/render/renderer';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useChatInputFile } from './useChatInputFile';
 

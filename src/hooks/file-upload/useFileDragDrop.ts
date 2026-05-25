@@ -3,7 +3,8 @@ import { type DragEvent, useState, useCallback } from 'react';
 import { type UploadedFile } from '@/types';
 import { generateUniqueId } from '@/utils/chat/ids';
 import { useI18n } from '@/contexts/I18nContext';
-import { createProcessingPlaceholderFile } from '@/utils/file-upload/fileUploadPolicy';
+import { createProcessingPlaceholderFile, DIRECTORY_PLACEHOLDER_MIME_TYPE } from '@/utils/file-upload/fileUploadPolicy';
+import { createEmptyDroppedItemsSnapshot, snapshotDroppedItems } from '@/utils/import-context/droppedItemsSnapshot';
 
 interface UseFileDragDropProps {
   onFilesDropped: (files: FileList | File[]) => Promise<void>;
@@ -57,21 +58,21 @@ export const useFileDragDrop = ({ onFilesDropped, onAddTempFile, onRemoveTempFil
 
       try {
         const items = e.dataTransfer.items;
-        let hasDirectory = false;
-
-        // Check if any dropped item is a directory
-        if (items) {
-          for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            if (item.kind === 'file' && typeof item.webkitGetAsEntry === 'function') {
-              const entry = item.webkitGetAsEntry();
-              if (entry && entry.isDirectory) {
-                hasDirectory = true;
-                break;
-              }
-            }
-          }
+        const droppedSnapshot = items ? snapshotDroppedItems(items) : createEmptyDroppedItemsSnapshot();
+        const hasSnapshotData =
+          droppedSnapshot.entries.length > 0 ||
+          droppedSnapshot.handlePromises.length > 0 ||
+          droppedSnapshot.files.length > 0;
+        if (!hasSnapshotData && e.dataTransfer.files?.length) {
+          await onFilesDropped(e.dataTransfer.files);
+          return;
         }
+
+        const handles = await Promise.all(droppedSnapshot.handlePromises);
+        const droppedHandles = handles.filter((handle): handle is FileSystemHandle => handle !== null);
+        const hasDirectory =
+          droppedSnapshot.entries.some((entry) => entry.isDirectory) ||
+          droppedHandles.some((handle) => handle.kind === 'directory');
 
         if (hasDirectory) {
           const tempId = generateUniqueId();
@@ -79,16 +80,21 @@ export const useFileDragDrop = ({ onFilesDropped, onAddTempFile, onRemoveTempFil
             createProcessingPlaceholderFile({
               id: tempId,
               name: t('fileProcessing_dropped'),
-              type: 'application/x-directory', // Dummy type for icon
+              type: DIRECTORY_PLACEHOLDER_MIME_TYPE,
               size: 0,
             }),
           );
 
-          const [{ processDroppedItems }, { buildImportContextFile }] = await Promise.all([
+          const [{ processDroppedItemsSnapshot }, { buildImportContextFile }] = await Promise.all([
             import('@/utils/import-context/droppedItems'),
             import('@/utils/import-context/importContextBuilder'),
           ]);
-          const dropped = await processDroppedItems(items);
+          const dropped = await processDroppedItemsSnapshot({
+            entries: droppedSnapshot.entries,
+            handles: droppedHandles,
+            handlePromises: [],
+            files: droppedSnapshot.files,
+          });
 
           if (dropped.files.length > 0 || dropped.emptyDirectoryPaths.length > 0) {
             const contextFile = await buildImportContextFile(dropped.files, {
@@ -99,10 +105,17 @@ export const useFileDragDrop = ({ onFilesDropped, onAddTempFile, onRemoveTempFil
 
           onRemoveTempFile(tempId);
         } else {
-          // Standard file drop
-          const files = e.dataTransfer.files;
-          if (files?.length) {
-            await onFilesDropped(files);
+          const dropped = await import('@/utils/import-context/droppedItems').then(({ processDroppedItemsSnapshot }) =>
+            processDroppedItemsSnapshot({
+              entries: droppedSnapshot.entries,
+              handles: droppedHandles,
+              handlePromises: [],
+              files: droppedSnapshot.files,
+            }),
+          );
+
+          if (dropped.files.length) {
+            await onFilesDropped(dropped.files);
           }
         }
       } catch (error) {

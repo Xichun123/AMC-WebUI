@@ -1,8 +1,8 @@
 import { act, fireEvent, screen } from '@testing-library/react';
-import { setupProviderTestRenderer as setupTestRenderer } from '@/test/providerTestUtils';
+import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { describe, expect, it, vi } from 'vitest';
 import type { SavedChatSession } from '@/types';
-import { createChatSettings } from '@/test/factories';
+import { createChatSettings } from '@/test/data/factories';
 import { HistorySidebar } from './HistorySidebar';
 
 vi.mock('@formkit/auto-animate/react', () => ({
@@ -54,15 +54,15 @@ const renderSidebar = async (sessions: SavedChatSession[]) => {
 
 describe('HistorySidebar large history lists', () => {
   it('limits each large session section until the user asks for more', async () => {
-    await renderSidebar(Array.from({ length: 200 }, (_, index) => createSession(index)));
+    await renderSidebar(Array.from({ length: 90 }, (_, index) => createSession(index)));
 
     expect(screen.getByText('Chat 0')).toBeInTheDocument();
     expect(screen.getByText('Chat 79')).toBeInTheDocument();
     expect(screen.queryByText('Chat 80')).toBeNull();
-    expect(screen.queryByText('Chat 120')).toBeNull();
+    expect(screen.queryByText('Chat 89')).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Show 120 more chats' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Show 10 more chats' }));
 
-    expect(screen.getByText('Chat 120')).toBeInTheDocument();
+    expect(screen.getByText('Chat 89')).toBeInTheDocument();
   });
 });

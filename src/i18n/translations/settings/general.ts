@@ -8,6 +8,7 @@ const generalSettings = {
   settingsTabSafety: { en: 'Safety', zh: '安全' },
   settingsTabInterface: { en: 'Interface & Interaction', zh: '界面与交互' },
   settingsTabApi: { en: 'API', zh: 'API' },
+  settingsTabMcp: { en: 'MCP', zh: 'MCP' },
   settingsTabData: { en: 'Data & App', zh: '数据与应用' },
   settingsTabAbout: { en: 'About', zh: '关于' },
   settingsTabShortcuts: { en: 'Shortcuts', zh: '快捷键' },

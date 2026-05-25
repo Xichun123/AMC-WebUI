@@ -4,8 +4,8 @@ import { type UploadedFile } from '@/types';
 import { Check, Copy, Download, SlidersHorizontal, Scissors } from 'lucide-react';
 import { triggerDownload } from '@/utils/export/core';
 import { CATEGORY_STYLES, getResolutionColor } from '@/utils/fileDisplayStyles';
-import { formatFileSize } from '@/utils/fileHelpers';
-import { getFileCardMeta } from '@/utils/fileCardUtils';
+import { formatFileSize } from '@/utils/fileSize';
+import { getFileCardMeta } from '@/components/shared/file-preview/fileCardMeta';
 import { useI18n } from '@/contexts/I18nContext';
 import { FileThumbnail } from '@/components/chat/input/FileThumbnail';
 
@@ -102,7 +102,6 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
         />
         {isFromMessageList && (
           <div className="absolute top-2 right-2 flex gap-1 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity">
-            {/* Resolution / Configuration Control (Merged to prevent duplicates) */}
             {canConfigure ? (
               <button
                 type="button"
@@ -156,7 +155,7 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
     );
   }
 
-  const { Icon, colorClass, bgClass } = CATEGORY_STYLES[category] || CATEGORY_STYLES['code'];
+  const { Icon, colorClass, bgClass } = CATEGORY_STYLES[category] || CATEGORY_STYLES['text'];
 
   return (
     <div
@@ -203,7 +202,6 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
         </div>
       </div>
 
-      {/* Action Buttons for Card View */}
       <div className="flex items-center gap-1">
         {canConfigure && (
           <button

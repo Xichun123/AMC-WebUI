@@ -1,7 +1,5 @@
 import { create } from 'zustand';
-import { getModelCapabilities } from '@/utils/modelCapabilities';
-
-export type ModelCapabilities = ReturnType<typeof getModelCapabilities>;
+import { getModelCapabilities, type ModelCapabilities } from '@/utils/modelCapabilities';
 
 interface ModelCapabilitiesState {
   capabilitiesByModelId: Record<string, ModelCapabilities>;

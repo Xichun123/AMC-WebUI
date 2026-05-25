@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 
 const DB_NAME = 'AllModelChatDB';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 const ACTIVE_SESSION_STORAGE_KEY = 'activeChatSessionId';
 
 interface SeededSession {
@@ -123,6 +123,7 @@ export async function seedAppState(
       const scenarioStoreName = 'scenarios';
       const keyValueStoreName = 'keyValueStore';
       const logsStoreName = 'logs';
+      const apiUsageStoreName = 'api_usage';
 
       await new Promise<void>((resolve) => {
         const deleteRequest = indexedDB.deleteDatabase(dbName);
@@ -159,6 +160,13 @@ export async function seedAppState(
               autoIncrement: true,
             });
             logStore.createIndex('timestamp', 'timestamp', { unique: false });
+          }
+          if (!nextDb.objectStoreNames.contains(apiUsageStoreName)) {
+            const usageStore = nextDb.createObjectStore(apiUsageStoreName, {
+              keyPath: 'id',
+              autoIncrement: true,
+            });
+            usageStore.createIndex('timestamp', 'timestamp', { unique: false });
           }
         };
 

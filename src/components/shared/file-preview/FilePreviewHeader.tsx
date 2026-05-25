@@ -18,8 +18,9 @@ import { type UploadedFile } from '@/types';
 import { useI18n } from '@/contexts/I18nContext';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
 import { triggerDownload } from '@/utils/export/core';
-import { copyFileToClipboard, formatFileSize } from '@/utils/fileHelpers';
-import { getFileKindFlags } from '@/utils/fileTypeUtils';
+import { copyFileToClipboard } from '@/utils/fileClipboard';
+import { formatFileSize } from '@/utils/fileSize';
+import { getFileKindFlags } from '@/utils/fileTypeClassification';
 import { FloatingToolbar, ToolbarButton, ToolbarDivider } from './FloatingToolbar';
 
 interface FilePreviewHeaderProps {
@@ -114,7 +115,6 @@ export const FilePreviewHeader = React.forwardRef<FilePreviewHeaderHandle, FileP
 
     return (
       <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex flex-row items-start justify-between gap-3 z-50 pointer-events-none">
-        {/* File Info */}
         <FloatingToolbar className="pointer-events-auto pl-2 pr-4 py-1.5 max-w-[calc(100%-140px)] sm:max-w-md group/info">
           <div className="bg-white/10 p-1.5 rounded-full text-white/90 group-hover/info:bg-white/20 transition-colors flex-shrink-0">
             <FileIcon size={16} strokeWidth={1.5} />
@@ -145,7 +145,6 @@ export const FilePreviewHeader = React.forwardRef<FilePreviewHeaderHandle, FileP
           </div>
         </FloatingToolbar>
 
-        {/* Top Actions */}
         <FloatingToolbar className="pointer-events-auto p-1">
           {isEditable ? (
             <ToolbarButton

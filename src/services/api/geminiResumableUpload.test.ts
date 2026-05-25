@@ -7,7 +7,13 @@ type UploadRequestRecord = {
   bodySize: number;
 };
 
+type StartUploadRequestRecord = {
+  body: unknown;
+  headers: Record<string, string>;
+};
+
 const uploadRequests: UploadRequestRecord[] = [];
+const startUploadRequests: StartUploadRequestRecord[] = [];
 
 class FakeUploadEventTarget {
   private listeners = new Set<(event: ProgressEvent) => void>();
@@ -81,17 +87,25 @@ class FakeXMLHttpRequest {
 describe('uploadGeminiFileResumable', () => {
   beforeEach(() => {
     uploadRequests.length = 0;
+    startUploadRequests.length = 0;
     vi.stubGlobal('XMLHttpRequest', FakeXMLHttpRequest);
   });
 
   it('starts the upload session against the configured Gemini base URL and uploads through the proxy path', async () => {
     const apiClient: InternalGeminiApiClient = {
-      request: async () => ({
-        headers: {
-          'x-goog-upload-url': 'https://upload.example.com/resumable/session-1',
-        },
-        json: async () => ({}),
-      }),
+      request: async (request) => {
+        startUploadRequests.push({
+          body: request.body ? JSON.parse(String(request.body)) : null,
+          headers: request.httpOptions?.headers ?? {},
+        });
+
+        return {
+          headers: {
+            'x-goog-upload-url': 'https://upload.example.com/resumable/session-1',
+          },
+          json: async () => ({}),
+        };
+      },
     };
     const onProgress = vi.fn();
 
@@ -108,6 +122,15 @@ describe('uploadGeminiFileResumable', () => {
     });
 
     expect(uploadRequests).toHaveLength(1);
+    expect(startUploadRequests).toEqual([
+      {
+        body: { file: { displayName: 'sample.txt' } },
+        headers: expect.objectContaining({
+          'X-Goog-Upload-Header-Content-Length': '5',
+          'X-Goog-Upload-Header-Content-Type': 'text/plain',
+        }),
+      },
+    ]);
     expect(uploadRequests[0]).toMatchObject({
       url: 'https://proxy.example.com/gemini/resumable/session-1',
       headers: {

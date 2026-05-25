@@ -1,5 +1,5 @@
 import React from 'react';
-import { type IconProps, StrokeIcon } from '@/components/icons/iconUtils';
+import { type IconProps, StrokeIcon } from '@/components/icons/iconPrimitives';
 
 // 1. Upload from Device (File Up)
 export const IconUpload: React.FC<IconProps> = (props) => (

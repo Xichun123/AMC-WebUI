@@ -6,7 +6,7 @@ const loadedFeatures = new Set<TranslationFeature>();
 const loadingFeatures = new Map<TranslationFeature, Promise<void>>();
 
 const loadSettingsTranslations = async (): Promise<TranslationMap> => {
-  const [general, appearance, api, model, data, safety, shortcuts, about] = await Promise.all([
+  const [general, appearance, api, model, data, safety, shortcuts, about, mcp] = await Promise.all([
     import('./translations/settings/general'),
     import('./translations/settings/appearance'),
     import('./translations/settings/api'),
@@ -15,6 +15,7 @@ const loadSettingsTranslations = async (): Promise<TranslationMap> => {
     import('./translations/settings/safety'),
     import('./translations/settings/shortcuts'),
     import('./translations/settings/about'),
+    import('./translations/settings/mcp'),
   ]);
 
   return {
@@ -26,6 +27,7 @@ const loadSettingsTranslations = async (): Promise<TranslationMap> => {
     ...safety.default,
     ...shortcuts.default,
     ...about.default,
+    ...mcp.default,
   };
 };
 

@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { loadConfig } from './config';
 
@@ -7,6 +8,8 @@ describe('loadConfig', () => {
     expect(config.backendFlavor).toBe('aistudio');
     expect(config.vertex).toBeUndefined();
     expect(config.siteAuth.enabled).toBe(false);
+    expect(config.enableMcpStdio).toBe(false);
+    expect(config.enableMcpPrivateHttp).toBe(false);
   });
 
   it('keeps backendFlavor aistudio for unrecognized GEMINI_BACKEND values', () => {
@@ -111,5 +114,34 @@ describe('loadConfig', () => {
         SITE_AUTH_USERS_JSON: JSON.stringify([{ username: 'amc', passwordHash: 'scrypt:hash' }]),
       }),
     ).toThrow(/SITE_AUTH_SECRET is required/);
+  });
+
+  it('parses MCP transport enablement flags from the environment', () => {
+    const config = loadConfig({
+      ENABLE_MCP_STDIO: 'true',
+      ENABLE_MCP_PRIVATE_HTTP: 'yes',
+    });
+
+    expect(config.enableMcpStdio).toBe(true);
+    expect(config.enableMcpPrivateHttp).toBe(true);
+  });
+
+  it('enables MCP transports without changing Vertex, GCS, or Site Access configuration', () => {
+    const config = loadConfig({
+      GEMINI_BACKEND: 'vertex',
+      GCP_PROJECT_ID: 'project-1',
+      GCS_BUCKET: 'amc-files',
+      SITE_AUTH_USERS_JSON: JSON.stringify([{ username: 'amc', passwordHash: 'scrypt:hash' }]),
+      SITE_AUTH_SECRET: 'site-secret',
+      ENABLE_MCP_STDIO: 'true',
+      ENABLE_MCP_PRIVATE_HTTP: '1',
+    });
+
+    expect(config.backendFlavor).toBe('vertex');
+    expect(config.vertex).toEqual({ projectId: 'project-1', location: 'us-central1' });
+    expect(config.gcs?.bucketName).toBe('amc-files');
+    expect(config.siteAuth.enabled).toBe(true);
+    expect(config.enableMcpStdio).toBe(true);
+    expect(config.enableMcpPrivateHttp).toBe(true);
   });
 });

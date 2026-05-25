@@ -1,6 +1,6 @@
 import { useCallback, type Dispatch, type MutableRefObject, type RefObject, type SetStateAction } from 'react';
 import { type UploadedFile, type VideoMetadata, type MediaResolution } from '@/types';
-import { cleanupFilePreviewUrl } from '@/utils/fileHelpers';
+import { cleanupFilePreviewUrl } from '@/utils/filePreviewUrls';
 import { useFilePreProcessingEffects } from './useFilePreProcessingEffects';
 import { useChatInputFileUi } from './useChatInputFileUi';
 import type { ChatInputBooleanUpdate } from '@/utils/chat-input/chatInputStateMachine';

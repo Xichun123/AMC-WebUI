@@ -1,7 +1,18 @@
 import JSZip from 'jszip';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { buildImportContextFile, generateZipContext } from './importContextBuilder';
+
+const { extractDocxTextMock } = vi.hoisted(() => ({
+  extractDocxTextMock: vi.fn(),
+}));
+
+vi.mock('@/utils/docxPreview', () => ({
+  extractDocxText: extractDocxTextMock,
+  isDocxFile: (file: { name: string; type: string }) =>
+    file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    file.name.toLowerCase().endsWith('.docx'),
+}));
 
 const EXACT_SAMPLE_OUTPUT = `This file is a merged representation of the current codebase, prepared by Structure Insight.
 
@@ -129,6 +140,25 @@ describe('buildImportContextFile', () => {
 
     const output = await contextFile.text();
     expect(output).toContain('empty/');
+  });
+
+  it('extracts text from Word documents inside folder imports', async () => {
+    extractDocxTextMock.mockResolvedValue({
+      text: 'Quarterly notes from a folder',
+      messages: [],
+    });
+    const docxFile = setRelativePath(
+      new File(['fake docx'], 'notes.docx', {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      }),
+      'demo/docs/notes.docx',
+    );
+
+    const contextFile = await buildImportContextFile([docxFile]);
+    const output = await contextFile.text();
+
+    expect(output).toContain('File: docs/notes.docx');
+    expect(output).toContain('Quarterly notes from a folder');
   });
 });
 

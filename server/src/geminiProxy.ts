@@ -268,7 +268,10 @@ function rewriteVertexRequestBody(body: Buffer, gcsFilesAdapter: GcsFilesAdapter
     : functionResponseSanitizedBody;
 }
 
-function parseInitiateUploadMetadata(body: Buffer): InitiateUploadMetadata | null {
+function parseInitiateUploadMetadata(
+  body: Buffer,
+  fallbackMetadata: { mimeType?: string; sizeBytes?: string } = {},
+): InitiateUploadMetadata | null {
   let parsed: unknown;
   try {
     parsed = JSON.parse(body.toString('utf8'));
@@ -291,8 +294,18 @@ function parseInitiateUploadMetadata(body: Buffer): InitiateUploadMetadata | nul
   };
 
   const displayName = typeof fileRecord.displayName === 'string' ? fileRecord.displayName : fileRecord.display_name;
-  const mimeType = typeof fileRecord.mimeType === 'string' ? fileRecord.mimeType : fileRecord.mime_type;
-  const rawSize = typeof fileRecord.sizeBytes !== 'undefined' ? fileRecord.sizeBytes : fileRecord.size_bytes;
+  const mimeType =
+    typeof fileRecord.mimeType === 'string'
+      ? fileRecord.mimeType
+      : typeof fileRecord.mime_type === 'string'
+        ? fileRecord.mime_type
+        : fallbackMetadata.mimeType;
+  const rawSize =
+    typeof fileRecord.sizeBytes !== 'undefined'
+      ? fileRecord.sizeBytes
+      : typeof fileRecord.size_bytes !== 'undefined'
+        ? fileRecord.size_bytes
+        : fallbackMetadata.sizeBytes;
   const sizeBytes =
     typeof rawSize === 'number' ? rawSize : Number.parseInt(typeof rawSize === 'string' ? rawSize : '', 10);
 
@@ -334,7 +347,10 @@ async function handleGcsFilesRequest(
       return true;
     }
 
-    const metadata = parseInitiateUploadMetadata(bodyBuffer);
+    const metadata = parseInitiateUploadMetadata(bodyBuffer, {
+      mimeType: readHeader(request, 'x-goog-upload-header-content-type'),
+      sizeBytes: readHeader(request, 'x-goog-upload-header-content-length'),
+    });
     if (!metadata) {
       sendJson(request, response, 400, { error: 'Invalid file metadata in upload initiate request.' }, allowedOrigins);
       return true;

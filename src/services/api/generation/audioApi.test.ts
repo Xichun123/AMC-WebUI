@@ -10,12 +10,12 @@ vi.mock('@/services/api/apiClient', () => ({
   getConfiguredApiClient: getConfiguredApiClientMock,
 }));
 
-vi.mock('@/utils/fileHelpers', () => ({
+vi.mock('@/utils/fileEncoding', () => ({
   blobToBase64: blobToBase64Mock,
 }));
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });
@@ -103,7 +103,7 @@ Jane: Thanks, it is great to be here.`,
 });
 
 describe('transcribeAudioApi request config', () => {
-  const audioFile = new File(['voice'], 'voice.webm', { type: 'audio/webm' });
+  const audioFile = new File(['voice'], 'voice.mp3', { type: 'audio/mpeg' });
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -126,7 +126,7 @@ describe('transcribeAudioApi request config', () => {
             { text: 'Transcribe voice input exactly.' },
             {
               inlineData: {
-                mimeType: 'audio/webm',
+                mimeType: 'audio/mpeg',
                 data: 'base64-audio',
               },
             },
@@ -166,5 +166,16 @@ describe('transcribeAudioApi request config', () => {
         }),
       }),
     );
+  });
+
+  it('rejects unsupported Gemini audio MIME types before building the inline audio part', async () => {
+    const unsupportedAudioFile = new File(['voice'], 'voice.webm', { type: 'audio/webm' });
+
+    await expect(transcribeAudioApi('api-key', unsupportedAudioFile, 'gemini-3-flash-preview')).rejects.toThrow(
+      'Unsupported audio MIME type for Gemini transcription: audio/webm.',
+    );
+
+    expect(blobToBase64Mock).not.toHaveBeenCalled();
+    expect(generateContentMock).not.toHaveBeenCalled();
   });
 });

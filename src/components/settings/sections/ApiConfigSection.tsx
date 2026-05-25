@@ -2,13 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { RadioTower } from 'lucide-react';
 import type { AppSettings } from '@/types';
 import { useI18n } from '@/contexts/I18nContext';
-import { DEFAULT_LIVE_ARTIFACTS_MODEL_ID } from '@/constants/modelConstants';
-import { SETTINGS_INPUT_CLASS } from '@/constants/styleClasses';
+import { DEFAULT_LIVE_ARTIFACTS_MODEL_ID } from '@/constants/modelConfiguration';
+import { SETTINGS_INPUT_CLASS } from '@/constants/formClasses';
 import { CONNECTION_TEST_MODELS } from '@/constants/settingsModelOptions';
 import { getClient } from '@/services/api/apiClient';
 import { sendOpenAICompatibleMessageNonStream } from '@/services/api/openaiCompatibleApi';
 import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '@/utils/apiProxyUrl';
-import { isServerManagedApiEnabledForProxyRequests, parseApiKeys, SERVER_MANAGED_API_KEY } from '@/utils/apiUtils';
+import {
+  isServerManagedApiEnabledForProxyRequests,
+  parseApiKeys,
+  SERVER_MANAGED_API_KEY,
+} from '@/utils/apiKeySelection';
 import { getBackendFlavor } from '@/runtime/runtimeConfig';
 import { ApiConfigToggle } from './api-config/ApiConfigToggle';
 import { ApiKeyInput } from './api-config/ApiKeyInput';

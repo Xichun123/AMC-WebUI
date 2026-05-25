@@ -211,13 +211,10 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
 
     const virtualFullSessions = createVirtualFullSessions(savedSessions, activeSessionId, activeMessages);
 
-    // 2. Run Updater
     const newFullSessions = updater(virtualFullSessions);
 
-    // 3. Sort
     sortSessionsInPlace(newFullSessions);
 
-    // 4. Update Active Messages if changed
     if (activeSessionId) {
       const newActiveSession = newFullSessions.find((s) => s.id === activeSessionId);
       if (newActiveSession && newActiveSession.messages !== activeMessages) {
@@ -225,7 +222,6 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       }
     }
 
-    // 5. Persist
     if (persist) {
       const { modifiedSessions, deletedSessionIds } = getSessionPersistenceChanges(
         virtualFullSessions,

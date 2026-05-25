@@ -1,7 +1,7 @@
 import { type MutableRefObject, useEffect, useRef, useCallback } from 'react';
 import { type AppSettings, type SavedChatSession, type ChatSettings as IndividualChatSettings } from '@/types';
 import { logService } from '@/services/logService';
-import { getGeminiKeyForRequest } from '@/utils/apiUtils';
+import { getGeminiKeyForRequest } from '@/utils/apiKeySelection';
 import { getModelCapabilities } from '@/utils/modelCapabilities';
 import { generateSuggestionsApi } from '@/services/api/generation/textApi';
 import { getVisibleChatMessages } from '@/utils/chat/visibility';

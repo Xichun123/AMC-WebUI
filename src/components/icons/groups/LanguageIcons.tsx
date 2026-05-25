@@ -1,5 +1,5 @@
 import React from 'react';
-import { type IconProps, defaultSize } from '@/components/icons/iconUtils';
+import { type IconProps, defaultSize } from '@/components/icons/iconPrimitives';
 
 export const IconHtml5: React.FC<IconProps> = ({ size = defaultSize, className }) => (
   <svg

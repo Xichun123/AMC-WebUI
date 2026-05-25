@@ -2,7 +2,7 @@ import type { Part } from '@google/genai';
 import type { ChatHistoryItem, EditImageRequestConfig } from '@/types';
 import { buildGenerationConfig } from '@/services/api/generationConfig';
 import { sendStatelessMessageNonStreamApi } from '@/services/api/chatApi';
-import { DEFAULT_APP_SETTINGS } from '@/constants/appConstants';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 
 export const editImageApi = async (
   apiKey: string,

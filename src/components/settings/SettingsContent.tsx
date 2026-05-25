@@ -6,6 +6,7 @@ import { ApiConfigSection } from './sections/ApiConfigSection';
 import { AppearanceSection } from './sections/AppearanceSection';
 import { DataManagementSection } from './sections/DataManagementSection';
 import { ModelsSection } from './sections/ModelsSection';
+import { McpSection } from './sections/McpSection';
 import { ShortcutsSection } from './sections/ShortcutsSection';
 import { AboutSection } from './sections/AboutSection';
 import { type SettingsTransferProps } from './settingsTypes';
@@ -14,6 +15,7 @@ import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
 interface SettingsContentProps extends SettingsTransferProps {
   activeTab: SettingsTab;
   currentSettings: AppSettings;
+  currentThemeId: string;
   availableModels: ModelOption[];
   updateSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void;
   handleModelChange: (modelId: string) => void;
@@ -55,6 +57,7 @@ const hasModelId = (models: ModelOption[], modelId: string): boolean => models.s
 export const SettingsContent: React.FC<SettingsContentProps> = ({
   activeTab,
   currentSettings,
+  currentThemeId,
   availableModels,
   updateSetting,
   handleModelChange,
@@ -131,6 +134,7 @@ export const SettingsContent: React.FC<SettingsContentProps> = ({
             defaultApiMode="gemini-native"
             isOpenAICompatibleMode={isOpenAICompatibleMode}
             currentSettings={currentSettings}
+            currentThemeId={currentThemeId}
             onUpdateSettings={handleBatchUpdate}
           />
         </div>
@@ -157,6 +161,12 @@ export const SettingsContent: React.FC<SettingsContentProps> = ({
             settings={currentSettings}
             onUpdate={updateSetting}
           />
+        </div>
+      )}
+
+      {activeTab === 'mcp' && (
+        <div className={animClass}>
+          <McpSection settings={currentSettings} onUpdate={updateSetting} />
         </div>
       )}
 

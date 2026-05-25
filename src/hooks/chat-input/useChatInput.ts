@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import { useVoiceInput } from '@/hooks/useVoiceInput';
-import { useSlashCommands } from '@/hooks/useSlashCommands';
+import { useVoiceInput } from './useVoiceInput';
+import { useSlashCommands } from './useSlashCommands';
 import { useChatInputCore } from './useChatInputCore';
 import { useChatInputFile } from './useChatInputFile';
 import { useChatInputGlobalEffects } from './useChatInputGlobalEffects';
@@ -127,6 +127,7 @@ export const useChatInput = () => {
     handleSmartSendMessage,
   } = useChatInputSubmission({
     activeSessionId,
+    appSettings,
     currentChatSettings,
     selectedFiles,
     setSelectedFiles,
@@ -221,6 +222,14 @@ export const useChatInput = () => {
     onEditLastUserMessage,
   });
 
+  const handleCompositionEnd = useCallback(
+    (value: string) => {
+      inputState.handleCompositionEnd();
+      slashCommandState.handleInputChange(value);
+    },
+    [inputState, slashCommandState],
+  );
+
   const handleToggleToolAndFocus = useCallback(
     (toggleFunc: () => void) => {
       toggleFunc();
@@ -245,7 +254,7 @@ export const useChatInput = () => {
       handleClearInput,
       handleKeyDown,
       onCompositionStart: inputState.handleCompositionStart,
-      onCompositionEnd: inputState.handleCompositionEnd,
+      onCompositionEnd: handleCompositionEnd,
       removeSelectedFile,
       handleAddFileByIdSubmit,
       handleToggleToolAndFocus,
@@ -254,10 +263,6 @@ export const useChatInput = () => {
       cancelPendingUploadSend,
       restoreQueuedSubmission,
       removeQueuedSubmission,
-      handlePrevImage: localFileState.handlePrevImage,
-      handleNextImage: localFileState.handleNextImage,
-      inputImages: localFileState.inputImages,
-      currentImageIndex: localFileState.currentImageIndex,
     }),
     [
       handleAddFileByIdSubmit,
@@ -280,12 +285,8 @@ export const useChatInput = () => {
       handleSubmit,
       handleToggleToolAndFocus,
       handleTranslate,
-      localFileState.currentImageIndex,
-      localFileState.handleNextImage,
-      localFileState.handlePrevImage,
-      localFileState.inputImages,
-      inputState.handleCompositionEnd,
       inputState.handleCompositionStart,
+      handleCompositionEnd,
       removeSelectedFile,
     ],
   );

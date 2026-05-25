@@ -1,8 +1,8 @@
 import { act } from 'react';
 import { describe, expect, it } from 'vitest';
-import { createUploadedFile } from '@/test/factories';
+import { createUploadedFile } from '@/test/data/factories';
 import { useFileModalState } from './useFileModalState';
-import { renderHook } from '@/test/testUtils';
+import { renderHook } from '@/test/render/renderer';
 
 const files = [
   createUploadedFile({

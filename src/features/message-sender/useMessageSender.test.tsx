@@ -1,10 +1,11 @@
 import { act } from 'react';
-import { renderHookWithProviders } from '@/test/providerTestUtils';
+import { renderHookWithProviders } from '@/test/render/providerRenderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
   mockSendStandardMessage,
-  mockSendTtsImagenMessage,
+  mockSendImageGenerationMessage,
+  mockSendTtsMessage,
   mockSendImageEditMessage,
   mockGetModelCapabilities,
   mockCreateMessage,
@@ -14,7 +15,8 @@ const {
   mockUploadFileApi,
 } = vi.hoisted(() => ({
   mockSendStandardMessage: vi.fn(),
-  mockSendTtsImagenMessage: vi.fn(),
+  mockSendImageGenerationMessage: vi.fn(),
+  mockSendTtsMessage: vi.fn(),
   mockSendImageEditMessage: vi.fn(),
   mockGetModelCapabilities: vi.fn(),
   mockCreateMessage: vi.fn((role: string, content: string, options?: Record<string, unknown>) => ({
@@ -45,8 +47,12 @@ vi.mock('./standardChatStrategy', () => ({
   sendStandardMessage: mockSendStandardMessage,
 }));
 
-vi.mock('./ttsImagenStrategy', () => ({
-  sendTtsImagenMessage: mockSendTtsImagenMessage,
+vi.mock('./imageGenerationStrategy', () => ({
+  sendImageGenerationMessage: mockSendImageGenerationMessage,
+}));
+
+vi.mock('./ttsStrategy', () => ({
+  sendTtsMessage: mockSendTtsMessage,
 }));
 
 vi.mock('./imageEditStrategy', () => ({
@@ -65,7 +71,7 @@ vi.mock('@/utils/chat/ids', () => ({
   generateUniqueId: vi.fn(() => 'generation-id'),
 }));
 
-vi.mock('@/utils/apiUtils', () => ({
+vi.mock('@/utils/apiKeySelection', () => ({
   getKeyForRequest: vi.fn(() => ({ key: 'api-key', isNewKey: false })),
   getApiKeyErrorTranslationKey: vi.fn((error: string) => {
     if (error === 'API Key not configured.') return 'apiRuntime_keyNotConfigured';
@@ -80,7 +86,7 @@ vi.mock('@/utils/chat/session', () => ({
 }));
 
 vi.mock('@/services/logService', async () => {
-  const { createLogServiceMockModule } = await import('@/test/moduleMockDoubles');
+  const { createLogServiceMockModule } = await import('@/test/doubles/moduleMocks');
 
   return createLogServiceMockModule();
 });
@@ -91,8 +97,8 @@ vi.mock('@/services/api/fileApi', () => ({
 }));
 
 import { useMessageSender } from './useMessageSender';
-import { createMessageSenderProps, type MessageSenderPropsOverrides } from '@/test/hookFactories';
-import { createChatSettings, createUploadedFile } from '@/test/factories';
+import { createMessageSenderProps, type MessageSenderPropsOverrides } from '@/test/hooks/factories';
+import { createChatSettings, createUploadedFile } from '@/test/data/factories';
 import { CODE_EXECUTION_TEXT_FILE_LIMIT_BYTES } from '@/utils/codeExecution';
 
 describe('useMessageSender', () => {
@@ -142,7 +148,8 @@ describe('useMessageSender', () => {
     });
 
     expect(setAppFileError).toHaveBeenCalledWith('Imagen 模型仅支持文本提示词。');
-    expect(mockSendTtsImagenMessage).not.toHaveBeenCalled();
+    expect(mockSendImageGenerationMessage).not.toHaveBeenCalled();
+    expect(mockSendTtsMessage).not.toHaveBeenCalled();
     expect(mockSendStandardMessage).not.toHaveBeenCalled();
     expect(mockSendImageEditMessage).not.toHaveBeenCalled();
     unmount();
@@ -180,7 +187,8 @@ describe('useMessageSender', () => {
     });
 
     expect(setAppFileError).toHaveBeenCalledWith('Gemini 3 图片模型每次请求最多支持 14 张参考图。');
-    expect(mockSendTtsImagenMessage).not.toHaveBeenCalled();
+    expect(mockSendImageGenerationMessage).not.toHaveBeenCalled();
+    expect(mockSendTtsMessage).not.toHaveBeenCalled();
     expect(mockSendStandardMessage).not.toHaveBeenCalled();
     expect(mockSendImageEditMessage).not.toHaveBeenCalled();
     unmount();
@@ -221,6 +229,39 @@ describe('useMessageSender', () => {
     });
 
     expect(setAppFileError).toHaveBeenCalledWith('代码执行文本/CSV 文件建议不超过 2MB。请拆分文件或关闭代码执行。');
+    expect(mockSendStandardMessage).not.toHaveBeenCalled();
+    unmount();
+  });
+
+  it('blocks audio attachments for hosted Gemma 4 large models', async () => {
+    mockGetModelCapabilities.mockReturnValue({
+      isTtsModel: false,
+      isRealImagenModel: false,
+      isFlashImageModel: false,
+      isGemini3ImageModel: false,
+      isGemmaModel: true,
+    });
+
+    const setAppFileError = vi.fn();
+
+    const { result, unmount } = renderMessageSender({
+      currentChatSettings: {
+        modelId: 'gemma-4-31b-it',
+      },
+      selectedFiles: [
+        createUploadedFile({
+          name: 'voice-note.mp3',
+          type: 'audio/mpeg',
+        }),
+      ],
+      setAppFileError,
+    });
+
+    await act(async () => {
+      await result.current.handleSendMessage({ text: 'transcribe this' });
+    });
+
+    expect(setAppFileError).toHaveBeenCalledWith('Gemma 4 31B/26B 模型仅支持文本和图片附件。');
     expect(mockSendStandardMessage).not.toHaveBeenCalled();
     unmount();
   });

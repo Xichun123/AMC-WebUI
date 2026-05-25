@@ -13,11 +13,8 @@ import {
   Atom,
 } from 'lucide-react';
 import { IconHtml5 } from '@/components/icons';
-import {
-  FOCUS_VISIBLE_RING_SECONDARY_OFFSET_CLASS,
-  ICON_BUTTON_CLASS,
-  MODAL_CLOSE_BUTTON_DANGER_HOVER_CLASS,
-} from '@/constants/styleClasses';
+import { FOCUS_VISIBLE_RING_SECONDARY_OFFSET_CLASS } from '@/constants/focusClasses';
+import { ICON_BUTTON_CLASS, MODAL_CLOSE_BUTTON_DANGER_HOVER_CLASS } from '@/constants/buttonClasses';
 
 interface HtmlPreviewHeaderProps {
   title: string;
@@ -78,7 +75,6 @@ export const HtmlPreviewHeader: React.FC<HtmlPreviewHeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-1">
-        {/* Zoom Controls */}
         <div className="hidden sm:flex items-center">
           <button
             onClick={onZoomOut}
@@ -103,7 +99,6 @@ export const HtmlPreviewHeader: React.FC<HtmlPreviewHeaderProps> = ({
 
         <div className="hidden sm:block w-px h-4 bg-[var(--theme-border-secondary)] mx-2" />
 
-        {/* Action Controls */}
         <button onClick={onRefresh} className={iconBtnClass} title={t('htmlPreview_reload')}>
           <RotateCw size={18} strokeWidth={1.5} />
         </button>
@@ -125,7 +120,6 @@ export const HtmlPreviewHeader: React.FC<HtmlPreviewHeaderProps> = ({
 
         <div className="w-px h-4 bg-[var(--theme-border-secondary)] mx-2" />
 
-        {/* Screen Mode Controls */}
         <button
           onClick={onToggleFullscreen}
           className={iconBtnClass}

@@ -1,27 +1,21 @@
 import React, { Suspense } from 'react';
 import type { MarkdownRendererProps } from './BaseMarkdownRenderer';
 import { lazyNamedComponent } from '@/utils/lazyNamedComponent';
+import { containsTexMathMarkdown } from '@/utils/markdownMathConfig';
 
-const LazyBaseMarkdownRenderer = lazyNamedComponent(
-  () => import('./BaseMarkdownRendererEntry'),
-  'BaseMarkdownRendererEntry',
-);
-const LazyMarkdownRendererMath = lazyNamedComponent(() => import('./MarkdownRenderer'), 'MarkdownRenderer');
+const LazyBasicMarkdownRenderer = lazyNamedComponent(() => import('./BasicMarkdownRenderer'), 'BasicMarkdownRenderer');
+const LazyMathMarkdownRenderer = lazyNamedComponent(() => import('./MathMarkdownRenderer'), 'MathMarkdownRenderer');
 
 interface LazyMarkdownRendererProps extends MarkdownRendererProps {
   fallbackMode?: 'raw' | 'none';
 }
-
-const containsMathMarkdown = (content: string) => {
-  return /(^|[^\\])\$\$[\s\S]+?(^|[^\\])\$\$/m.test(content) || /(^|[^\\])\$[^$\n]+?[^\\]\$/m.test(content);
-};
 
 export const LazyMarkdownRenderer: React.FC<LazyMarkdownRendererProps> = ({
   content,
   fallbackMode = 'raw',
   ...props
 }) => {
-  const shouldLoadMathRenderer = containsMathMarkdown(content);
+  const shouldLoadMathRenderer = containsTexMathMarkdown(content);
   const fallback =
     fallbackMode === 'raw' ? (
       <div className="whitespace-pre-wrap break-words text-[var(--theme-text-secondary)]">{content}</div>
@@ -30,14 +24,14 @@ export const LazyMarkdownRenderer: React.FC<LazyMarkdownRendererProps> = ({
   if (!shouldLoadMathRenderer) {
     return (
       <Suspense fallback={fallback}>
-        <LazyBaseMarkdownRenderer {...props} content={content} />
+        <LazyBasicMarkdownRenderer {...props} content={content} />
       </Suspense>
     );
   }
 
   return (
     <Suspense fallback={fallback}>
-      <LazyMarkdownRendererMath content={content} {...props} />
+      <LazyMathMarkdownRenderer content={content} {...props} />
     </Suspense>
   );
 };

@@ -37,17 +37,27 @@ export const useScenarioManager = ({
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
   const importInputRef = useRef<HTMLInputElement>(null);
+  const feedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Reset state when modal opens
+  const clearFeedbackTimeout = useCallback(() => {
+    if (feedbackTimeoutRef.current !== null) {
+      clearTimeout(feedbackTimeoutRef.current);
+      feedbackTimeoutRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => () => clearFeedbackTimeout(), [clearFeedbackTimeout]);
+
   useEffect(() => {
     if (isOpen) {
+      clearFeedbackTimeout();
       setScenarios(savedScenarios);
       setView('list');
       setEditingScenario(null);
       setFeedback(null);
       setSearchQuery('');
     }
-  }, [isOpen, savedScenarios]);
+  }, [clearFeedbackTimeout, isOpen, savedScenarios]);
 
   const hasUnsavedChanges = useMemo(
     () =>
@@ -56,13 +66,20 @@ export const useScenarioManager = ({
     [savedScenarios, scenarios],
   );
 
-  const showFeedback = useCallback((type: 'success' | 'error' | 'info', message: string, duration: number = 3000) => {
-    setFeedback({ type, message });
-    setTimeout(() => setFeedback(null), duration);
-  }, []);
+  const showFeedback = useCallback(
+    (type: 'success' | 'error' | 'info', message: string, duration: number = 3000) => {
+      clearFeedbackTimeout();
+      setFeedback({ type, message });
+      feedbackTimeoutRef.current = setTimeout(() => {
+        setFeedback(null);
+        feedbackTimeoutRef.current = null;
+      }, duration);
+    },
+    [clearFeedbackTimeout],
+  );
 
   const handleStartAddNew = useCallback(() => {
-    setEditingScenario({ id: Date.now().toString(), title: '', messages: [] });
+    setEditingScenario({ id: generateUniqueId(), title: '', messages: [] });
     setView('editor');
   }, []);
 

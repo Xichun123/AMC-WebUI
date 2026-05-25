@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRecorder } from '@/hooks/core/useRecorder';
 import { createManagedObjectUrl, releaseManagedObjectUrl } from '@/services/objectUrlManager';
 
@@ -8,30 +8,40 @@ export const useAudioRecorder = () => {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [systemAudioWarning, setSystemAudioWarning] = useState<string | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
 
-  // Cleanup previous URL when component unmounts or url changes
-  useEffect(() => {
-    return () => {
-      releaseManagedObjectUrl(audioUrl);
-    };
-  }, [audioUrl]);
+  const replaceAudioUrl = useCallback((nextAudioUrl: string | null) => {
+    const previousAudioUrl = audioUrlRef.current;
+
+    if (previousAudioUrl && previousAudioUrl !== nextAudioUrl) {
+      releaseManagedObjectUrl(previousAudioUrl);
+    }
+
+    audioUrlRef.current = nextAudioUrl;
+    setAudioUrl(nextAudioUrl);
+  }, []);
+
+  useEffect(
+    () => () => {
+      releaseManagedObjectUrl(audioUrlRef.current);
+      audioUrlRef.current = null;
+    },
+    [],
+  );
 
   const resetPreview = useCallback(() => {
     setAudioBlob(null);
-    setAudioUrl((currentUrl) => {
-      releaseManagedObjectUrl(currentUrl);
-      return null;
-    });
-  }, []);
+    replaceAudioUrl(null);
+  }, [replaceAudioUrl]);
 
-  const handleRecordingComplete = useCallback((blob: Blob) => {
-    const nextAudioUrl = createManagedObjectUrl(blob);
-    setAudioBlob(blob);
-    setAudioUrl((currentUrl) => {
-      releaseManagedObjectUrl(currentUrl);
-      return nextAudioUrl;
-    });
-  }, []);
+  const handleRecordingComplete = useCallback(
+    (blob: Blob) => {
+      const nextAudioUrl = createManagedObjectUrl(blob);
+      setAudioBlob(blob);
+      replaceAudioUrl(nextAudioUrl);
+    },
+    [replaceAudioUrl],
+  );
 
   const {
     status,

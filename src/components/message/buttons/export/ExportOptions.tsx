@@ -1,6 +1,6 @@
 import React from 'react';
 import { ImageIcon, FileCode2, FileText, FileJson } from 'lucide-react';
-import { type ExportType } from '@/hooks/useMessageExport';
+import { type ExportType } from './useMessageExport';
 import { useResponsiveValue } from '@/hooks/useDevice';
 import { useI18n } from '@/contexts/I18nContext';
 

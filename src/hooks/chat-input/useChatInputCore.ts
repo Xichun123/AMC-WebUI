@@ -1,14 +1,14 @@
 import { useRef } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { useWindowContext } from '@/contexts/WindowContext';
-import { isBboxSystemInstruction, isHdGuideSystemInstruction } from '@/constants/promptHelpers';
+import { isBboxSystemInstruction, isHdGuideSystemInstruction } from '@/features/prompts/promptRegistry';
 import { useChatInputRuntime } from '@/components/layout/chat-runtime/ChatRuntimeContext';
 import { useChatStore } from '@/stores/chatStore';
 import { getCachedModelCapabilities } from '@/stores/modelCapabilitiesStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { getVisibleChatMessages } from '@/utils/chat/visibility';
 import { useChatState } from '@/hooks/chat/useChatState';
-import { useLiveApi } from '@/hooks/useLiveApi';
+import { useLiveApi } from '@/hooks/live-api/useLiveApi';
 import { useTextAreaInsert } from '@/hooks/useTextAreaInsert';
 import { useChatInputState } from './useChatInputState';
 import { useChatInputToolStates } from './useChatInputToolStates';

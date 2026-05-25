@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { MODELS_SUPPORTING_RAW_MODE } from '@/constants/modelConstants';
+import { MODELS_SUPPORTING_RAW_MODE } from '@/constants/modelConfiguration';
 import {
   getDefaultThinkingLevelForModel,
   getModelCapabilities,
   isGemini3Model,
+  normalizeThinkingLevelForModel,
   shouldStripThinkingFromContext,
 } from './modelCapabilities';
 
@@ -131,8 +132,20 @@ describe('getModelCapabilities', () => {
   it('exposes the latest Gemini 3.1 Flash Image ratios and sizes', () => {
     const capabilities = getModelCapabilities('gemini-3.1-flash-image-preview');
 
+    expect(capabilities.isImageGenerationModel).toBe(true);
+    expect(capabilities).not.toHaveProperty('isImagenModel');
     expect(capabilities.supportedAspectRatios).toEqual(expect.arrayContaining(['1:4', '4:1', '1:8', '8:1']));
     expect(capabilities.supportedImageSizes).toEqual(expect.arrayContaining(['512', '1K', '2K', '4K']));
+  });
+
+  it('distinguishes actual Imagen models from the broader image-generation capability', () => {
+    const imagenCapabilities = getModelCapabilities('imagen-4.0-generate-preview');
+    const geminiImageCapabilities = getModelCapabilities('gemini-3.1-flash-image-preview');
+
+    expect(imagenCapabilities.isRealImagenModel).toBe(true);
+    expect(imagenCapabilities.isImageGenerationModel).toBe(true);
+    expect(geminiImageCapabilities.isRealImagenModel).toBe(false);
+    expect(geminiImageCapabilities.isImageGenerationModel).toBe(true);
   });
 });
 
@@ -147,6 +160,18 @@ describe('getDefaultThinkingLevelForModel', () => {
 
   it('keeps fallback thinking level for non-special models', () => {
     expect(getDefaultThinkingLevelForModel('gemini-2.5-flash', 'HIGH')).toBe('HIGH');
+  });
+});
+
+describe('normalizeThinkingLevelForModel', () => {
+  it('maps MINIMAL to LOW for Gemini 3 Pro text models', () => {
+    expect(normalizeThinkingLevelForModel('gemini-3.1-pro-preview', 'MINIMAL')).toBe('LOW');
+    expect(normalizeThinkingLevelForModel('models/gemini-3-pro-preview', 'MINIMAL')).toBe('LOW');
+  });
+
+  it('keeps MINIMAL for Gemini 3 Flash models', () => {
+    expect(normalizeThinkingLevelForModel('gemini-3-flash-preview', 'MINIMAL')).toBe('MINIMAL');
+    expect(normalizeThinkingLevelForModel('gemini-3.1-flash-lite', 'MINIMAL')).toBe('MINIMAL');
   });
 });
 

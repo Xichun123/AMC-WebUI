@@ -5,7 +5,7 @@ import { buildContentParts } from '@/utils/chat/builder';
 import { isServerCodeExecutionMode } from '@/utils/codeExecution';
 import { generateUniqueId } from '@/utils/chat/ids';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
-import { cleanupFilePreviewUrl, cleanupFilePreviewUrls } from '@/utils/fileHelpers';
+import { cleanupFilePreviewUrl, cleanupFilePreviewUrls } from '@/utils/filePreviewUrls';
 import { countTokensApi } from '@/services/api/generation/tokenApi';
 import {
   appendFunctionDeclarationsToTools,
@@ -20,7 +20,7 @@ import {
   isServerManagedApiEnabledForProxyRequests,
   parseApiKeys,
   SERVER_MANAGED_API_KEY,
-} from '@/utils/apiUtils';
+} from '@/utils/apiKeySelection';
 import { useI18n } from '@/contexts/I18nContext';
 
 interface UseTokenCountLogicProps {

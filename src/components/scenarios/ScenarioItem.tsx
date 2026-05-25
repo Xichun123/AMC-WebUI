@@ -2,7 +2,7 @@ import React from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { type SavedScenario } from '@/types';
 import { Download, Edit3, Trash2, Shield, MessageSquare, Eye, Copy, Sparkles } from 'lucide-react';
-import { SMALL_ICON_BUTTON_CLASS, SMALL_ICON_DANGER_BUTTON_CLASS } from '@/constants/styleClasses';
+import { SMALL_ICON_BUTTON_CLASS, SMALL_ICON_DANGER_BUTTON_CLASS } from '@/constants/buttonClasses';
 
 interface ScenarioItemProps {
   scenario: SavedScenario;
@@ -46,7 +46,6 @@ export const ScenarioItem: React.FC<ScenarioItemProps> = ({
       "
       onClick={() => onLoad(scenario)}
     >
-      {/* Header: Icon & Title */}
       <div className="flex items-center gap-3 mb-3">
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${iconColorClass}`}>
           <Icon size={16} strokeWidth={2} />
@@ -69,7 +68,6 @@ export const ScenarioItem: React.FC<ScenarioItemProps> = ({
         </div>
       </div>
 
-      {/* Content Preview */}
       <div className="flex-grow mb-4">
         <p className="text-xs text-[var(--theme-text-secondary)] leading-relaxed line-clamp-3 opacity-80 group-hover:opacity-100 transition-opacity">
           {scenario.systemInstruction ||
@@ -77,7 +75,6 @@ export const ScenarioItem: React.FC<ScenarioItemProps> = ({
         </p>
       </div>
 
-      {/* Footer Actions - Visible on Hover (Desktop) / Always (Mobile) */}
       <div className="flex items-center justify-end gap-1 pt-3 border-t border-[var(--theme-border-secondary)]/50 opacity-100 pointer-events-auto sm:opacity-0 sm:pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 translate-y-1 group-hover:translate-y-0">
         {isSystem && onView && (
           <ActionButton onClick={onView} icon={Eye} label={t('scenarios_view_title')} scenario={scenario} />

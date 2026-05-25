@@ -1,6 +1,6 @@
 import React, { act } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { renderWithChatAreaProviders } from '@/test/chatAreaFixtures';
+import { renderWithChatAreaProviders } from '@/test/chat-area/fixtures';
 import { ChatInputProvider } from './ChatInputProvider';
 import { useChatInputActionsContext, useChatInputContext } from './ChatInputContext';
 

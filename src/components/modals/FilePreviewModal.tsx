@@ -81,8 +81,8 @@ const FilePreviewModalContent: React.FC<FilePreviewModalContentProps> = ({
     try {
       await copyFileToClipboard(previewFile);
       filePreviewHeaderRef.current?.showCopyFeedback();
-    } catch (err) {
-      logService.error('Failed to copy content:', err);
+    } catch (copyError) {
+      logService.error('Failed to copy content:', copyError);
     }
   }, [previewFile]);
 

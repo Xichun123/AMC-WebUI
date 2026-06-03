@@ -18,10 +18,13 @@ describe('useLiveAudio feedback prevention', () => {
 
   it('suppresses outbound microphone frames while model audio is playing', () => {
     const source = fs.readFileSync(liveAudioPath, 'utf8');
+    const outputSuppressionIndex = source.indexOf('if (outputAudioActiveRef.current)');
+    const audioCallbackIndex = source.indexOf('onAudioData(inputSamples)');
 
     expect(source).toContain('outputAudioActiveRef');
     expect(source).toContain('outputAudioTailTimeoutRef');
-    expect(source).toContain('if (outputAudioActiveRef.current)');
-    expect(source.indexOf('if (outputAudioActiveRef.current)')).toBeLessThan(source.indexOf('onAudioData(inputData)'));
+    expect(outputSuppressionIndex).toBeGreaterThanOrEqual(0);
+    expect(audioCallbackIndex).toBeGreaterThanOrEqual(0);
+    expect(outputSuppressionIndex).toBeLessThan(audioCallbackIndex);
   });
 });

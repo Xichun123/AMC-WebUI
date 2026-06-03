@@ -146,32 +146,6 @@ describe('useAppPromptModes', () => {
     unmount();
   });
 
-  it('loads the selected built-in Live Artifacts prompt version', async () => {
-    mockLoadLiveArtifactsSystemPrompt.mockResolvedValue(LIVE_ARTIFACTS_PROMPT_EN);
-
-    const { result, unmount } = renderHook(() =>
-      useAppPromptModesWithDefaultTheme({
-        appSettings: createAppSettings({ liveArtifactsPromptMode: 'full' }),
-        setAppSettings: vi.fn(),
-        activeChat: createLiveArtifactsSession(),
-        activeSessionId: 'session-1',
-        currentChatSettings: createLiveArtifactsChatSettings(),
-        setCurrentChatSettings: vi.fn(),
-        handleSendMessage: vi.fn(),
-        setCommandedInput: createSetCommandedInputMock(),
-        language: 'en',
-      }),
-    );
-
-    await act(async () => {
-      await result.current.handleLoadLiveArtifactsPromptAndSave();
-    });
-
-    expect(mockLoadLiveArtifactsSystemPrompt).toHaveBeenCalledWith('en', 'full', 'light');
-
-    unmount();
-  });
-
   it('passes the current page theme to the built-in Live Artifacts prompt loader', async () => {
     mockLoadLiveArtifactsSystemPrompt.mockResolvedValue(`${LIVE_ARTIFACTS_PROMPT_EN}\nCurrent Page Theme: dark`);
 
@@ -267,42 +241,6 @@ describe('useAppPromptModes', () => {
     expect(setAppSettings).toHaveBeenCalledWith(expect.any(Function));
     const appSettingsUpdater = setAppSettings.mock.calls.at(-1)?.[0] as (prev: AppSettings) => AppSettings;
     expect(appSettingsUpdater(createAppSettings()).systemInstruction).toBe(customPrompt);
-
-    unmount();
-  });
-
-  it('uses the custom Live Artifacts prompt for the selected prompt version', async () => {
-    const setAppSettings = vi.fn();
-    const setCurrentChatSettings = vi.fn();
-
-    const { result, unmount } = renderHook(() =>
-      useAppPromptModesWithDefaultTheme({
-        appSettings: createAppSettings({
-          liveArtifactsPromptMode: 'fullHtml',
-          liveArtifactsSystemPrompts: {
-            inline: 'Inline custom prompt',
-            full: 'Full custom prompt',
-            fullHtml: 'Complete HTML custom prompt',
-          },
-        }),
-        setAppSettings,
-        activeChat: createLiveArtifactsSession(),
-        activeSessionId: 'session-1',
-        currentChatSettings: createLiveArtifactsChatSettings(),
-        setCurrentChatSettings,
-        handleSendMessage: vi.fn(),
-        setCommandedInput: createSetCommandedInputMock(),
-        language: 'en',
-      }),
-    );
-
-    await act(async () => {
-      await result.current.handleLoadLiveArtifactsPromptAndSave();
-    });
-
-    expect(mockLoadLiveArtifactsSystemPrompt).not.toHaveBeenCalled();
-    const appSettingsUpdater = setAppSettings.mock.calls.at(-1)?.[0] as (prev: AppSettings) => AppSettings;
-    expect(appSettingsUpdater(createAppSettings()).systemInstruction).toBe('Complete HTML custom prompt');
 
     unmount();
   });

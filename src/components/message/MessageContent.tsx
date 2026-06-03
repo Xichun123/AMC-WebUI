@@ -5,6 +5,7 @@ import { MessageThoughts } from './content/MessageThoughts';
 import { MessageText } from './content/MessageText';
 import { MessageFooter } from './content/MessageFooter';
 import type { LiveArtifactFollowupPayload } from '@/utils/liveArtifactFollowup';
+import type { UserMessageCollapseController } from './content/userMessageCollapse';
 
 interface MessageContentProps {
   message: ChatMessage;
@@ -23,6 +24,7 @@ interface MessageContentProps {
   onOpenSidePanel: (content: SideViewContent) => void;
   onConfigureFile?: (file: UploadedFile, messageId: string) => void;
   isGemini3?: boolean;
+  userMessageCollapse?: UserMessageCollapseController;
 }
 
 export const MessageContent: React.FC<MessageContentProps> = React.memo((props) => {

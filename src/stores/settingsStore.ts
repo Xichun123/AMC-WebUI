@@ -9,6 +9,7 @@ import { resolveSupportedModelId, sanitizeModelOptions } from '@/utils/modelSort
 import { dbService } from '@/services/db/dbService';
 import { normalizeLiveArtifactsSystemPrompts } from '@/utils/liveArtifactsPromptSettings';
 import { getBackendFlavor, getRuntimeConfigAppSettingsOverrides } from '@/runtime/runtimeConfig';
+import { resolveUpdaterOrValue, type UpdaterOrValue } from './stateUpdaters';
 
 const LEGACY_DEFAULT_TRANSCRIPTION_MODEL_ID = 'gemini-3-flash-preview';
 
@@ -21,7 +22,7 @@ interface SettingsState {
 }
 
 interface SettingsActions {
-  setAppSettings: (v: AppSettings | ((prev: AppSettings) => AppSettings)) => void;
+  setAppSettings: (value: UpdaterOrValue<AppSettings>) => void;
   loadSettings: () => Promise<void>;
   broadcastSettingsUpdate: () => void;
 }
@@ -44,7 +45,10 @@ function resolveLanguage(language: string): 'en' | 'zh' {
 
 function computeTheme(themeId: string): Theme {
   const resolvedId = resolveThemeId(themeId);
-  return AVAILABLE_THEMES.find((t) => t.id === resolvedId) || AVAILABLE_THEMES.find((t) => t.id === DEFAULT_THEME_ID)!;
+  return (
+    AVAILABLE_THEMES.find((theme) => theme.id === resolvedId) ||
+    AVAILABLE_THEMES.find((theme) => theme.id === DEFAULT_THEME_ID)!
+  );
 }
 
 function sanitizeAppSettings(settings: AppSettings): AppSettings {
@@ -166,7 +170,7 @@ function persistLoadedPreloadOverrides(newSettings: AppSettings, preloadOverride
   dbService
     .setAppSettings(newSettings)
     .then(() => getSettingsChannel()?.postMessage({ type: 'SETTINGS_UPDATED' }))
-    .catch((e) => logService.error('Failed to save settings', { error: e }));
+    .catch((settingsSaveError) => logService.error('Failed to save settings', { error: settingsSaveError }));
 }
 
 export const useSettingsStore = create<SettingsState & SettingsActions>((set) => ({
@@ -174,9 +178,9 @@ export const useSettingsStore = create<SettingsState & SettingsActions>((set) =>
   isSettingsLoaded: false,
   pendingPreloadSettingsOverrides: null,
 
-  setAppSettings: (v) => {
+  setAppSettings: (value) => {
     set((state) => {
-      const next = typeof v === 'function' ? v(state.appSettings) : v;
+      const next = resolveUpdaterOrValue(value, state.appSettings);
       const sanitizedNext = sanitizeAppSettings(next);
       const currentTheme = computeTheme(sanitizedNext.themeId);
       const language = resolveLanguage(sanitizedNext.language);
@@ -185,7 +189,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>((set) =>
         dbService
           .setAppSettings(sanitizedNext)
           .then(() => getSettingsChannel()?.postMessage({ type: 'SETTINGS_UPDATED' }))
-          .catch((e) => logService.error('Failed to save settings', { error: e }));
+          .catch((settingsSaveError) => logService.error('Failed to save settings', { error: settingsSaveError }));
         return {
           appSettings: sanitizedNext,
           currentTheme,
@@ -236,8 +240,8 @@ if (typeof BroadcastChannel !== 'undefined') {
   const channel = getSettingsChannel();
   if (channel) {
     channel.onmessage = (event: MessageEvent<SyncMessage>) => {
-      const msg = event.data;
-      if (msg.type === 'SETTINGS_UPDATED') {
+      const syncMessage = event.data;
+      if (syncMessage.type === 'SETTINGS_UPDATED') {
         logService.info('[Sync] Reloading settings from DB');
         useSettingsStore.getState().loadSettings();
       }

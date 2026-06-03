@@ -4,6 +4,32 @@ import { base64ToBlob } from '@/utils/fileEncoding';
 import { getExtensionFromMimeType } from '@/utils/fileMime';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
 
+const getThoughtHeadingTitle = (line: string): string | null => {
+  if (line.startsWith('## ') || line.startsWith('### ')) {
+    return line.replace(/^[#]+\s*/, '').trim();
+  }
+
+  for (const marker of ['**', '__']) {
+    if (line.startsWith(marker) && line.endsWith(marker) && !line.slice(2, -2).includes(marker)) {
+      return line.substring(2, line.length - 2).trim();
+    }
+  }
+
+  return null;
+};
+
+const buildGeneratedFileName = (baseName: string, extension: string): string => {
+  if (baseName.toLowerCase().endsWith(extension)) {
+    return baseName;
+  }
+
+  if (baseName === 'generated-file' || baseName === 'generated-image') {
+    return `${baseName}-${generateUniqueId().slice(-4)}${extension}`;
+  }
+
+  return `${baseName}${extension}`;
+};
+
 export const parseThoughtProcess = (thoughts: string | undefined) => {
   if (!thoughts) return null;
 
@@ -11,22 +37,11 @@ export const parseThoughtProcess = (thoughts: string | undefined) => {
   let lastHeadingIndex = -1;
   let lastHeading = '';
 
-  for (let i = lines.length - 1; i >= 0; i--) {
-    const line = lines[i].trim();
-    // Check for ## or ### headings
-    if (line.startsWith('## ') || line.startsWith('### ')) {
-      lastHeadingIndex = i;
-      lastHeading = line.replace(/^[#]+\s*/, '').trim();
-      break;
-    }
-    // Check for lines that are entirely bolded (e.g., **Title**)
-    if (
-      (line.startsWith('**') && line.endsWith('**') && !line.slice(2, -2).includes('**')) ||
-      (line.startsWith('__') && line.endsWith('__') && !line.slice(2, -2).includes('__'))
-    ) {
-      lastHeadingIndex = i;
-      // Remove the bold markers from the start and end
-      lastHeading = line.substring(2, line.length - 2).trim();
+  for (let lineIndex = lines.length - 1; lineIndex >= 0; lineIndex--) {
+    const headingTitle = getThoughtHeadingTitle(lines[lineIndex].trim());
+    if (headingTitle !== null) {
+      lastHeadingIndex = lineIndex;
+      lastHeading = headingTitle;
       break;
     }
   }
@@ -54,18 +69,8 @@ export const createUploadedFileFromBase64 = (
   mimeType: string,
   baseName: string = 'generated-file',
 ): UploadedFile => {
-  const ext = getExtensionFromMimeType(mimeType);
-
-  // Ensure filename ends with extension
-  let fileName = baseName;
-  if (!fileName.toLowerCase().endsWith(ext)) {
-    // If baseName is generic "generated-file", append random ID
-    if (baseName === 'generated-file' || baseName === 'generated-image') {
-      fileName = `${baseName}-${generateUniqueId().slice(-4)}${ext}`;
-    } else {
-      fileName = `${baseName}${ext}`;
-    }
-  }
+  const extension = getExtensionFromMimeType(mimeType);
+  const fileName = buildGeneratedFileName(baseName, extension);
 
   const blob = base64ToBlob(base64Data, mimeType);
   const file = new File([blob], fileName, { type: mimeType });

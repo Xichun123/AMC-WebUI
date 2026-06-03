@@ -3,10 +3,10 @@ import type { SavedChatSession } from '@/types';
 import { resolveSupportedModelId } from '@/utils/modelSorting';
 
 export function sortSessionsInPlace<T extends Pick<SavedChatSession, 'isPinned' | 'timestamp'>>(sessions: T[]): T[] {
-  sessions.sort((a, b) => {
-    if (a.isPinned && !b.isPinned) return -1;
-    if (!a.isPinned && b.isPinned) return 1;
-    return b.timestamp - a.timestamp;
+  sessions.sort((leftSession, rightSession) => {
+    if (leftSession.isPinned && !rightSession.isPinned) return -1;
+    if (!leftSession.isPinned && rightSession.isPinned) return 1;
+    return rightSession.timestamp - leftSession.timestamp;
   });
   return sessions;
 }

@@ -2,6 +2,7 @@ import { act } from 'react';
 import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { setupStoreStateReset } from '@/test/stores/reset';
+import { expectNoModelBadges } from '@/test/model-selector/assertions';
 import { ModelListView } from './ModelListView';
 
 describe('ModelListView', () => {
@@ -30,14 +31,7 @@ describe('ModelListView', () => {
     expect(renderer.container.querySelector('input[placeholder="Search models..."]')).toBeNull();
     expect(renderer.container.textContent).toContain('Gemini 3 Pro Image Preview');
     expect(renderer.container.textContent).toContain('Gemma 4 31B IT');
-    expect(renderer.container.querySelector('[data-badge-key="pinned"]')).toBeNull();
-    expect(renderer.container.querySelector('[data-badge-key="flash"]')).toBeNull();
-    expect(renderer.container.querySelector('[data-badge-key="pro"]')).toBeNull();
-    expect(renderer.container.querySelector('[data-badge-key="gemma"]')).toBeNull();
-    expect(renderer.container.querySelector('[data-badge-key="live"]')).toBeNull();
-    expect(renderer.container.querySelector('[data-badge-key="tts"]')).toBeNull();
-    expect(renderer.container.querySelector('[data-badge-key="image"]')).toBeNull();
-    expect(renderer.container.querySelector('[data-badge-key="robotics"]')).toBeNull();
+    expectNoModelBadges(renderer.container);
     expect(renderer.container.textContent).not.toContain('Pinned');
     expect(renderer.container.textContent).not.toContain('Speech');
   });

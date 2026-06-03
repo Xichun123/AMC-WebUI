@@ -49,7 +49,7 @@ export const ModelPicker: React.FC<ModelPickerProps> = ({
 
   const sections = useMemo(() => buildModelCatalogSections(filteredEntries), [filteredEntries]);
   const visibleEntries = useMemo(() => sections.flatMap((section) => section.entries), [sections]);
-  const selectedModel = models.find((m) => m.id === selectedId);
+  const selectedModel = models.find((model) => model.id === selectedId);
   const selectedIndex = visibleEntries.findIndex((entry) => entry.id === selectedId);
   const getInitialActiveIndex = () => (selectedIndex >= 0 ? selectedIndex : visibleEntries.length > 0 ? 0 : -1);
   const setOpenState = (nextIsOpen: boolean) => {

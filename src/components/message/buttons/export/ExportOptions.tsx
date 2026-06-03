@@ -63,11 +63,14 @@ export const ExportOptions: React.FC<ExportOptionsProps> = ({ onExport, variant 
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      {options.map((opt) => (
-        <button
-          key={opt.id}
-          onClick={() => onExport(opt.id)}
-          className={`
+      {options.map((exportOption) => {
+        const ExportIcon = exportOption.icon;
+
+        return (
+          <button
+            key={exportOption.id}
+            onClick={() => onExport(exportOption.id)}
+            className={`
                         flex flex-col items-center justify-center gap-3 p-6 
                         bg-[var(--theme-bg-secondary)] hover:bg-[var(--theme-bg-tertiary)] 
                         rounded-lg border border-[var(--theme-border-secondary)] 
@@ -75,12 +78,13 @@ export const ExportOptions: React.FC<ExportOptionsProps> = ({ onExport, variant 
                         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--theme-bg-primary)] focus:ring-[var(--theme-border-focus)] 
                         transform hover:-translate-y-1 hover:shadow-lg
                     `}
-        >
-          <opt.icon size={buttonIconSize} className={opt.colorClass} strokeWidth={1.5} />
-          <span className="font-semibold text-base text-[var(--theme-text-primary)]">{opt.label}</span>
-          <span className="text-xs text-center text-[var(--theme-text-tertiary)]">{opt.desc}</span>
-        </button>
-      ))}
+          >
+            <ExportIcon size={buttonIconSize} className={exportOption.colorClass} strokeWidth={1.5} />
+            <span className="font-semibold text-base text-[var(--theme-text-primary)]">{exportOption.label}</span>
+            <span className="text-xs text-center text-[var(--theme-text-tertiary)]">{exportOption.desc}</span>
+          </button>
+        );
+      })}
     </div>
   );
 };

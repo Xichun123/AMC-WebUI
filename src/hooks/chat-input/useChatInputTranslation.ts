@@ -2,7 +2,7 @@ import { logService } from '@/services/logService';
 import { useCallback, type Dispatch, type SetStateAction } from 'react';
 import type { AppSettings, ChatSettings } from '@/types';
 import { translateTextApi } from '@/services/api/generation/textApi';
-import { getApiKeyErrorTranslationKey, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
+import { formatApiKeyErrorMessage, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
 import { useI18n } from '@/contexts/I18nContext';
 
 interface UseChatInputTranslationParams {
@@ -35,8 +35,7 @@ export const useChatInputTranslation = ({
 
     const keyResult = getGeminiKeyForRequest(appSettings, currentChatSettings, { skipIncrement: true });
     if ('error' in keyResult) {
-      const translationKey = getApiKeyErrorTranslationKey(keyResult.error);
-      setAppFileError(translationKey ? t(translationKey) : keyResult.error);
+      setAppFileError(formatApiKeyErrorMessage(keyResult.error, t));
       setTranslating(false);
       return;
     }

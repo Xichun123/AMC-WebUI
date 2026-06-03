@@ -17,6 +17,8 @@ interface TextEditorModalProps {
 
 type TextEditorModalContentProps = Omit<TextEditorModalProps, 'isOpen'>;
 
+const TEXT_EDITOR_AUTO_FOCUS_DELAY_MS = 100;
+
 const TextEditorModalContent: React.FC<TextEditorModalContentProps> = ({
   onClose,
   title,
@@ -29,22 +31,21 @@ const TextEditorModalContent: React.FC<TextEditorModalContentProps> = ({
   const { t } = useI18n();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Use local state to decouple rendering from global app state during active typing
-  const [localValue, setLocalValue] = useState(value);
+  const [draftValue, setDraftValue] = useState(value);
 
   useEffect(() => {
-    const focusTimeout = setTimeout(() => textareaRef.current?.focus(), 100);
+    const focusTimeout = setTimeout(() => textareaRef.current?.focus(), TEXT_EDITOR_AUTO_FOCUS_DELAY_MS);
     return () => clearTimeout(focusTimeout);
   }, []);
 
   const handleValueChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (readOnly) return;
-    setLocalValue(e.target.value);
+    setDraftValue(e.target.value);
   };
 
   const handleDone = () => {
-    if (!readOnly && localValue !== value) {
-      onChange(localValue);
+    if (!readOnly && draftValue !== value) {
+      onChange(draftValue);
     }
     onClose();
   };
@@ -68,7 +69,7 @@ const TextEditorModalContent: React.FC<TextEditorModalContentProps> = ({
         <div className="flex-grow p-4 flex flex-col min-h-0 bg-[var(--theme-bg-primary)]">
           <textarea
             ref={textareaRef}
-            value={localValue}
+            value={draftValue}
             onChange={handleValueChange}
             readOnly={readOnly}
             className="flex-grow w-full p-4 bg-[var(--theme-bg-input)] border border-[var(--theme-border-secondary)] rounded-lg focus:ring-2 focus:ring-[var(--theme-border-focus)] focus:border-transparent text-[var(--theme-text-primary)] placeholder-[var(--theme-text-tertiary)] outline-none transition-all resize-none custom-scrollbar font-mono text-sm leading-relaxed"

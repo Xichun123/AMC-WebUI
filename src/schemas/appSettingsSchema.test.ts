@@ -18,7 +18,7 @@ describe('appSettingsSchema', () => {
     expect((settings as { liveArtifactsSystemPrompt?: string }).liveArtifactsSystemPrompt).toBe('');
   });
 
-  it('preserves per-version custom Live Artifacts prompts from imported settings', () => {
+  it('preserves only the inline custom Live Artifacts prompt from imported settings', () => {
     const settings = sanitizeImportedAppSettings({
       liveArtifactsSystemPrompts: {
         inline: 'Inline custom prompt',
@@ -36,8 +36,6 @@ describe('appSettingsSchema', () => {
       ).liveArtifactsSystemPrompts,
     ).toEqual({
       inline: 'Inline custom prompt',
-      full: 'Full custom prompt',
-      fullHtml: 'Complete HTML custom prompt',
     });
   });
 
@@ -47,20 +45,32 @@ describe('appSettingsSchema', () => {
     expect(settings.liveArtifactsPromptMode).toBe('inline');
   });
 
-  it('preserves valid Live Artifacts built-in prompt modes', () => {
-    const settings = sanitizeImportedAppSettings({
+  it('falls back to inline when importing retired Live Artifacts prompt modes', () => {
+    const fullSettings = sanitizeImportedAppSettings({
       liveArtifactsPromptMode: 'full',
     });
-
-    expect(settings.liveArtifactsPromptMode).toBe('full');
-  });
-
-  it('preserves the complete HTML Live Artifacts built-in prompt mode', () => {
-    const settings = sanitizeImportedAppSettings({
+    const fullHtmlSettings = sanitizeImportedAppSettings({
       liveArtifactsPromptMode: 'fullHtml',
     });
 
-    expect(settings.liveArtifactsPromptMode).toBe('fullHtml');
+    expect(fullSettings.liveArtifactsPromptMode).toBe('inline');
+    expect(fullHtmlSettings.liveArtifactsPromptMode).toBe('inline');
+  });
+
+  it('preserves valid Live Artifacts custom font size settings from imported settings', () => {
+    const settings = sanitizeImportedAppSettings({
+      liveArtifactsCustomFontSize: 22,
+    });
+
+    expect(settings.liveArtifactsCustomFontSize).toBe(22);
+  });
+
+  it('falls back for invalid Live Artifacts custom font size settings', () => {
+    const settings = sanitizeImportedAppSettings({
+      liveArtifactsCustomFontSize: 99,
+    });
+
+    expect(settings.liveArtifactsCustomFontSize).toBe(16);
   });
 
   it('preserves valid MCP server settings from imported settings', () => {

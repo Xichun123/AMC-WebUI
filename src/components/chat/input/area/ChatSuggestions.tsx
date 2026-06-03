@@ -69,13 +69,13 @@ export const ChatSuggestions: React.FC<ChatSuggestionsProps> = ({
         onScroll={checkScroll}
         className="flex gap-2 overflow-x-auto pb-1 px-1 no-scrollbar fade-mask-x scroll-smooth"
       >
-        {SUGGESTIONS_KEYS.map((s, i) => (
-          <React.Fragment key={i}>
+        {SUGGESTIONS_KEYS.map((suggestion, index) => (
+          <React.Fragment key={index}>
             <button
               type="button"
               onClick={() => {
-                const text = t(s.descKey as keyof typeof translations);
-                if (s.specialAction === 'organize' && onOrganizeInfoClick) {
+                const text = t(suggestion.descKey as keyof typeof translations);
+                if (suggestion.specialAction === 'organize' && onOrganizeInfoClick) {
                   onOrganizeInfoClick(text);
                 } else if (onSuggestionClick) {
                   onSuggestionClick(text);
@@ -90,12 +90,11 @@ export const ChatSuggestions: React.FC<ChatSuggestionsProps> = ({
                                 transition-all shadow-sm
                             "
             >
-              <SuggestionIcon iconName={s.icon} />
-              <span>{t(s.titleKey as keyof typeof translations)}</span>
+              <SuggestionIcon iconName={suggestion.icon} />
+              <span>{t(suggestion.titleKey as keyof typeof translations)}</span>
             </button>
 
-            {/* Insert BBox and Guide Buttons after "Smart Board" (organize action) if available */}
-            {s.specialAction === 'organize' && (
+            {suggestion.specialAction === 'organize' && (
               <>
                 {onToggleBBox && (
                   <button

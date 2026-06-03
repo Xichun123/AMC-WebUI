@@ -1,35 +1,21 @@
-import { act, type ComponentProps } from 'react';
+import { act } from 'react';
 import { fireEvent } from '@testing-library/react';
 import { setupTestRenderer } from '@/test/render/renderer';
 import { describe, expect, it, vi } from 'vitest';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { BasicMarkdownRenderer } from './BasicMarkdownRenderer';
+import {
+  createBasicMarkdownRendererElement,
+  renderBasicMarkdown,
+  type BasicMarkdownRendererTestProps,
+} from '@/test/message/basicMarkdownRenderer';
 
 describe('BasicMarkdownRenderer Live Artifacts', () => {
   const renderer = setupTestRenderer();
-  const renderMarkdown = (props: Partial<ComponentProps<typeof BasicMarkdownRenderer>> & { content: string }) => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-          {...props}
-        />,
-      );
-    });
-  };
+  const renderMarkdown = (props: BasicMarkdownRendererTestProps) => renderBasicMarkdown(renderer.root, props);
 
   it('renders standalone multiline raw html fragments without accidental code blocks', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={`<div style="padding:24px;background:#f8f9fa">
+    renderMarkdown({
+      content: `<div style="padding:24px;background:#f8f9fa">
   <section style="background:white">
     <p>Transformer summary</p>
   </section>
@@ -38,18 +24,8 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
   <div style="display:grid">
     <strong>Self-Attention</strong>
   </div>
-</div>`}
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
+</div>`,
+      allowHtml: true,
     });
 
     const iframe = renderer.container.querySelector('iframe[title="HTML Preview"]');
@@ -61,28 +37,17 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
   });
 
   it('renders streaming raw html fragments inside stable artifact frames before they close', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={`<div style="padding:24px;background:#f8f9fa">
+    renderMarkdown({
+      content: `<div style="padding:24px;background:#f8f9fa">
     <section style="background:white">
         <p>Transformer summary</p>
     </section>
 
     <!-- 三大核心特性 -->
     <div style="display:grid">
-        <strong>Self-Attention</strong>`}
-          isLoading={true}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
+        <strong>Self-Attention</strong>`,
+      isLoading: true,
+      allowHtml: true,
     });
 
     const iframe = renderer.container.querySelector('iframe[title="HTML Preview"]');
@@ -97,22 +62,7 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
   it('renders streaming full html documents inside artifact frames before they close', () => {
     const partialDocument = '<!DOCTYPE html><html><head><title>Live</title></head><body><main>Loading';
 
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={partialDocument}
-          isLoading={true}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
-    });
+    renderMarkdown({ content: partialDocument, isLoading: true, allowHtml: true });
 
     const iframe = renderer.container.querySelector('iframe[title="HTML Preview"]');
 
@@ -123,21 +73,10 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
   });
 
   it('shows a stable pending frame for streaming interaction JSON before it parses', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={'```amc-live-artifact-interaction\n{"instruction":"Collect","schema":{'}
-          isLoading={true}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
+    renderMarkdown({
+      content: '```amc-live-artifact-interaction\n{"instruction":"Collect","schema":{',
+      isLoading: true,
+      allowHtml: true,
     });
 
     expect(renderer.container.querySelector('[data-live-artifact-interaction-pending="true"]')).not.toBeNull();
@@ -145,21 +84,9 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
   });
 
   it('hides markdown preview affordances when interactive mode is disabled', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={'```html\n<html><body>Hello</body></html>\n```'}
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-          interactiveMode="disabled"
-        />,
-      );
+    renderMarkdown({
+      content: '```html\n<html><body>Hello</body></html>\n```',
+      interactiveMode: 'disabled',
     });
 
     expect(renderer.container.querySelector('[title="Open in Side Panel"]')).toBeNull();
@@ -171,21 +98,7 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
     const document =
       '<!DOCTYPE html><html><head><title>Demo Artifact</title></head><body><main>Hello</main></body></html>';
 
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={`\`\`\`html\n${document}\n\`\`\``}
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
-    });
+    renderMarkdown({ content: `\`\`\`html\n${document}\n\`\`\`` });
 
     const iframe = renderer.container.querySelector('iframe[title="HTML Preview"]');
 
@@ -209,21 +122,9 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
   });
 
   it('renders standalone raw html fragments inside artifact frames instead of the message dom', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={'<section style="display:grid"><strong>Inline Artifact</strong></section>'}
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
+    renderMarkdown({
+      content: '<section style="display:grid"><strong>Inline Artifact</strong></section>',
+      allowHtml: true,
     });
 
     const iframe = renderer.container.querySelector('iframe[title="HTML Preview"]');
@@ -234,22 +135,22 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
     expect(renderer.container.querySelector('pre')).toBeNull();
   });
 
+  it('passes the configured Live Artifacts font size into artifact frames', () => {
+    renderMarkdown({
+      content: '<section style="display:grid"><strong>Inline Artifact</strong></section>',
+      allowHtml: true,
+      liveArtifactFontSize: 21,
+    });
+
+    const iframe = renderer.container.querySelector('iframe[title="HTML Preview"]');
+
+    expect(iframe?.getAttribute('srcdoc')).toContain('--amc-live-artifact-font-size:21px');
+  });
+
   it('does not show inline action buttons over Live Artifact frames', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={'<section style="display:grid"><strong>Inline Artifact</strong></section>'}
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
+    renderMarkdown({
+      content: '<section style="display:grid"><strong>Inline Artifact</strong></section>',
+      allowHtml: true,
     });
 
     const artifactFrame = renderer.container.querySelector('[data-live-artifact-frame="true"]');
@@ -262,24 +163,11 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
   it('forwards valid Live Artifact follow-up payloads from the current iframe only', () => {
     const handleFollowUp = vi.fn();
 
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={
-            '<section><button data-amc-followup="{&quot;instruction&quot;:&quot;Continue&quot;}">Continue</button></section>'
-          }
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          onLiveArtifactFollowUp={handleFollowUp}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
+    renderMarkdown({
+      content:
+        '<section><button data-amc-followup="{&quot;instruction&quot;:&quot;Continue&quot;}">Continue</button></section>',
+      onLiveArtifactFollowUp: handleFollowUp,
+      allowHtml: true,
     });
 
     const iframe = renderer.container.querySelector<HTMLIFrameElement>('iframe[title="HTML Preview"]');
@@ -357,22 +245,10 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
       },
     };
 
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={`\`\`\`amc-live-artifact-interaction\n${JSON.stringify(interaction, null, 2)}\n\`\`\``}
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          onLiveArtifactFollowUp={handleFollowUp}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
+    renderMarkdown({
+      content: `\`\`\`amc-live-artifact-interaction\n${JSON.stringify(interaction, null, 2)}\n\`\`\``,
+      onLiveArtifactFollowUp: handleFollowUp,
+      allowHtml: true,
     });
 
     const form = renderer.container.querySelector<HTMLFormElement>('[data-live-artifact-interaction="true"]');
@@ -436,19 +312,11 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
     };
     const renderInteraction = (interaction: object) => {
       renderer.root.render(
-        <BasicMarkdownRenderer
-          content={`\`\`\`amc-live-artifact-interaction\n${JSON.stringify(interaction, null, 2)}\n\`\`\``}
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          onLiveArtifactFollowUp={handleFollowUp}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
+        createBasicMarkdownRendererElement({
+          content: `\`\`\`amc-live-artifact-interaction\n${JSON.stringify(interaction, null, 2)}\n\`\`\``,
+          onLiveArtifactFollowUp: handleFollowUp,
+          allowHtml: true,
+        }),
       );
     };
 
@@ -488,23 +356,11 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
       },
     };
 
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={`\`\`\`amc-live-artifact-interaction\n${JSON.stringify(interaction, null, 2)}\n\`\`\``}
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          onLiveArtifactFollowUp={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-          interactiveMode="disabled"
-        />,
-      );
+    renderMarkdown({
+      content: `\`\`\`amc-live-artifact-interaction\n${JSON.stringify(interaction, null, 2)}\n\`\`\``,
+      onLiveArtifactFollowUp: vi.fn(),
+      allowHtml: true,
+      interactiveMode: 'disabled',
     });
 
     expect(renderer.container.querySelector('[data-live-artifact-interaction="true"]')).toBeNull();
@@ -526,22 +382,10 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
     };
 
     try {
-      act(() => {
-        renderer.root.render(
-          <BasicMarkdownRenderer
-            content={`\`\`\`amc-live-artifact-interaction\n${JSON.stringify(interaction, null, 2)}\n\`\`\``}
-            isLoading={false}
-            onImageClick={vi.fn()}
-            onOpenHtmlPreview={vi.fn()}
-            onLiveArtifactFollowUp={vi.fn()}
-            expandCodeBlocksByDefault={false}
-            isMermaidRenderingEnabled={false}
-            isGraphvizRenderingEnabled={false}
-            allowHtml
-            themeId="pearl"
-            onOpenSidePanel={vi.fn()}
-          />,
-        );
+      renderMarkdown({
+        content: `\`\`\`amc-live-artifact-interaction\n${JSON.stringify(interaction, null, 2)}\n\`\`\``,
+        onLiveArtifactFollowUp: vi.fn(),
+        allowHtml: true,
       });
 
       expect(renderer.container.querySelector('button[type="submit"]')?.textContent).toContain('继续');
@@ -558,21 +402,7 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
   it('resizes artifact frames from the iframe bridge height message without capping into internal scroll', () => {
     const document = '<!DOCTYPE html><html><body><main style="height:512px">Tall</main></body></html>';
 
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={document}
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
-    });
+    renderMarkdown({ content: document });
 
     const iframe = renderer.container.querySelector<HTMLIFrameElement>('iframe[title="HTML Preview"]');
     const viewport = renderer.container.querySelector<HTMLElement>('[data-live-artifact-viewport="true"]');
@@ -595,20 +425,11 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
 
   it('preserves measured artifact height when the same message remounts during list scrolling', () => {
     const document = '<!DOCTYPE html><html><body><main style="height:960px">Stable</main></body></html>';
-    const renderArtifact = () => (
-      <BasicMarkdownRenderer
-        content={document}
-        messageId="artifact-message-1"
-        isLoading={false}
-        onImageClick={vi.fn()}
-        onOpenHtmlPreview={vi.fn()}
-        expandCodeBlocksByDefault={false}
-        isMermaidRenderingEnabled={false}
-        isGraphvizRenderingEnabled={false}
-        themeId="pearl"
-        onOpenSidePanel={vi.fn()}
-      />
-    );
+    const renderArtifact = () =>
+      createBasicMarkdownRendererElement({
+        content: document,
+        messageId: 'artifact-message-1',
+      });
 
     act(() => {
       renderer.root.render(renderArtifact());
@@ -645,19 +466,10 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
   it('resets artifact frame height when the html content changes in place', () => {
     const firstDocument = '<!DOCTYPE html><html><body><main>First</main></body></html>';
     const secondDocument = '<!DOCTYPE html><html><body><main>Second</main></body></html>';
-    const renderArtifact = (document: string) => (
-      <BasicMarkdownRenderer
-        content={document}
-        isLoading={false}
-        onImageClick={vi.fn()}
-        onOpenHtmlPreview={vi.fn()}
-        expandCodeBlocksByDefault={false}
-        isMermaidRenderingEnabled={false}
-        isGraphvizRenderingEnabled={false}
-        themeId="pearl"
-        onOpenSidePanel={vi.fn()}
-      />
-    );
+    const renderArtifact = (document: string) =>
+      createBasicMarkdownRendererElement({
+        content: document,
+      });
 
     act(() => {
       renderer.root.render(renderArtifact(firstDocument));
@@ -691,20 +503,12 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
     const firstDocument = '<!DOCTYPE html><html><body><main>Streaming first</main></body></html>';
     const secondDocument =
       '<!DOCTYPE html><html><body><main><section>Streaming second</section><section>More content</section></main></body></html>';
-    const renderArtifact = (document: string) => (
-      <BasicMarkdownRenderer
-        content={document}
-        messageId="streaming-artifact-message"
-        isLoading={true}
-        onImageClick={vi.fn()}
-        onOpenHtmlPreview={vi.fn()}
-        expandCodeBlocksByDefault={false}
-        isMermaidRenderingEnabled={false}
-        isGraphvizRenderingEnabled={false}
-        themeId="pearl"
-        onOpenSidePanel={vi.fn()}
-      />
-    );
+    const renderArtifact = (document: string) =>
+      createBasicMarkdownRendererElement({
+        content: document,
+        messageId: 'streaming-artifact-message',
+        isLoading: true,
+      });
 
     act(() => {
       renderer.root.render(renderArtifact(firstDocument));
@@ -734,20 +538,12 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
     const firstDocument = '<!DOCTYPE html><html><body><main>Streaming first</main></body></html>';
     const secondDocument =
       '<!DOCTYPE html><html><body><main><section>Streaming second</section><section>More content</section></main></body></html>';
-    const renderArtifact = (document: string) => (
-      <BasicMarkdownRenderer
-        content={document}
-        messageId="streaming-artifact-identity-message"
-        isLoading={true}
-        onImageClick={vi.fn()}
-        onOpenHtmlPreview={vi.fn()}
-        expandCodeBlocksByDefault={false}
-        isMermaidRenderingEnabled={false}
-        isGraphvizRenderingEnabled={false}
-        themeId="pearl"
-        onOpenSidePanel={vi.fn()}
-      />
-    );
+    const renderArtifact = (document: string) =>
+      createBasicMarkdownRendererElement({
+        content: document,
+        messageId: 'streaming-artifact-identity-message',
+        isLoading: true,
+      });
 
     act(() => {
       renderer.root.render(renderArtifact(firstDocument));
@@ -768,20 +564,12 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
 
   it('keeps the measured artifact frame height when streaming completes with the final html content', () => {
     const document = '<!DOCTYPE html><html><body><main>Streaming final</main></body></html>';
-    const renderArtifact = (isLoading: boolean) => (
-      <BasicMarkdownRenderer
-        content={document}
-        messageId="completed-streaming-artifact-message"
-        isLoading={isLoading}
-        onImageClick={vi.fn()}
-        onOpenHtmlPreview={vi.fn()}
-        expandCodeBlocksByDefault={false}
-        isMermaidRenderingEnabled={false}
-        isGraphvizRenderingEnabled={false}
-        themeId="pearl"
-        onOpenSidePanel={vi.fn()}
-      />
-    );
+    const renderArtifact = (isLoading: boolean) =>
+      createBasicMarkdownRendererElement({
+        content: document,
+        messageId: 'completed-streaming-artifact-message',
+        isLoading,
+      });
 
     act(() => {
       renderer.root.render(renderArtifact(true));

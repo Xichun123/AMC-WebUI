@@ -31,6 +31,8 @@ const hasRawHtmlInlineStyle = (node?: HastElementLike): boolean => {
   return typeof node?.properties?.style === 'string' && node.properties.style.trim().length > 0;
 };
 
+const COPY_FEEDBACK_MS = 2000;
+
 const hasInlineStyle = (node: React.ReactNode): boolean => {
   return React.Children.toArray(node).some((child) => {
     if (!React.isValidElement<TableChildProps>(child)) {
@@ -76,9 +78,9 @@ export const TableBlock: React.FC<TableBlockProps> = ({ children, className, nod
       const markdown = convertHtmlToMarkdown(tableRef.current.outerHTML);
       await navigator.clipboard.writeText(markdown);
       setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (e) {
-      logService.error('Failed to copy markdown table', e);
+      setTimeout(() => setIsCopied(false), COPY_FEEDBACK_MS);
+    } catch (error) {
+      logService.error('Failed to copy markdown table', error);
     }
   };
 

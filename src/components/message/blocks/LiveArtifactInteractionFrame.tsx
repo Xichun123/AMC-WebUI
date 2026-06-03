@@ -14,6 +14,7 @@ import {
 
 interface LiveArtifactInteractionFrameProps {
   spec: LiveArtifactInteractionSpec;
+  baseFontSize?: number;
   onFollowUp?: (payload: LiveArtifactFollowupPayload) => void;
 }
 
@@ -129,7 +130,12 @@ const getEnumOptionLabel = (property: LiveArtifactInteractionProperty, index: nu
   return enumValue === undefined ? '' : String(enumValue);
 };
 
-const LiveArtifactInteractionForm: React.FC<LiveArtifactInteractionFormProps> = ({ spec, fields, onFollowUp }) => {
+const LiveArtifactInteractionForm: React.FC<LiveArtifactInteractionFormProps> = ({
+  spec,
+  fields,
+  baseFontSize,
+  onFollowUp,
+}) => {
   const { t } = useI18n();
   const [state, setState] = useState<FormState>(() => createInitialState(fields));
   const [errors, setErrors] = useState<FormErrors>({});
@@ -181,7 +187,7 @@ const LiveArtifactInteractionForm: React.FC<LiveArtifactInteractionFormProps> = 
     const errorId = `${field.key}-error`;
     const describedBy = [field.description ? descriptionId : null, error ? errorId : null].filter(Boolean).join(' ');
     const commonControlClassName =
-      'mt-1.5 w-full rounded-md border border-[var(--theme-border-primary)] bg-[var(--theme-bg-input)] px-3 py-2 text-sm text-[var(--theme-text-primary)] outline-none transition focus:border-[var(--theme-border-focus)] focus:ring-2 focus:ring-[var(--theme-border-focus)]/20';
+      'mt-1.5 w-full rounded-md border border-[var(--theme-border-primary)] bg-[var(--theme-bg-input)] px-3 py-2 text-[0.875em] text-[var(--theme-text-primary)] outline-none transition focus:border-[var(--theme-border-focus)] focus:ring-2 focus:ring-[var(--theme-border-focus)]/20';
 
     if (field.property.type === 'boolean') {
       return (
@@ -199,14 +205,14 @@ const LiveArtifactInteractionForm: React.FC<LiveArtifactInteractionFormProps> = 
             className="mt-1 h-4 w-4 rounded border-[var(--theme-border-primary)] accent-[var(--theme-bg-accent)]"
           />
           <span className="min-w-0">
-            <span className="block text-sm font-medium text-[var(--theme-text-primary)]">{field.label}</span>
+            <span className="block text-[0.875em] font-medium text-[var(--theme-text-primary)]">{field.label}</span>
             {field.description && (
-              <span className="mt-0.5 block text-xs leading-relaxed text-[var(--theme-text-secondary)]">
+              <span className="mt-0.5 block text-[0.75em] leading-relaxed text-[var(--theme-text-secondary)]">
                 {field.description}
               </span>
             )}
             {error && (
-              <span id={errorId} className="mt-1 block text-xs text-[var(--theme-text-danger)]">
+              <span id={errorId} className="mt-1 block text-[0.75em] text-[var(--theme-text-danger)]">
                 {error}
               </span>
             )}
@@ -217,12 +223,15 @@ const LiveArtifactInteractionForm: React.FC<LiveArtifactInteractionFormProps> = 
 
     return (
       <label key={field.key} className="block">
-        <span className="text-sm font-medium text-[var(--theme-text-primary)]">
+        <span className="text-[0.875em] font-medium text-[var(--theme-text-primary)]">
           {field.label}
           {field.required && <span className="ml-1 text-[var(--theme-text-danger)]">*</span>}
         </span>
         {field.description && (
-          <span id={descriptionId} className="mt-0.5 block text-xs leading-relaxed text-[var(--theme-text-secondary)]">
+          <span
+            id={descriptionId}
+            className="mt-0.5 block text-[0.75em] leading-relaxed text-[var(--theme-text-secondary)]"
+          >
             {field.description}
           </span>
         )}
@@ -276,7 +285,7 @@ const LiveArtifactInteractionForm: React.FC<LiveArtifactInteractionFormProps> = 
         )}
 
         {error && (
-          <span id={errorId} className="mt-1 block text-xs text-[var(--theme-text-danger)]">
+          <span id={errorId} className="mt-1 block text-[0.75em] text-[var(--theme-text-danger)]">
             {error}
           </span>
         )}
@@ -289,22 +298,23 @@ const LiveArtifactInteractionForm: React.FC<LiveArtifactInteractionFormProps> = 
       data-live-artifact-interaction="true"
       onSubmit={handleSubmit}
       className="my-3 rounded-lg border border-[var(--theme-border-primary)] bg-[var(--theme-bg-model-message)] p-4 shadow-sm"
+      style={baseFontSize ? { fontSize: `${baseFontSize}px` } : undefined}
     >
       <div className="mb-4">
-        {spec.title && <h2 className="text-base font-semibold text-[var(--theme-text-primary)]">{spec.title}</h2>}
+        {spec.title && <h2 className="text-[1em] font-semibold text-[var(--theme-text-primary)]">{spec.title}</h2>}
         {spec.description && (
-          <p className="mt-1 text-sm leading-relaxed text-[var(--theme-text-secondary)]">{spec.description}</p>
+          <p className="mt-1 text-[0.875em] leading-relaxed text-[var(--theme-text-secondary)]">{spec.description}</p>
         )}
       </div>
 
       <div className="grid gap-3">{fields.map(renderField)}</div>
 
-      {formError && <p className="mt-3 text-sm text-[var(--theme-text-danger)]">{formError}</p>}
+      {formError && <p className="mt-3 text-[0.875em] text-[var(--theme-text-danger)]">{formError}</p>}
 
       <div className="mt-4 flex justify-end">
         <button
           type="submit"
-          className="inline-flex items-center gap-2 rounded-md bg-[var(--theme-bg-accent)] px-3 py-2 text-sm font-medium text-[var(--theme-text-accent)] transition hover:bg-[var(--theme-bg-accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-border-focus)]/30"
+          className="inline-flex items-center gap-2 rounded-md bg-[var(--theme-bg-accent)] px-3 py-2 text-[0.875em] font-medium text-[var(--theme-text-accent)] transition hover:bg-[var(--theme-bg-accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-border-focus)]/30"
         >
           <Send size={15} />
           <span>{spec.submitLabel || t('liveArtifactInteraction_continue')}</span>
@@ -314,9 +324,21 @@ const LiveArtifactInteractionForm: React.FC<LiveArtifactInteractionFormProps> = 
   );
 };
 
-export const LiveArtifactInteractionFrame: React.FC<LiveArtifactInteractionFrameProps> = ({ spec, onFollowUp }) => {
+export const LiveArtifactInteractionFrame: React.FC<LiveArtifactInteractionFrameProps> = ({
+  spec,
+  baseFontSize,
+  onFollowUp,
+}) => {
   const specSignature = JSON.stringify(spec);
   const fields = getLiveArtifactInteractionFields(spec);
 
-  return <LiveArtifactInteractionForm key={specSignature} spec={spec} fields={fields} onFollowUp={onFollowUp} />;
+  return (
+    <LiveArtifactInteractionForm
+      key={specSignature}
+      spec={spec}
+      fields={fields}
+      baseFontSize={baseFontSize}
+      onFollowUp={onFollowUp}
+    />
+  );
 };

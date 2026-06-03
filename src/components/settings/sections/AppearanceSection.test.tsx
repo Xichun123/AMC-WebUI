@@ -1,4 +1,5 @@
 import { act } from 'react';
+import { fireEvent } from '@testing-library/react';
 import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { describe, expect, it, vi } from 'vitest';
 import { useSettingsStore } from '@/stores/settingsStore';
@@ -36,6 +37,7 @@ describe('AppearanceSection', () => {
 
     expect(renderer.container.textContent).toContain('Theme');
     expect(renderer.container.textContent).toContain('Reading Size');
+    expect(renderer.container.textContent).toContain('Live Artifacts Size');
     expect(renderer.container.textContent).toContain('Input Toolbar');
     expect(renderer.container.textContent).toContain('Streaming Responses');
     expect(renderer.container.textContent).toContain('Show Translate Button');
@@ -50,6 +52,7 @@ describe('AppearanceSection', () => {
 
     expect(renderer.container.textContent).toContain('主题');
     expect(renderer.container.textContent).toContain('阅读字号');
+    expect(renderer.container.textContent).toContain('Live Artifacts 字号');
     expect(renderer.container.textContent).toContain('输入框工具栏');
     expect(renderer.container.textContent).toContain('流式输出');
     expect(renderer.container.textContent).toContain('显示翻译按钮');
@@ -70,6 +73,29 @@ describe('AppearanceSection', () => {
 
     expect(renderer.container.textContent).not.toContain('点按回复即发');
     expect(renderer.container.textContent).not.toContain('Tap to Send Reply');
+  });
+
+  it('updates the custom Live Artifacts font size', async () => {
+    const onUpdate = vi.fn();
+
+    await renderAppearanceSection({
+      language: 'zh',
+      settings: {
+        liveArtifactsCustomFontSize: 19,
+      },
+      onUpdate,
+    });
+
+    const slider = renderer.container.querySelector<HTMLInputElement>('#live-artifacts-custom-font-size');
+    expect(slider).not.toBeNull();
+    expect(slider?.value).toBe('19');
+    expect(renderer.container.querySelector('#live-artifacts-font-size-mode')).toBeNull();
+
+    act(() => {
+      fireEvent.change(slider!, { target: { value: '22' } });
+    });
+
+    expect(onUpdate).toHaveBeenCalledWith('liveArtifactsCustomFontSize', 22);
   });
 
   it('updates the translate button visibility preference from the input toolbar group', async () => {

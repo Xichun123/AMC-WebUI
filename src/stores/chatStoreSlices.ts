@@ -1,6 +1,6 @@
 import { type InputCommand, type UploadedFile, type ImageOutputMode, type ImagePersonGeneration } from '@/types';
+import { resolveUpdaterOrValue, type UpdaterOrValue } from './stateUpdaters';
 
-type UpdaterOrValue<T> = T | ((prev: T) => T);
 type SliceSet<T> = (partial: Partial<T> | ((state: T) => Partial<T>)) => void;
 
 export interface ChatUiSliceState {
@@ -37,9 +37,6 @@ export interface ChatUiSliceActions {
 
 type ChatUiSlice = ChatUiSliceState & ChatUiSliceActions;
 
-const resolveUpdater = <T>(value: UpdaterOrValue<T>, previous: T) =>
-  typeof value === 'function' ? (value as (prev: T) => T)(previous) : value;
-
 const setSliceValue = <T extends ChatUiSlice, K extends keyof ChatUiSliceState>(
   set: SliceSet<T>,
   key: K,
@@ -47,7 +44,7 @@ const setSliceValue = <T extends ChatUiSlice, K extends keyof ChatUiSliceState>(
 ) => {
   set((state) => {
     const nextState = {
-      [key]: resolveUpdater(value, state[key]),
+      [key]: resolveUpdaterOrValue(value, state[key]),
     } as Pick<ChatUiSliceState, K>;
 
     return nextState as Partial<T>;

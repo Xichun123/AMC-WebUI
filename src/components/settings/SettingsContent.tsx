@@ -150,13 +150,13 @@ export const SettingsContent: React.FC<SettingsContentProps> = ({
         <div className={animClass}>
           <ApiConfigSection
             useCustomApiConfig={currentSettings.useCustomApiConfig}
-            setUseCustomApiConfig={(val) => updateSetting('useCustomApiConfig', val)}
+            setUseCustomApiConfig={(useCustomApiConfig) => updateSetting('useCustomApiConfig', useCustomApiConfig)}
             apiKey={currentSettings.apiKey}
-            setApiKey={(val) => updateSetting('apiKey', val)}
+            setApiKey={(apiKey) => updateSetting('apiKey', apiKey)}
             apiProxyUrl={currentSettings.apiProxyUrl}
-            setApiProxyUrl={(val) => updateSetting('apiProxyUrl', val)}
+            setApiProxyUrl={(apiProxyUrl) => updateSetting('apiProxyUrl', apiProxyUrl)}
             useApiProxy={currentSettings.useApiProxy ?? false}
-            setUseApiProxy={(val) => updateSetting('useApiProxy', val)}
+            setUseApiProxy={(useApiProxy) => updateSetting('useApiProxy', useApiProxy)}
             serverManagedApi={currentSettings.serverManagedApi ?? false}
             settings={currentSettings}
             onUpdate={updateSetting}

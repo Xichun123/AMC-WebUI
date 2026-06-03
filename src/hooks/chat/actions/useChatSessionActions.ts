@@ -31,17 +31,16 @@ export const useChatSessionActions = ({
     if (isLoading) handleStopGenerating();
     if (activeSessionId) {
       updateAndPersistSessions((prev) =>
-        updateSessionById(prev, activeSessionId, (s) => {
-          // Cleanup files in the cleared session
-          s.messages.forEach((msg) => cleanupFilePreviewUrls(msg.files));
+        updateSessionById(prev, activeSessionId, (session) => {
+          session.messages.forEach((message) => cleanupFilePreviewUrls(message.files));
 
           return {
-            ...s,
+            ...session,
             messages: [],
             title: 'New Chat',
             timestamp: Date.now(),
             // Resetting lockedApiKey is crucial to allow using new global settings
-            settings: { ...s.settings, lockedApiKey: null },
+            settings: { ...session.settings, lockedApiKey: null },
           };
         }),
       );

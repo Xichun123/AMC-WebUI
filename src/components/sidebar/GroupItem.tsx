@@ -66,13 +66,13 @@ export const GroupItem: React.FC<GroupItemProps> = (props) => {
     setActiveMenu,
   };
 
-  const isMenuOpenInGroup = activeMenu === group.id || sessions?.some((s) => s.id === activeMenu);
+  const isMenuOpenInGroup = activeMenu === group.id || sessions?.some((session) => session.id === activeMenu);
 
   return (
     <div
       onDragOver={(e) => {
         e.preventDefault();
-        e.stopPropagation(); // Prevent bubbling to the "all conversations" drop zone
+        e.stopPropagation();
         e.dataTransfer.dropEffect = 'move';
         handleDragOver(e);
       }}
@@ -83,8 +83,6 @@ export const GroupItem: React.FC<GroupItemProps> = (props) => {
         setDragOverId(group.id);
       }}
       onDragLeave={(e) => {
-        // Check if we are entering a child of this element (e.g., text, button)
-        // If so, do NOT reset the dragOverId
         if (e.currentTarget.contains(e.relatedTarget as Node)) return;
         setDragOverId(null);
       }}

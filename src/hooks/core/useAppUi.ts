@@ -16,16 +16,16 @@ const isSettingsModalHistoryState = (state: unknown) =>
 const getCurrentRelativeUrl = () => `${window.location.pathname}${window.location.search}${window.location.hash}`;
 
 export const useAppUi = () => {
-  const isSettingsModalOpen = useUIStore((s) => s.isSettingsModalOpen);
-  const isPreloadedMessagesModalOpen = useUIStore((s) => s.isPreloadedMessagesModalOpen);
-  const isHistorySidebarOpen = useUIStore((s) => s.isHistorySidebarOpen);
-  const isLogViewerOpen = useUIStore((s) => s.isLogViewerOpen);
-  const setIsSettingsModalOpen = useUIStore((s) => s.setIsSettingsModalOpen);
-  const setIsPreloadedMessagesModalOpen = useUIStore((s) => s.setIsPreloadedMessagesModalOpen);
-  const setIsHistorySidebarOpen = useUIStore((s) => s.setIsHistorySidebarOpen);
-  const setIsHistorySidebarOpenTransient = useUIStore((s) => s.setIsHistorySidebarOpenTransient);
-  const syncHistorySidebarForViewport = useUIStore((s) => s.syncHistorySidebarForViewport);
-  const setIsLogViewerOpen = useUIStore((s) => s.setIsLogViewerOpen);
+  const isSettingsModalOpen = useUIStore((state) => state.isSettingsModalOpen);
+  const isPreloadedMessagesModalOpen = useUIStore((state) => state.isPreloadedMessagesModalOpen);
+  const isHistorySidebarOpen = useUIStore((state) => state.isHistorySidebarOpen);
+  const isLogViewerOpen = useUIStore((state) => state.isLogViewerOpen);
+  const setIsSettingsModalOpen = useUIStore((state) => state.setIsSettingsModalOpen);
+  const setIsPreloadedMessagesModalOpen = useUIStore((state) => state.setIsPreloadedMessagesModalOpen);
+  const setIsHistorySidebarOpen = useUIStore((state) => state.setIsHistorySidebarOpen);
+  const setIsHistorySidebarOpenTransient = useUIStore((state) => state.setIsHistorySidebarOpenTransient);
+  const syncHistorySidebarForViewport = useUIStore((state) => state.syncHistorySidebarForViewport);
+  const setIsLogViewerOpen = useUIStore((state) => state.setIsLogViewerOpen);
 
   const touchStartRef = useRef({ x: 0, y: 0, startedInSidebar: false });
   const wasDesktopRef = useRef(window.innerWidth >= DESKTOP_BREAKPOINT_PX);

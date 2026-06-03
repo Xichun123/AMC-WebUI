@@ -68,7 +68,7 @@ export const useLiveTools = ({ clientFunctions, sessionRef, onGeneratedFiles }: 
                 name: callName,
                 response: toStructuredToolResponse(result.response),
               });
-            } catch (e) {
+            } catch (toolError) {
               if (callId) {
                 activeControllersRef.current.delete(callId);
               }
@@ -76,11 +76,11 @@ export const useLiveTools = ({ clientFunctions, sessionRef, onGeneratedFiles }: 
                 cancelledCallIdsRef.current.delete(callId);
                 continue;
               }
-              logService.error(`Error executing function ${callName}`, e);
+              logService.error(`Error executing function ${callName}`, toolError);
               functionResponses.push({
                 id: callId,
                 name: callName,
-                response: { error: e instanceof Error ? e.message : String(e) },
+                response: { error: toolError instanceof Error ? toolError.message : String(toolError) },
               });
             }
           } else {

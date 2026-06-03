@@ -5,6 +5,7 @@ const appearanceSettings = {
   settingsThemeDark: { en: 'Dark', zh: '暗色' },
   settingsThemeLight: { en: 'Light', zh: '浅色' },
   settingsFontSize: { en: 'Reading Size', zh: '阅读字号' },
+  settingsLiveArtifactsFontSize: { en: 'Live Artifacts Size', zh: 'Live Artifacts 字号' },
   settingsLanguage: { en: 'Language', zh: '语言' },
   settingsLanguageSystem: { en: 'System Default', zh: '跟随系统' },
   settingsLanguageEn: { en: 'English', zh: 'English' },

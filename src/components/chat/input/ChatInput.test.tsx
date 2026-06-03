@@ -2,7 +2,7 @@ import { act } from 'react';
 import { setupProviderTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  ChatInputTestProvider,
+  createChatInputRenderer,
   createProviderValue,
   dispatchKeyDown,
   getChatInputHarnessMocks,
@@ -18,14 +18,7 @@ const { mockChatStoreState, mockChatStoreSubscribers, mockLiveApiState, mockMode
 
 describe('ChatInput', () => {
   const renderer = setupProviderTestRenderer({ providers: { language: 'en' } });
-
-  const renderChatInput = (providerValue: ChatAreaProviderValue) => {
-    renderer.root.render(
-      <ChatInputTestProvider value={providerValue}>
-        <ChatInput />
-      </ChatInputTestProvider>,
-    );
-  };
+  const renderChatInput = createChatInputRenderer(renderer, <ChatInput />);
 
   beforeEach(() => {
     localStorage.clear();

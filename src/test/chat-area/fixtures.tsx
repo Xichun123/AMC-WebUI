@@ -271,7 +271,7 @@ export const applyChatAreaProviderValue = (value: ChatAreaProviderValue) => {
   useUIStore.setState({ chatInputHeight: value.messageList.chatInputHeight });
 };
 
-const createChatRuntimeApp = (value: ChatAreaProviderValue): AppViewModel => {
+export const createChatRuntimeApp = (value: ChatAreaProviderValue): AppViewModel => {
   const app = {
     appSettings: value.input.appSettings,
     setAppSettings: vi.fn(),

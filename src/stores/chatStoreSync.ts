@@ -4,8 +4,7 @@ import { logService } from '@/services/logService';
 import { dbService } from '@/services/db/dbService';
 import { rehydrateSessionFiles } from '@/utils/chat/session';
 import { getChatSyncChannel } from './chatSyncChannel';
-
-type UpdaterOrValue<T> = T | ((prev: T) => T);
+import type { UpdaterOrValue } from './stateUpdaters';
 
 interface ChatSyncStore {
   getState: () => {
@@ -47,9 +46,9 @@ export function setupChatStoreSync({
   const channel = getChannel();
 
   const handleMessage = (event: MessageEvent<SyncMessage>) => {
-    const msg = event.data;
+    const syncMessage = event.data;
 
-    switch (msg.type) {
+    switch (syncMessage.type) {
       case 'SETTINGS_UPDATED':
       case 'SESSIONS_UPDATED':
         if (resolvedDocument.hidden) {
@@ -66,22 +65,24 @@ export function setupChatStoreSync({
         }
         break;
       case 'SESSION_CONTENT_UPDATED': {
-        if (localLoadingSessionIds.has(msg.sessionId)) return;
+        if (localLoadingSessionIds.has(syncMessage.sessionId)) return;
         if (resolvedDocument.hidden) {
           isDirty = true;
           return;
         }
 
         const { activeSessionId } = store.getState();
-        if (msg.sessionId === activeSessionId) {
-          getSession(msg.sessionId).then((session) => {
+        if (syncMessage.sessionId === activeSessionId) {
+          getSession(syncMessage.sessionId).then((session) => {
             if (session) {
               const rehydrated = rehydrateSession(session);
               store.getState().setActiveMessages(rehydrated.messages);
               store
                 .getState()
-                .setSavedSessions((prev) =>
-                  prev.map((old) => (old.id === msg.sessionId ? { ...rehydrated, messages: [] } : old)),
+                .setSavedSessions((previousSessions) =>
+                  previousSessions.map((savedSession) =>
+                    savedSession.id === syncMessage.sessionId ? { ...rehydrated, messages: [] } : savedSession,
+                  ),
                 );
             }
           });
@@ -91,11 +92,11 @@ export function setupChatStoreSync({
         break;
       }
       case 'SESSION_LOADING': {
-        store.getState().setLoadingSessionIds((prev) => {
-          const next = new Set(prev);
-          if (msg.isLoading) next.add(msg.sessionId);
-          else next.delete(msg.sessionId);
-          return next;
+        store.getState().setLoadingSessionIds((previousLoadingSessionIds) => {
+          const nextLoadingSessionIds = new Set(previousLoadingSessionIds);
+          if (syncMessage.isLoading) nextLoadingSessionIds.add(syncMessage.sessionId);
+          else nextLoadingSessionIds.delete(syncMessage.sessionId);
+          return nextLoadingSessionIds;
         });
         break;
       }

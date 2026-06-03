@@ -79,8 +79,8 @@ export const captureScreenImage = async (messages: ScreenCaptureMessages): Promi
         canvas.toBlob((blob) => {
           finish(blob);
         }, 'image/png');
-      } catch (e) {
-        logService.error('Error drawing bitmap:', e);
+      } catch (drawError) {
+        logService.error('Error drawing bitmap:', drawError);
         finish(null);
       }
     };
@@ -92,8 +92,8 @@ export const captureScreenImage = async (messages: ScreenCaptureMessages): Promi
       imageCapture
         .grabFrame()
         .then(processBitmap)
-        .catch((err: unknown) => {
-          logService.warn('ImageCapture failed, falling back to video element:', err);
+        .catch((error: unknown) => {
+          logService.warn('ImageCapture failed, falling back to video element:', error);
           fallbackToVideo();
         });
     } else {
@@ -166,8 +166,8 @@ export const captureScreenImage = async (messages: ScreenCaptureMessages): Promi
           }
         };
         video.onerror = () => fail();
-      } catch (e) {
-        fail(e);
+      } catch (captureError) {
+        fail(captureError);
       }
     }
   });

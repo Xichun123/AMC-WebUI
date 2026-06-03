@@ -1,13 +1,21 @@
 import { act } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { useModels } from './useModels';
 import { renderHook } from '@/test/render/renderer';
 import { useModelPreferencesStore } from '@/stores/modelPreferencesStore';
 
-let storage: Map<string, string>;
-
 const readPersistedCustomModels = () => {
-  for (const value of storage.values()) {
+  for (let index = 0; index < localStorage.length; index += 1) {
+    const key = localStorage.key(index);
+    if (!key) {
+      continue;
+    }
+
+    const value = localStorage.getItem(key);
+    if (!value) {
+      continue;
+    }
+
     const parsed = JSON.parse(value) as { state?: { customModels?: unknown } };
     if (parsed.state?.customModels) {
       return parsed.state.customModels;
@@ -19,19 +27,7 @@ const readPersistedCustomModels = () => {
 
 describe('useModels', () => {
   beforeEach(() => {
-    storage = new Map<string, string>();
-    vi.stubGlobal('localStorage', {
-      getItem: (key: string) => storage.get(key) ?? null,
-      setItem: (key: string, value: string) => {
-        storage.set(key, value);
-      },
-      removeItem: (key: string) => {
-        storage.delete(key);
-      },
-      clear: () => {
-        storage.clear();
-      },
-    });
+    localStorage.clear();
     useModelPreferencesStore.setState({
       customModels: null,
       modelSettingsCache: {},

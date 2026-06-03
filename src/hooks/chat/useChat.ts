@@ -24,7 +24,6 @@ export const useChat = (
   setAppSettings: Dispatch<SetStateAction<AppSettings>>,
   language: 'en' | 'zh',
 ) => {
-  // Computed state — reactive values that require derivation
   const { activeChat, currentChatSettings, isLoading, activeSessionId, savedSessions, activeMessages } =
     useChatState(appSettings);
 
@@ -245,13 +244,11 @@ export const useChat = (
   });
 
   return {
-    // Computed state
     messages: activeMessages,
     isLoading,
     currentChatSettings,
     activeChat,
 
-    // Store state (reactive via selectors)
     loadingSessionIds,
     generatingTitleSessionIds,
     editingMessageId,

@@ -74,14 +74,16 @@ export const cloneMessagesWithFreshIds = (messages: ChatMessage[]): ChatMessage[
 
 export const generateSessionTitle = (messages: ChatMessage[]): string => {
   const visibleMessages = getVisibleChatMessages(messages);
-  const firstUserMessage = visibleMessages.find((msg) => msg.role === 'user' && msg.content.trim() !== '');
+  const firstUserMessage = visibleMessages.find((message) => message.role === 'user' && message.content.trim() !== '');
   if (firstUserMessage) {
     return (
       firstUserMessage.content.split(/\s+/).slice(0, 7).join(' ') +
       (firstUserMessage.content.split(/\s+/).length > 7 ? '...' : '')
     );
   }
-  const firstModelMessage = visibleMessages.find((msg) => msg.role === 'model' && msg.content.trim() !== '');
+  const firstModelMessage = visibleMessages.find(
+    (message) => message.role === 'model' && message.content.trim() !== '',
+  );
   if (firstModelMessage) {
     return (
       'Model: ' +
@@ -89,7 +91,7 @@ export const generateSessionTitle = (messages: ChatMessage[]): string => {
       (firstModelMessage.content.split(/\s+/).length > 5 ? '...' : '')
     );
   }
-  const firstFile = visibleMessages.find((msg) => msg.files && msg.files.length > 0)?.files?.[0];
+  const firstFile = visibleMessages.find((message) => message.files && message.files.length > 0)?.files?.[0];
   if (firstFile) {
     return `Chat with ${firstFile.name}`;
   }
@@ -121,7 +123,7 @@ export const rehydrateSessionFiles = (session: SavedChatSession): SavedChatSessi
           return { ...file, rawFile: newFile, dataUrl: newUrl };
         } catch {
           logSessionWarning(`Failed to migrate legacy Base64 file: ${file.name}`);
-          // If migration fails, keep as is, but it might lag
+          // Keep the original payload when migration fails so existing sessions remain readable.
         }
       }
 
@@ -303,40 +305,36 @@ export const performOptimisticSessionUpdate = (
   const { activeSessionId, newSessionId, newMessages, settings, editingMessageId, title, shouldLockKey, keyToLock } =
     params;
 
-  const existingSessionIndex = prevSessions.findIndex((s) => s.id === activeSessionId);
+  const existingSessionIndex = prevSessions.findIndex((session) => session.id === activeSessionId);
 
-  // --- Case 1: Create New Session ---
   if (existingSessionIndex === -1) {
     const newSettings = { ...settings };
     if (shouldLockKey && keyToLock) {
       newSettings.lockedApiKey = keyToLock;
     }
 
-    const newSession = createNewSession(newSettings, newMessages, title || 'New Chat');
-    newSession.id = newSessionId; // Ensure ID matches what caller expects
+    const newSession = {
+      ...createNewSession(newSettings, newMessages, title || 'New Chat'),
+      id: newSessionId,
+    };
 
     return [newSession, ...prevSessions];
   }
 
-  // --- Case 2: Update Existing Session ---
   const updatedSessions = [...prevSessions];
   const session = updatedSessions[existingSessionIndex];
   let finalMessages = [...session.messages];
 
-  // Handle Edit/Rewind
   if (editingMessageId) {
-    const editIndex = finalMessages.findIndex((m) => m.id === editingMessageId);
+    const editIndex = finalMessages.findIndex((message) => message.id === editingMessageId);
     if (editIndex !== -1) {
       finalMessages = finalMessages.slice(0, editIndex);
     }
   }
 
-  // Append new messages
   finalMessages = [...finalMessages, ...newMessages];
 
-  // Handle Settings Update (Key Locking)
-  let updatedSettings = session.settings;
-  updatedSettings = { ...updatedSettings, ...settings };
+  const updatedSettings = { ...session.settings, ...settings };
 
   if (shouldLockKey && !session.settings.lockedApiKey && keyToLock) {
     updatedSettings.lockedApiKey = keyToLock;
@@ -347,7 +345,6 @@ export const performOptimisticSessionUpdate = (
     messages: finalMessages,
     title: title || session.title,
     settings: updatedSettings,
-    // Update timestamp if new messages are added to bump it to the top
     timestamp: newMessages.length > 0 ? Date.now() : session.timestamp,
   };
 

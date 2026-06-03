@@ -30,6 +30,8 @@ interface SelectedFileDisplayProps {
   isGemini3?: boolean;
 }
 
+const NEWLY_ACTIVE_FEEDBACK_MS = 800;
+
 export const SelectedFileDisplay: React.FC<SelectedFileDisplayProps> = ({
   file,
   onRemove,
@@ -54,7 +56,7 @@ export const SelectedFileDisplay: React.FC<SelectedFileDisplayProps> = ({
     }
 
     const showTimer = window.setTimeout(() => setIsNewlyActive(true), 0);
-    const hideTimer = window.setTimeout(() => setIsNewlyActive(false), 800);
+    const hideTimer = window.setTimeout(() => setIsNewlyActive(false), NEWLY_ACTIVE_FEEDBACK_MS);
 
     return () => {
       window.clearTimeout(showTimer);

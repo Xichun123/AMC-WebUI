@@ -1,32 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createFakeResumableUploadXhr } from '@/test/api/fakeResumableUpload';
 
-type UploadRequestRecord = {
-  url: string;
-  headers: Record<string, string>;
-  bodySize: number;
-};
-
-type UploadResponseScenario = {
-  status?: number;
-  responseText?: string;
-  responseHeaders?: Record<string, string>;
-  progressFractions?: number[];
-};
-
-const {
-  fetchMock,
-  uploadRequests,
-  uploadResponseScenarios,
-  getConfiguredApiClientMock,
-  getConfiguredApiClientContextMock,
-} = vi.hoisted(() => ({
+const { fetchMock, getConfiguredApiClientMock, getConfiguredApiClientContextMock } = vi.hoisted(() => ({
   fetchMock: vi.fn(),
-  uploadRequests: {
-    requests: [] as UploadRequestRecord[],
-  },
-  uploadResponseScenarios: {
-    scenarios: [] as UploadResponseScenario[],
-  },
   getConfiguredApiClientMock: vi.fn(),
   getConfiguredApiClientContextMock: vi.fn(),
 }));
@@ -44,93 +20,18 @@ vi.mock('@/services/logService', async () => {
 
 import { uploadFileApi } from './fileApi';
 
-class FakeUploadEventTarget {
-  private listeners = new Set<(event: ProgressEvent) => void>();
-
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject) {
-    if (type !== 'progress') return;
-    this.listeners.add(listener as (event: ProgressEvent) => void);
-  }
-
-  dispatchProgress(loaded: number, total: number) {
-    const event = new ProgressEvent('progress', {
-      lengthComputable: true,
-      loaded,
-      total,
-    });
-    this.listeners.forEach((listener) => listener(event));
-  }
-}
-
-class FakeXMLHttpRequest {
-  upload = new FakeUploadEventTarget();
-  status = 0;
-  responseText = '';
-  onload: (() => void) | null = null;
-  onerror: (() => void) | null = null;
-  onabort: (() => void) | null = null;
-  private requestHeaders: Record<string, string> = {};
-  private responseHeaders: Record<string, string> = {};
-  private requestUrl = '';
-
-  open(_method: string, url: string) {
-    this.requestUrl = url;
-  }
-
-  setRequestHeader(header: string, value: string) {
-    this.requestHeaders[header] = value;
-  }
-
-  getAllResponseHeaders() {
-    return Object.entries(this.responseHeaders)
-      .map(([header, value]) => `${header}: ${value}`)
-      .join('\r\n');
-  }
-
-  send(body?: XMLHttpRequestBodyInit | null) {
-    const blob = body instanceof Blob ? body : undefined;
-    uploadRequests.requests.push({
-      url: this.requestUrl,
-      headers: { ...this.requestHeaders },
-      bodySize: blob?.size ?? 0,
-    });
-
-    const command =
-      this.requestHeaders['X-Goog-Upload-Command'] ?? this.requestHeaders['x-goog-upload-command'] ?? 'upload';
-    const isFinalChunk = /finalize/i.test(command);
-    const scenario = uploadResponseScenarios.scenarios.shift() ?? {};
-
-    queueMicrotask(() => {
-      const total = blob?.size ?? 0;
-      const progressFractions = scenario.progressFractions ?? [0.5, 1];
-      progressFractions.forEach((fraction) => {
-        this.upload.dispatchProgress(Math.round(total * fraction), total);
-      });
-
-      this.status = scenario.status ?? 200;
-      this.responseText =
-        scenario.responseText ??
-        (isFinalChunk
-          ? JSON.stringify({
-              file: {
-                name: 'files/test-file',
-                uri: 'https://generativelanguage.googleapis.com/v1beta/files/test-file',
-              },
-            })
-          : JSON.stringify({}));
-      this.responseHeaders = scenario.responseHeaders ?? {
-        'content-type': 'application/json',
-        'x-goog-upload-status': isFinalChunk ? 'final' : 'active',
-      };
-
-      this.onload?.();
-    });
-  }
-
-  abort() {
-    this.onabort?.();
-  }
-}
+const uploadXhr = createFakeResumableUploadXhr({
+  defaultProgressFractions: [0.5, 1],
+  defaultResponseText: ({ isFinalChunk }) =>
+    isFinalChunk
+      ? JSON.stringify({
+          file: {
+            name: 'files/test-file',
+            uri: 'https://generativelanguage.googleapis.com/v1beta/files/test-file',
+          },
+        })
+      : JSON.stringify({}),
+});
 
 const createInternalApiClient = () => ({
   request: async (request: {
@@ -169,10 +70,9 @@ const createInternalApiClient = () => ({
 describe('uploadFileApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    uploadRequests.requests = [];
-    uploadResponseScenarios.scenarios = [];
+    uploadXhr.reset();
     vi.stubGlobal('fetch', fetchMock);
-    vi.stubGlobal('XMLHttpRequest', FakeXMLHttpRequest);
+    vi.stubGlobal('XMLHttpRequest', uploadXhr.XMLHttpRequest);
     const client = {
       apiClient: createInternalApiClient(),
     };
@@ -222,9 +122,9 @@ describe('uploadFileApi', () => {
     });
     expect(onProgress).toHaveBeenCalledWith(3, 5);
     expect(onProgress).toHaveBeenCalledWith(5, 5);
-    expect(uploadRequests.requests).toHaveLength(1);
-    expect(uploadRequests.requests[0].url).toBe('https://upload.example.com/resumable/session-1');
-    expect(uploadRequests.requests[0].headers['x-goog-api-key']).toBe('api-key');
+    expect(uploadXhr.requests).toHaveLength(1);
+    expect(uploadXhr.requests[0].url).toBe('https://upload.example.com/resumable/session-1');
+    expect(uploadXhr.requests[0].headers['x-goog-api-key']).toBe('api-key');
     expect(uploadedFile).toMatchObject({
       name: 'files/test-file',
       uri: 'https://generativelanguage.googleapis.com/v1beta/files/test-file',
@@ -246,8 +146,8 @@ describe('uploadFileApi', () => {
 
     await uploadFileApi('api-key', file, 'text/plain', 'sample.txt', new AbortController().signal, vi.fn());
 
-    expect(uploadRequests.requests).toHaveLength(1);
-    expect(uploadRequests.requests[0].url).toBe('https://proxy.example.com/gemini/resumable/session-1');
+    expect(uploadXhr.requests).toHaveLength(1);
+    expect(uploadXhr.requests[0].url).toBe('https://proxy.example.com/gemini/resumable/session-1');
   });
 
   it('uploads large files in multiple resumable chunks', async () => {
@@ -256,20 +156,20 @@ describe('uploadFileApi', () => {
 
     await uploadFileApi('api-key', file, 'video/mp4', 'large.mp4', new AbortController().signal, vi.fn());
 
-    expect(uploadRequests.requests).toHaveLength(3);
-    expect(uploadRequests.requests[0].headers['X-Goog-Upload-Offset']).toBe('0');
-    expect(uploadRequests.requests[0].headers['X-Goog-Upload-Command']).toBe('upload');
-    expect(uploadRequests.requests[0].bodySize).toBe(chunkSize);
-    expect(uploadRequests.requests[1].headers['X-Goog-Upload-Offset']).toBe(String(chunkSize));
-    expect(uploadRequests.requests[1].headers['X-Goog-Upload-Command']).toBe('upload');
-    expect(uploadRequests.requests[1].bodySize).toBe(chunkSize);
-    expect(uploadRequests.requests[2].headers['X-Goog-Upload-Offset']).toBe(String(chunkSize * 2));
-    expect(uploadRequests.requests[2].headers['X-Goog-Upload-Command']).toBe('upload, finalize');
-    expect(uploadRequests.requests[2].bodySize).toBe(1024);
+    expect(uploadXhr.requests).toHaveLength(3);
+    expect(uploadXhr.requests[0].headers['X-Goog-Upload-Offset']).toBe('0');
+    expect(uploadXhr.requests[0].headers['X-Goog-Upload-Command']).toBe('upload');
+    expect(uploadXhr.requests[0].bodySize).toBe(chunkSize);
+    expect(uploadXhr.requests[1].headers['X-Goog-Upload-Offset']).toBe(String(chunkSize));
+    expect(uploadXhr.requests[1].headers['X-Goog-Upload-Command']).toBe('upload');
+    expect(uploadXhr.requests[1].bodySize).toBe(chunkSize);
+    expect(uploadXhr.requests[2].headers['X-Goog-Upload-Offset']).toBe(String(chunkSize * 2));
+    expect(uploadXhr.requests[2].headers['X-Goog-Upload-Command']).toBe('upload, finalize');
+    expect(uploadXhr.requests[2].bodySize).toBe(1024);
   });
 
   it('retries transient byte upload failures before giving up on the chunk', async () => {
-    uploadResponseScenarios.scenarios = [
+    uploadXhr.scenarios.push(
       {
         status: 503,
         responseText: JSON.stringify({ error: { message: 'try again' } }),
@@ -288,7 +188,7 @@ describe('uploadFileApi', () => {
           },
         }),
       },
-    ];
+    );
     const file = new File(['hello'], 'sample.txt', { type: 'text/plain' });
 
     const uploadedFile = await uploadFileApi(
@@ -300,9 +200,9 @@ describe('uploadFileApi', () => {
       vi.fn(),
     );
 
-    expect(uploadRequests.requests).toHaveLength(2);
-    expect(uploadRequests.requests[0].headers['X-Goog-Upload-Offset']).toBe('0');
-    expect(uploadRequests.requests[1].headers['X-Goog-Upload-Offset']).toBe('0');
+    expect(uploadXhr.requests).toHaveLength(2);
+    expect(uploadXhr.requests[0].headers['X-Goog-Upload-Offset']).toBe('0');
+    expect(uploadXhr.requests[1].headers['X-Goog-Upload-Offset']).toBe('0');
     expect(uploadedFile.name).toBe('files/test-file');
   });
 });

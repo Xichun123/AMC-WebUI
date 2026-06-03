@@ -46,7 +46,6 @@ export const useChatEffects = ({
 }: UseChatEffectsProps) => {
   const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
 
-  // 1. Initial Data Load
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -58,13 +57,12 @@ export const useChatEffects = ({
     void loadData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps -- Load persisted chat data once on mount.
 
-  // 2. Session Validation
-  // This effect ensures that if the activeSessionId points to a session that doesn't exist in savedSessions
-  // (e.g. deleted), we switch to another valid session or new chat.
   useEffect(() => {
-    if (hasLoadedInitialData && activeSessionId && !savedSessions.find((s) => s.id === activeSessionId)) {
+    if (hasLoadedInitialData && activeSessionId && !savedSessions.find((session) => session.id === activeSessionId)) {
       logService.warn(`Active session ${activeSessionId} is no longer available. Switching sessions.`);
-      const sortedSessions = [...savedSessions].sort((a, b) => b.timestamp - a.timestamp);
+      const sortedSessions = [...savedSessions].sort(
+        (leftSession, rightSession) => rightSession.timestamp - leftSession.timestamp,
+      );
       const nextSession = sortedSessions[0];
       if (nextSession) {
         loadChatSession(nextSession.id);
@@ -74,7 +72,6 @@ export const useChatEffects = ({
     }
   }, [savedSessions, activeSessionId, hasLoadedInitialData, loadChatSession, startNewChat]);
 
-  // 3. Online Status Listener
   useEffect(() => {
     const handleOnline = () => {
       setAppFileError((currentError) => {
@@ -92,7 +89,6 @@ export const useChatEffects = ({
     return () => window.removeEventListener('online', handleOnline);
   }, [setAppFileError]);
 
-  // 4. File Error Auto-Clear
   useEffect(() => {
     const isFileProcessing = selectedFiles.some((file) => file.isProcessing);
     const waitForFilesMessages = [
@@ -104,8 +100,6 @@ export const useChatEffects = ({
     }
   }, [selectedFiles, appFileError, setAppFileError]);
 
-  // 5. Blob URL Cleanup (Optimized)
-  // Track sessions ref to allow cleanup on unmount without triggering effect on every render
   const savedSessionsRef = useRef(savedSessions);
   useEffect(() => {
     savedSessionsRef.current = savedSessions;
@@ -113,17 +107,15 @@ export const useChatEffects = ({
 
   useEffect(
     () => () => {
-      // Cleanup all file previews when the app unmounts/reloads
       savedSessionsRef.current.forEach((session) => {
-        session.messages.forEach((msg) => {
-          cleanupFilePreviewUrls(msg.files);
+        session.messages.forEach((message) => {
+          cleanupFilePreviewUrls(message.files);
         });
       });
     },
     [],
   );
 
-  // 6. Reset Switching Model State
   useEffect(() => {
     if (isSwitchingModel) {
       const timer = setTimeout(() => setIsSwitchingModel(false), 0);
@@ -132,7 +124,6 @@ export const useChatEffects = ({
     return undefined;
   }, [isSwitchingModel, setIsSwitchingModel]);
 
-  // 8. Auto-set Aspect Ratio
   const prevModelIdRef = useRef(currentChatSettings.modelId);
   useEffect(() => {
     if (prevModelIdRef.current !== currentChatSettings.modelId) {

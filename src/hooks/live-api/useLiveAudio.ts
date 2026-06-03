@@ -16,7 +16,6 @@ export const useLiveAudio = () => {
   const processorRef = useRef<AudioWorkletNode | null>(null);
   const inputSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
 
-  // Playback timing state
   const nextStartTimeRef = useRef<number>(0);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const outputAudioActiveRef = useRef(false);
@@ -42,11 +41,11 @@ export const useLiveAudio = () => {
     async (onAudioData: (data: Float32Array) => void) => {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 
-      const audioCtx = new AudioContextClass({ sampleRate: 24000 });
-      audioContextRef.current = audioCtx;
+      const outputAudioContext = new AudioContextClass({ sampleRate: 24000 });
+      audioContextRef.current = outputAudioContext;
 
-      const inputCtx = new AudioContextClass({ sampleRate: 16000 });
-      inputContextRef.current = inputCtx;
+      const inputAudioContext = new AudioContextClass({ sampleRate: 16000 });
+      inputContextRef.current = inputAudioContext;
 
       // Keep browser echo processing enabled so model playback is not captured as fresh user input.
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -62,35 +61,32 @@ export const useLiveAudio = () => {
         track.enabled = !isMutedRef.current;
       });
 
-      if (inputCtx.state === 'suspended') {
-        await inputCtx.resume();
+      if (inputAudioContext.state === 'suspended') {
+        await inputAudioContext.resume();
       }
 
-      const source = inputCtx.createMediaStreamSource(stream);
-      inputSourceRef.current = source;
+      const microphoneSource = inputAudioContext.createMediaStreamSource(stream);
+      inputSourceRef.current = microphoneSource;
 
       const blob = new Blob([audioWorkletCode], { type: 'application/javascript' });
       const blobUrl = createManagedObjectUrl(blob);
 
       try {
-        await inputCtx.audioWorklet.addModule(blobUrl);
+        await inputAudioContext.audioWorklet.addModule(blobUrl);
       } finally {
         releaseManagedObjectUrl(blobUrl);
       }
 
-      const workletNode = new AudioWorkletNode(inputCtx, 'pcm-processor');
+      const workletNode = new AudioWorkletNode(inputAudioContext, 'pcm-processor');
       processorRef.current = workletNode;
 
-      workletNode.port.onmessage = (e) => {
-        // If muted, we effectively send silence or nothing.
-        // However, track.enabled = false usually stops data flow at the source level (OS/Browser).
-        // But to be safe and ensure volume is 0 in UI:
+      workletNode.port.onmessage = (event) => {
         if (isMutedRef.current) {
           setVolume(0);
           return;
         }
 
-        const inputData = e.data; // Float32Array
+        const inputSamples = event.data as Float32Array;
 
         if (outputAudioActiveRef.current) {
           setVolume(0);
@@ -98,21 +94,22 @@ export const useLiveAudio = () => {
         }
 
         let sum = 0;
-        const sampleCount = inputData.length;
+        const sampleCount = inputSamples.length;
         const step = Math.ceil(sampleCount / 100);
         for (let i = 0; i < sampleCount; i += step) {
-          sum += inputData[i] * inputData[i];
+          sum += inputSamples[i] * inputSamples[i];
         }
         const rms = Math.sqrt(sum / (sampleCount / step));
         setVolume(rms);
 
-        onAudioData(inputData);
+        onAudioData(inputSamples);
       };
 
-      source.connect(workletNode);
-      workletNode.connect(inputCtx.destination); // Keep graph alive
+      microphoneSource.connect(workletNode);
+      // AudioWorklet processors can stop if the graph has no destination.
+      workletNode.connect(inputAudioContext.destination);
 
-      return { audioCtx, inputCtx };
+      return { outputAudioContext, inputAudioContext };
     },
     [isMutedRef],
   );
@@ -126,7 +123,6 @@ export const useLiveAudio = () => {
       });
       setIsMuted(newMutedState);
     } else {
-      // Even if stream is not active (yet), toggle state so it applies on next init
       setIsMuted((prev) => !prev);
     }
   }, [isMutedRef, setIsMuted]);
@@ -141,7 +137,6 @@ export const useLiveAudio = () => {
       setIsSpeaking(true);
 
       try {
-        // Ensure strict timing sequence
         nextStartTimeRef.current = Math.max(nextStartTimeRef.current, audioContext.currentTime);
 
         const arrayBuffer = decodeBase64ToArrayBuffer(base64Audio);
@@ -189,7 +184,7 @@ export const useLiveAudio = () => {
     outputAudioActiveRef.current = false;
 
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
 

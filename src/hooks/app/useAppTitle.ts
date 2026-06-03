@@ -8,6 +8,8 @@ interface UseAppTitleProps {
   sessionTitle: string;
 }
 
+const GENERATION_TITLE_REFRESH_MS = 1000;
+
 export const useAppTitle = ({ isLoading, messages, language, sessionTitle }: UseAppTitleProps) => {
   const [generationTime, setGenerationTime] = useState(0);
 
@@ -34,7 +36,7 @@ export const useAppTitle = ({ isLoading, messages, language, sessionTitle }: Use
         setGenerationTime(Math.max(0, Math.floor((Date.now() - currentGenerationStartTime) / 1000)));
       };
       update();
-      intervalId = window.setInterval(update, 1000);
+      intervalId = window.setInterval(update, GENERATION_TITLE_REFRESH_MS);
     }
 
     return () => clearInterval(intervalId);

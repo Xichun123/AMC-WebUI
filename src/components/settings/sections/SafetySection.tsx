@@ -18,7 +18,7 @@ const ALL_CATEGORIES: HarmCategory[] = [
   HarmCategory.HARM_CATEGORY_CIVIC_INTEGRITY,
 ];
 
-const categoryMap: Record<HarmCategory, string> = {
+const CATEGORY_TRANSLATION_KEYS: Record<HarmCategory, string> = {
   [HarmCategory.HARM_CATEGORY_HARASSMENT]: 'safety_category_HARASSMENT',
   [HarmCategory.HARM_CATEGORY_HATE_SPEECH]: 'safety_category_HATE_SPEECH',
   [HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT]: 'safety_category_SEXUALLY_EXPLICIT',
@@ -26,16 +26,16 @@ const categoryMap: Record<HarmCategory, string> = {
   [HarmCategory.HARM_CATEGORY_CIVIC_INTEGRITY]: 'safety_category_CIVIC_INTEGRITY',
 };
 
-// Map internal enum to UI slider index (0-4)
-const thresholdSteps: HarmBlockThreshold[] = [
+const DEFAULT_THRESHOLD_INDEX = 3;
+const THRESHOLD_STEPS: HarmBlockThreshold[] = [
   HarmBlockThreshold.OFF,
   HarmBlockThreshold.BLOCK_NONE,
-  HarmBlockThreshold.BLOCK_ONLY_HIGH, // Block few
-  HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE, // Block some (Default)
-  HarmBlockThreshold.BLOCK_LOW_AND_ABOVE, // Block most
+  HarmBlockThreshold.BLOCK_ONLY_HIGH,
+  HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+  HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
 ];
 
-const thresholdLabels: Record<HarmBlockThreshold, string> = {
+const THRESHOLD_LABEL_KEYS: Record<HarmBlockThreshold, string> = {
   [HarmBlockThreshold.OFF]: 'safety_threshold_OFF',
   [HarmBlockThreshold.BLOCK_NONE]: 'safety_threshold_BLOCK_NONE',
   [HarmBlockThreshold.BLOCK_ONLY_HIGH]: 'safety_threshold_BLOCK_ONLY_HIGH',
@@ -43,44 +43,46 @@ const thresholdLabels: Record<HarmBlockThreshold, string> = {
   [HarmBlockThreshold.BLOCK_LOW_AND_ABOVE]: 'safety_threshold_BLOCK_LOW_AND_ABOVE',
 };
 
-const stepTextColors = ['text-red-500', 'text-orange-500', 'text-yellow-500', 'text-blue-500', 'text-green-500'];
+const STEP_TEXT_COLOR_CLASSES = [
+  'text-red-500',
+  'text-orange-500',
+  'text-yellow-500',
+  'text-blue-500',
+  'text-green-500',
+];
 
 type SliderValueMap = Record<HarmCategory, number>;
 
-const clampIndex = (idx: number) => {
-  if (Number.isNaN(idx)) return 3;
-  return Math.min(4, Math.max(0, idx));
+const clampIndex = (index: number) => {
+  if (Number.isNaN(index)) return DEFAULT_THRESHOLD_INDEX;
+  return Math.min(THRESHOLD_STEPS.length - 1, Math.max(0, index));
 };
 
 const indexFromThreshold = (threshold: HarmBlockThreshold | undefined) => {
-  const idx = threshold ? thresholdSteps.indexOf(threshold) : -1;
-  return clampIndex(idx !== -1 ? idx : 3);
+  const thresholdIndex = threshold ? THRESHOLD_STEPS.indexOf(threshold) : -1;
+  return clampIndex(thresholdIndex !== -1 ? thresholdIndex : DEFAULT_THRESHOLD_INDEX);
 };
 
 const normalizeSettings = (settings: SafetySetting[] | undefined): SafetySetting[] => {
-  // Prefer user settings, but ensure every category exists using defaults.
   const merged = new Map<HarmCategory, HarmBlockThreshold>();
 
-  // Start with defaults so we always have a full set.
-  for (const s of DEFAULT_SAFETY_SETTINGS) merged.set(s.category, s.threshold);
+  for (const setting of DEFAULT_SAFETY_SETTINGS) merged.set(setting.category, setting.threshold);
 
-  // Overlay user settings.
   if (settings && settings.length > 0) {
-    for (const s of settings) merged.set(s.category, s.threshold);
+    for (const setting of settings) merged.set(setting.category, setting.threshold);
   }
 
-  // Return in stable order.
-  return ALL_CATEGORIES.map((cat) => ({
-    category: cat,
-    threshold: merged.get(cat) ?? HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+  return ALL_CATEGORIES.map((category) => ({
+    category,
+    threshold: merged.get(category) ?? HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
   }));
 };
 
 const buildSliderMap = (settings: SafetySetting[] | undefined): SliderValueMap => {
   const normalized = normalizeSettings(settings);
   const map = {} as SliderValueMap;
-  for (const s of normalized) {
-    map[s.category] = indexFromThreshold(s.threshold);
+  for (const setting of normalized) {
+    map[setting.category] = indexFromThreshold(setting.threshold);
   }
   return map;
 };
@@ -93,10 +95,8 @@ export const SafetySection: React.FC<SafetySectionProps> = ({
   const { t } = useI18n();
   const normalizedSettings = useMemo(() => normalizeSettings(safetySettings), [safetySettings]);
 
-  // Local state to ensure slider updates immediately
   const [sliderValues, setSliderValues] = useState<SliderValueMap>(() => buildSliderMap(safetySettings));
 
-  // Sync when external settings change
   useEffect(() => {
     setSliderValues(buildSliderMap(safetySettings));
   }, [safetySettings]);
@@ -108,11 +108,11 @@ export const SafetySection: React.FC<SafetySectionProps> = ({
       setSliderValues((prev) => {
         const nextSliderValues = { ...prev, [category]: nextIndex };
 
-        // Reconstruct the entire settings array from the authoritative local state
-        // to prevent race conditions where rapid updates might be lost if we relied on the 'safetySettings' prop.
-        const updatedSettings = ALL_CATEGORIES.map((cat) => ({
-          category: cat,
-          threshold: thresholdSteps[nextSliderValues[cat] ?? 3] ?? HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+        const updatedSettings = ALL_CATEGORIES.map((currentCategory) => ({
+          category: currentCategory,
+          threshold:
+            THRESHOLD_STEPS[nextSliderValues[currentCategory] ?? DEFAULT_THRESHOLD_INDEX] ??
+            HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
         }));
 
         setSafetySettings(updatedSettings);
@@ -140,9 +140,8 @@ export const SafetySection: React.FC<SafetySectionProps> = ({
       <div className="grid gap-6">
         {normalizedSettings.map((setting) => {
           const category = setting.category;
-          // Use local state for immediate feedback, fallback to prop derived value
           const sliderValue = sliderValues[category] ?? indexFromThreshold(setting.threshold);
-          const effectiveThreshold = thresholdSteps[sliderValue] ?? HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE;
+          const effectiveThreshold = THRESHOLD_STEPS[sliderValue] ?? HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE;
 
           return (
             <div
@@ -151,14 +150,14 @@ export const SafetySection: React.FC<SafetySectionProps> = ({
             >
               <div className="flex justify-between items-center">
                 <label className="text-sm font-medium text-[var(--theme-text-primary)]">
-                  {t(categoryMap[category])}
+                  {t(CATEGORY_TRANSLATION_KEYS[category])}
                 </label>
                 <span
                   className={`text-xs font-bold uppercase tracking-wider ${
-                    stepTextColors[sliderValue] || 'text-[var(--theme-text-primary)]'
+                    STEP_TEXT_COLOR_CLASSES[sliderValue] || 'text-[var(--theme-text-primary)]'
                   }`}
                 >
-                  {t(thresholdLabels[effectiveThreshold])}
+                  {t(THRESHOLD_LABEL_KEYS[effectiveThreshold])}
                 </span>
               </div>
 
@@ -176,11 +175,11 @@ export const SafetySection: React.FC<SafetySectionProps> = ({
               />
 
               <div className="flex justify-between px-1">
-                {thresholdSteps.map((step, idx) => (
+                {THRESHOLD_STEPS.map((step, stepIndex) => (
                   <div key={step} className="flex flex-col items-center w-8">
                     <div
                       className={`w-1 h-2 rounded-full mb-1 ${
-                        idx === sliderValue
+                        stepIndex === sliderValue
                           ? 'bg-[var(--theme-text-primary)] h-3'
                           : 'bg-[var(--theme-border-secondary)]'
                       }`}

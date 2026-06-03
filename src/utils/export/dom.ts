@@ -1,41 +1,44 @@
 import { logService } from '@/services/logService';
 import { sanitizeCssColorFunctionsForPngExport } from './cssColorSanitizer';
 
+const DEFAULT_EXPORT_WIDTH = '800px';
+
+const isExportableStylesheetContentType = (contentType: string): boolean =>
+  contentType.includes('text/css') || contentType.includes('application/octet-stream');
+
 /**
  * Gathers all style and link tags from the current document's head to be inlined.
  * @returns A promise that resolves to a string of HTML style and link tags.
  */
 export const gatherPageStyles = async (): Promise<string> => {
-  const stylePromises = Array.from(document.head.querySelectorAll('style, link[rel="stylesheet"]')).map(async (el) => {
-    if (el.tagName === 'STYLE') {
-      return `<style>${sanitizeCssColorFunctionsForPngExport(el.innerHTML)}</style>`;
-    }
-    if (el.tagName === 'LINK' && (el as HTMLLinkElement).rel === 'stylesheet') {
-      const href = (el as HTMLLinkElement).href;
+  const stylePromises = Array.from(document.head.querySelectorAll('style, link[rel="stylesheet"]')).map(
+    async (element) => {
+      if (element.tagName === 'STYLE') {
+        return `<style>${sanitizeCssColorFunctionsForPngExport(element.innerHTML)}</style>`;
+      }
+      if (element.tagName === 'LINK' && (element as HTMLLinkElement).rel === 'stylesheet') {
+        const href = (element as HTMLLinkElement).href;
 
-      try {
-        const res = await fetch(href);
-        if (!res.ok) throw new Error(res.statusText);
+        try {
+          const response = await fetch(href);
+          if (!response.ok) throw new Error(response.statusText);
 
-        // Check Content-Type to avoid inlining HTML error pages as CSS
-        const contentType = res.headers.get('content-type');
-        if (contentType && !contentType.includes('text/css') && !contentType.includes('application/octet-stream')) {
-          logService.warn(`Skipping stylesheet ${href} due to invalid MIME: ${contentType}`);
+          const contentType = response.headers.get('content-type');
+          if (contentType && !isExportableStylesheetContentType(contentType)) {
+            logService.warn(`Skipping stylesheet ${href} due to invalid MIME: ${contentType}`);
+            return '';
+          }
+
+          const stylesheetCss = await response.text();
+          return `<style>${sanitizeCssColorFunctionsForPngExport(stylesheetCss)}</style>`;
+        } catch (stylesheetError) {
+          logService.warn('Could not fetch stylesheet for export.', { href, error: stylesheetError });
           return '';
         }
-
-        const css = await res.text();
-        return `<style>${sanitizeCssColorFunctionsForPngExport(css)}</style>`;
-      } catch (err) {
-        logService.warn('Could not fetch stylesheet for export.', { href, error: err });
-        // Fallback: If we can't fetch it, we ignore it rather than linking it,
-        // because cross-origin links often cause taint issues in html2canvas.
-        // Or we could return empty string.
-        return '';
       }
-    }
-    return '';
-  });
+      return '';
+    },
+  );
 
   return (await Promise.all(stylePromises)).join('\n');
 };
@@ -51,10 +54,8 @@ const embedImagesInClone = async (clone: HTMLElement): Promise<void> => {
     images.map(async (img) => {
       try {
         const src = img.getAttribute('src');
-        // Skip if no src or already a data URI
         if (!src || src.startsWith('data:')) return;
 
-        // Fetch the image content
         const response = await fetch(img.src);
         const blob = await response.blob();
         const reader = new FileReader();
@@ -62,17 +63,16 @@ const embedImagesInClone = async (clone: HTMLElement): Promise<void> => {
           reader.onloadend = () => {
             if (typeof reader.result === 'string') {
               img.src = reader.result;
-              // Remove attributes that might interfere with the data URI source
               img.removeAttribute('srcset');
               img.removeAttribute('loading');
             }
             resolve();
           };
-          reader.onerror = () => resolve(); // Resolve to continue even on error
+          reader.onerror = () => resolve();
           reader.readAsDataURL(blob);
         });
-      } catch (e) {
-        logService.warn('Failed to embed image for export:', e);
+      } catch (embedError) {
+        logService.warn('Failed to embed image for export:', embedError);
       }
     }),
   );
@@ -83,7 +83,7 @@ const embedImagesInClone = async (clone: HTMLElement): Promise<void> => {
  */
 export const createSnapshotContainer = async (
   themeId: string,
-  width: string = '800px',
+  width: string = DEFAULT_EXPORT_WIDTH,
 ): Promise<{ container: HTMLElement; innerContent: HTMLElement; remove: () => void; rootBgColor: string }> => {
   const tempContainer = document.createElement('div');
   tempContainer.style.position = 'absolute';
@@ -107,7 +107,6 @@ export const createSnapshotContainer = async (
         <div class="theme-${themeId} ${bodyClasses} is-exporting-png" style="background-color: ${rootBgColor}; color: var(--theme-text-primary); min-height: 100vh;">
             <div style="background-color: ${rootBgColor}; padding: 0;">
                 <div class="exported-chat-container" style="width: 100%; max-width: 100%; margin: 0 auto;">
-                    <!-- Content will be injected here -->
                 </div>
             </div>
         </div>
@@ -124,8 +123,8 @@ export const createSnapshotContainer = async (
   }
 
   return {
-    container: captureTarget, // The element to pass to html2canvas
-    innerContent, // The element to append content to
+    container: captureTarget,
+    innerContent,
     remove: () => {
       if (document.body.contains(tempContainer)) {
         document.body.removeChild(tempContainer);
@@ -209,28 +208,28 @@ export const prepareElementForExport = async (
     '[role="tooltip"]',
     '.loading-dots-container',
   ];
-  clone.querySelectorAll(selectorsToRemove.join(',')).forEach((el) => el.remove());
+  clone.querySelectorAll(selectorsToRemove.join(',')).forEach((element) => element.remove());
 
-  clone.querySelectorAll('[data-message-id]').forEach((el) => {
-    (el as HTMLElement).style.animation = 'none';
-    (el as HTMLElement).style.opacity = '1';
-    (el as HTMLElement).style.transform = 'none';
+  clone.querySelectorAll('[data-message-id]').forEach((element) => {
+    (element as HTMLElement).style.animation = 'none';
+    (element as HTMLElement).style.opacity = '1';
+    (element as HTMLElement).style.transform = 'none';
   });
 
   if (expandDetails) {
-    clone.querySelectorAll('.message-thoughts-block').forEach((el) => el.remove());
+    clone.querySelectorAll('.message-thoughts-block').forEach((element) => element.remove());
 
-    clone.querySelectorAll('.code-block-expand-overlay').forEach((el) => el.remove());
+    clone.querySelectorAll('.code-block-expand-overlay').forEach((element) => element.remove());
 
-    clone.querySelectorAll('pre').forEach((el) => {
-      (el as HTMLElement).style.maxHeight = 'none';
-      (el as HTMLElement).style.height = 'auto';
-      (el as HTMLElement).style.overflow = 'visible';
+    clone.querySelectorAll('pre').forEach((element) => {
+      (element as HTMLElement).style.maxHeight = 'none';
+      (element as HTMLElement).style.height = 'auto';
+      (element as HTMLElement).style.overflow = 'visible';
     });
 
-    clone.querySelectorAll('details').forEach((el) => el.setAttribute('open', 'true'));
+    clone.querySelectorAll('details').forEach((element) => element.setAttribute('open', 'true'));
   } else {
-    clone.querySelectorAll('details').forEach((el) => el.removeAttribute('open'));
+    clone.querySelectorAll('details').forEach((element) => element.removeAttribute('open'));
 
     clone.querySelectorAll('.thought-process-accordion').forEach((accordion) => {
       const parent = accordion.parentElement;
@@ -276,7 +275,7 @@ export const prepareElementForExport = async (
     });
   }
 
-  // 7. Embed Images: Convert blob/url images to Base64
+  // Embed blob and remote images before the clone leaves the live document.
   await embedImagesInClone(clone);
 
   return clone;

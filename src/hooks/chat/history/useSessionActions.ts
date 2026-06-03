@@ -23,22 +23,22 @@ export const useSessionActions = ({ updateAndPersistSessions, activeJobs }: UseS
 
       try {
         removeSessionScopedLocalStorageEntries([sessionId]);
-      } catch (e) {
-        logService.error('Failed to clean up session localStorage:', e);
+      } catch (cleanupError) {
+        logService.error('Failed to clean up session localStorage:', cleanupError);
       }
 
       updateAndPersistSessions((prev) => {
-        const sessionToDelete = prev.find((s) => s.id === sessionId);
+        const sessionToDelete = prev.find((session) => session.id === sessionId);
         if (sessionToDelete) {
-          sessionToDelete.messages.forEach((msg) => {
-            if (msg.isLoading && activeJobs.current.has(msg.id)) {
-              activeJobs.current.get(msg.id)?.abort();
-              activeJobs.current.delete(msg.id);
+          sessionToDelete.messages.forEach((message) => {
+            if (message.isLoading && activeJobs.current.has(message.id)) {
+              activeJobs.current.get(message.id)?.abort();
+              activeJobs.current.delete(message.id);
             }
-            cleanupFilePreviewUrls(msg.files);
+            cleanupFilePreviewUrls(message.files);
           });
         }
-        return prev.filter((s) => s.id !== sessionId);
+        return prev.filter((session) => session.id !== sessionId);
       });
     },
     [updateAndPersistSessions, activeJobs],
@@ -48,7 +48,9 @@ export const useSessionActions = ({ updateAndPersistSessions, activeJobs }: UseS
     (sessionId: string, newTitle: string) => {
       if (!newTitle.trim()) return;
       logService.info(`Renaming session ${sessionId} to "${newTitle}"`);
-      updateAndPersistSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, title: newTitle.trim() } : s)));
+      updateAndPersistSessions((prev) =>
+        prev.map((session) => (session.id === sessionId ? { ...session, title: newTitle.trim() } : session)),
+      );
     },
     [updateAndPersistSessions],
   );
@@ -56,7 +58,9 @@ export const useSessionActions = ({ updateAndPersistSessions, activeJobs }: UseS
   const handleTogglePinSession = useCallback(
     (sessionId: string) => {
       logService.info(`Toggling pin for session ${sessionId}`);
-      updateAndPersistSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, isPinned: !s.isPinned } : s)));
+      updateAndPersistSessions((prev) =>
+        prev.map((session) => (session.id === sessionId ? { ...session, isPinned: !session.isPinned } : session)),
+      );
     },
     [updateAndPersistSessions],
   );
@@ -67,7 +71,7 @@ export const useSessionActions = ({ updateAndPersistSessions, activeJobs }: UseS
       const persistedSession = await dbService.getSession(sessionId);
 
       updateAndPersistSessions((prev) => {
-        const sessionToDuplicate = prev.find((s) => s.id === sessionId);
+        const sessionToDuplicate = prev.find((session) => session.id === sessionId);
         if (!sessionToDuplicate) return prev;
         const fullSessionToDuplicate =
           sessionToDuplicate.messages.length > 0 ? sessionToDuplicate : (persistedSession ?? sessionToDuplicate);

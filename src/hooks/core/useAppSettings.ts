@@ -3,18 +3,16 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { applyThemeToDocument } from '@/utils/themeDom';
 
 export const useAppSettings = () => {
-  const appSettings = useSettingsStore((s) => s.appSettings);
-  const setAppSettings = useSettingsStore((s) => s.setAppSettings);
-  const currentTheme = useSettingsStore((s) => s.currentTheme);
-  const language = useSettingsStore((s) => s.language);
-  const loadSettings = useSettingsStore((s) => s.loadSettings);
+  const appSettings = useSettingsStore((state) => state.appSettings);
+  const setAppSettings = useSettingsStore((state) => state.setAppSettings);
+  const currentTheme = useSettingsStore((state) => state.currentTheme);
+  const language = useSettingsStore((state) => state.language);
+  const loadSettings = useSettingsStore((state) => state.loadSettings);
 
-  // Initial load
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
 
-  // Apply theme to DOM when settings change
   useEffect(() => {
     applyThemeToDocument(document, currentTheme, appSettings);
   }, [appSettings, currentTheme]);

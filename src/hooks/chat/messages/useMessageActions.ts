@@ -64,7 +64,7 @@ export const useMessageActions = ({
       const { silent = false, skipLoadingUpdate = false } = options;
       if (!activeSessionId || !isLoading) return;
 
-      const loadingMessage = messages.find((msg) => msg.isLoading);
+      const loadingMessage = messages.find((message) => message.isLoading);
       if (loadingMessage) {
         const generationId = loadingMessage.id;
         const controller = activeJobs.current.get(generationId);
@@ -128,7 +128,7 @@ export const useMessageActions = ({
   const handleEditMessage = useCallback(
     (messageId: string, mode: 'update' | 'resend' = 'resend') => {
       logService.info('User initiated message edit', { messageId, mode });
-      const messageToEdit = messages.find((msg) => msg.id === messageId);
+      const messageToEdit = messages.find((message) => message.id === messageId);
       if (messageToEdit) {
         if (isLoading) handleStopGenerating();
         setCommandedInput({ text: messageToEdit.content || '', id: Date.now() });
@@ -156,25 +156,24 @@ export const useMessageActions = ({
       if (!activeSessionId) return;
       logService.info('User deleted message', { messageId, sessionId: activeSessionId });
 
-      const messageToDelete = messages.find((msg) => msg.id === messageId);
+      const messageToDelete = messages.find((message) => message.id === messageId);
       if (messageToDelete?.isLoading) {
         handleStopGenerating();
       }
 
-      // Cleanup blob URLs for the deleted message
       if (messageToDelete) {
         cleanupFilePreviewUrls(messageToDelete.files);
       }
 
       const relatedToolMessageIds = new Set(
-        messages.filter((msg) => msg.toolParentMessageId === messageId).map((msg) => msg.id),
+        messages.filter((message) => message.toolParentMessageId === messageId).map((message) => message.id),
       );
       relatedToolMessageIds.add(messageId);
 
       updateAndPersistSessions((prev) =>
-        updateSessionById(prev, activeSessionId, (s) => ({
-          ...s,
-          messages: s.messages.filter((msg) => !relatedToolMessageIds.has(msg.id)),
+        updateSessionById(prev, activeSessionId, (session) => ({
+          ...session,
+          messages: session.messages.filter((message) => !relatedToolMessageIds.has(message.id)),
         })),
       );
 
@@ -198,7 +197,7 @@ export const useMessageActions = ({
       logService.info('User retrying message', { modelMessageId: modelMessageIdToRetry, sessionId: activeSessionId });
 
       const visibleMessages = getVisibleChatMessages(messages);
-      const modelMessageIndex = visibleMessages.findIndex((m) => m.id === modelMessageIdToRetry);
+      const modelMessageIndex = visibleMessages.findIndex((message) => message.id === modelMessageIdToRetry);
       if (modelMessageIndex < 1) return;
 
       // Cleanup artifacts (images/audio) from the model message being discarded to prevent memory leaks
@@ -238,7 +237,7 @@ export const useMessageActions = ({
 
     const lastModelMessage = [...getVisibleChatMessages(messages)]
       .reverse()
-      .find((m) => m.role === 'model' || m.role === 'error');
+      .find((message) => message.role === 'model' || message.role === 'error');
 
     if (lastModelMessage) {
       logService.info('User retrying last turn via command', {
@@ -255,8 +254,7 @@ export const useMessageActions = ({
     if (isLoading) {
       handleStopGenerating();
     }
-    // Find the last message that was sent by the user
-    const lastUserMessage = [...getVisibleChatMessages(messages)].reverse().find((m) => m.role === 'user');
+    const lastUserMessage = [...getVisibleChatMessages(messages)].reverse().find((message) => message.role === 'user');
     if (lastUserMessage) {
       logService.info('User editing last message via command', { messageId: lastUserMessage.id });
       handleEditMessage(lastUserMessage.id, 'resend');
@@ -269,7 +267,7 @@ export const useMessageActions = ({
     async (messageId: string) => {
       if (!activeSessionId) return;
 
-      const message = messages.find((m) => m.id === messageId);
+      const message = messages.find((candidateMessage) => candidateMessage.id === messageId);
       if (!message || message.role !== 'model') return;
 
       logService.info('User requested Continue Generation', { messageId });

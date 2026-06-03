@@ -1,7 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
-import { listProjectSourceFiles, projectRoot, readProjectFile } from './projectFiles';
+import { listProjectSourceFiles, listProjectSourceFilesExcept, projectRoot, readProjectFile } from './projectFiles';
+
+const thisTestFile = 'src/test/architecture/codeStyleBoundaries.test.ts';
 
 const importDeclarationPattern = /^import\s+(?:type\s+)?[\s\S]*?\s+from\s+['"]([^'"]+)['"];$/gm;
 const sourceImportSpecifierPattern =
@@ -101,42 +103,38 @@ describe('code style boundaries', () => {
   });
 
   it('does not repeat static import declarations from the same module', () => {
-    const offenders = listProjectSourceFiles('src')
-      .filter((relativePath) => relativePath !== 'src/test/architecture/codeStyleBoundaries.test.ts')
-      .flatMap((relativePath) => {
-        const source = readProjectFile(relativePath);
-        const importCounts = new Map<string, number>();
+    const offenders = listProjectSourceFilesExcept('src', thisTestFile).flatMap((relativePath) => {
+      const source = readProjectFile(relativePath);
+      const importCounts = new Map<string, number>();
 
-        for (const match of source.matchAll(importDeclarationPattern)) {
-          const specifier = match[1];
-          importCounts.set(specifier, (importCounts.get(specifier) ?? 0) + 1);
-        }
+      for (const match of source.matchAll(importDeclarationPattern)) {
+        const specifier = match[1];
+        importCounts.set(specifier, (importCounts.get(specifier) ?? 0) + 1);
+      }
 
-        return Array.from(importCounts)
-          .filter(([, count]) => count > 1)
-          .map(([specifier]) => `${relativePath}:${specifier}`);
-      });
+      return Array.from(importCounts)
+        .filter(([, count]) => count > 1)
+        .map(([specifier]) => `${relativePath}:${specifier}`);
+    });
 
     expect(offenders).toEqual([]);
   });
 
   it('keeps static import declarations before exports', () => {
-    const offenders = listProjectSourceFiles('src')
-      .filter((relativePath) => relativePath !== 'src/test/architecture/codeStyleBoundaries.test.ts')
-      .flatMap((relativePath) => {
-        const lines = readProjectFile(relativePath).split('\n');
-        let sawExport = false;
-        const lateImports: string[] = [];
+    const offenders = listProjectSourceFilesExcept('src', thisTestFile).flatMap((relativePath) => {
+      const lines = readProjectFile(relativePath).split('\n');
+      let sawExport = false;
+      const lateImports: string[] = [];
 
-        lines.forEach((line, index) => {
-          if (/^export\s/.test(line)) sawExport = true;
-          if (sawExport && /^import\s/.test(line)) {
-            lateImports.push(`${relativePath}:${index + 1}`);
-          }
-        });
-
-        return lateImports;
+      lines.forEach((line, index) => {
+        if (/^export\s/.test(line)) sawExport = true;
+        if (sawExport && /^import\s/.test(line)) {
+          lateImports.push(`${relativePath}:${index + 1}`);
+        }
       });
+
+      return lateImports;
+    });
 
     expect(offenders).toEqual([]);
   });
@@ -144,7 +142,7 @@ describe('code style boundaries', () => {
   it('uses direct React ref type imports instead of namespace ref aliases', () => {
     const offenders = listProjectSourceFiles('src')
       .filter((relativePath) => !relativePath.includes('.test.'))
-      .filter((relativePath) => relativePath !== 'src/test/architecture/codeStyleBoundaries.test.ts')
+      .filter((relativePath) => relativePath !== thisTestFile)
       .filter((relativePath) => /React\.(?:MutableRefObject|RefObject)\b/.test(readProjectFile(relativePath)));
 
     expect(offenders).toEqual([]);
@@ -162,7 +160,7 @@ describe('code style boundaries', () => {
   it('does not call useI18n more than once in a production component or hook', () => {
     const offenders = listProjectSourceFiles('src')
       .filter((relativePath) => !relativePath.includes('.test.'))
-      .filter((relativePath) => relativePath !== 'src/test/architecture/codeStyleBoundaries.test.ts')
+      .filter((relativePath) => relativePath !== thisTestFile)
       .filter((relativePath) => (readProjectFile(relativePath).match(/\buseI18n\(/g) ?? []).length > 1);
 
     expect(offenders).toEqual([]);
@@ -195,6 +193,7 @@ describe('code style boundaries', () => {
     expect(packageJson.scripts?.test).toBe('node scripts/run-vitest.mjs run');
     expect(packageJson.scripts?.['test:watch']).toBe('node scripts/run-vitest.mjs');
     expect(packageJson.scripts?.['build:docker']).toBe('npm run build && npm run build:api');
+    expect(packageJson.scripts?.['start:api']).toBe('node server/dist/server/src/index.js');
     expect(fs.existsSync(path.join(projectRoot, 'scripts/runVitest.mjs'))).toBe(false);
     expect(fs.existsSync(path.join(projectRoot, 'scripts/run-vitest.mjs'))).toBe(true);
   });
@@ -248,7 +247,7 @@ describe('code style boundaries', () => {
     const tautologicalExtensionFallbackPattern = /CREATE_FILE_EXTENSION_OPTIONS\.includes\(ext\)\s*\?\s*ext\s*:\s*ext/;
     const offenders = listProjectSourceFiles('src')
       .filter((relativePath) => !relativePath.includes('.test.'))
-      .filter((relativePath) => relativePath !== 'src/test/architecture/codeStyleBoundaries.test.ts')
+      .filter((relativePath) => relativePath !== thisTestFile)
       .filter((relativePath) => {
         const source = readProjectFile(relativePath);
         return tautologicalLiteralTernaryPattern.test(source) || tautologicalExtensionFallbackPattern.test(source);
@@ -262,7 +261,7 @@ describe('code style boundaries', () => {
       /^\/\/\s*(?:src\/|hooks\/|components\/|utils\/|services\/|features\/).+\.(?:ts|tsx)$/;
     const offenders = listProjectSourceFiles('src')
       .filter((relativePath) => !relativePath.includes('.test.'))
-      .filter((relativePath) => relativePath !== 'src/test/architecture/codeStyleBoundaries.test.ts')
+      .filter((relativePath) => relativePath !== thisTestFile)
       .filter((relativePath) => pathHeaderCommentPattern.test(readProjectFile(relativePath).split('\n')[0] ?? ''));
 
     expect(offenders).toEqual([]);
@@ -397,9 +396,7 @@ describe('code style boundaries', () => {
 
   it('keeps hook lint escapes narrow and explained', () => {
     const selectionDragSource = readProjectFile('src/hooks/text-selection/useSelectionDrag.ts');
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/codeStyleBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
     const sourceLevelRefDisables = sourceFiles.filter((relativePath) =>
       readProjectFile(relativePath).includes('eslint-disable react-hooks/refs'),
     );
@@ -435,9 +432,7 @@ describe('code style boundaries', () => {
   });
 
   it('keeps React Refresh component-export exceptions in ESLint config instead of source comments', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/codeStyleBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
     const sourceLevelReactRefreshDisables = sourceFiles.filter((relativePath) =>
       readProjectFile(relativePath).includes('eslint-disable react-refresh/only-export-components'),
     );

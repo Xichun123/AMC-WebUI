@@ -9,13 +9,12 @@ import {
 } from '@/types';
 import { useI18n } from '@/contexts/I18nContext';
 import { logService } from '@/services/logService';
-import { getApiKeyErrorTranslationKey } from '@/utils/apiKeySelection';
+import { formatApiKeyErrorMessage } from '@/utils/apiKeySelection';
 import { isServerCodeExecutionMode } from '@/utils/codeExecution';
 import { getModelCapabilities } from '@/utils/modelCapabilities';
 import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
 
-import { ensureFilesApiReferences } from './fileApiReference';
-import { formatMessageSenderText } from './i18nFormat';
+import { ensureFilesApiReferences, formatFileReferenceErrorMessage } from './fileApiReference';
 import { sendImageGenerationMessage } from './imageGenerationStrategy';
 import { sendImageEditMessage } from './imageEditStrategy';
 import { prepareFilesForOpenAICompatibleMode } from './openaiCompatibleFiles';
@@ -67,13 +66,7 @@ export const useMessageSender = (props: MessageSenderProps) => {
   const senderStoreActions = useMemo(() => createSenderStoreActions(), []);
   const { updateAndPersistSessions, setActiveSessionId, setSessionLoading, activeJobs } = senderStoreActions;
 
-  const translateApiKeyError = useCallback(
-    (error: string) => {
-      const translationKey = getApiKeyErrorTranslationKey(error);
-      return translationKey ? t(translationKey) : error;
-    },
-    [t],
-  );
+  const translateApiKeyError = useCallback((error: string) => formatApiKeyErrorMessage(error, t), [t]);
 
   const { getStreamHandlers } = useChatStreamHandler({
     appSettings,
@@ -189,12 +182,7 @@ export const useMessageSender = (props: MessageSenderProps) => {
           });
 
       if (!fileReferenceResult.ok) {
-        const template = t(fileReferenceResult.errorKey);
-        setAppFileError(
-          fileReferenceResult.fileName
-            ? formatMessageSenderText(template, { filename: fileReferenceResult.fileName })
-            : template,
-        );
+        setAppFileError(formatFileReferenceErrorMessage(fileReferenceResult, t));
         return;
       }
       const filesReadyForSend = fileReferenceResult.files;
@@ -246,7 +234,7 @@ export const useMessageSender = (props: MessageSenderProps) => {
       }
 
       if (isImageEditModel || (isGemini3Image && appSettings.generateQuadImages)) {
-        const editIndex = effectiveEditingId ? messages.findIndex((m) => m.id === effectiveEditingId) : -1;
+        const editIndex = effectiveEditingId ? messages.findIndex((message) => message.id === effectiveEditingId) : -1;
         const historyMessages = editIndex !== -1 ? messages.slice(0, editIndex) : messages;
         await sendImageEditMessage({
           keyToUse,

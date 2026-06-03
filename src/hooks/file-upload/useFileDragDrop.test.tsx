@@ -2,65 +2,13 @@ import { act } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { renderHookWithProviders } from '@/test/render/providerRenderer';
+import {
+  createFileSystemDirectoryEntry,
+  createFileSystemDirectoryHandle,
+  createFileSystemFileEntry,
+  createFileSystemFileHandle,
+} from '@/test/file-system/entries';
 import { useFileDragDrop } from './useFileDragDrop';
-
-function createFileEntry(fullPath: string, file: File): FileSystemFileEntry {
-  return {
-    isFile: true,
-    isDirectory: false,
-    name: file.name,
-    fullPath,
-    file(successCallback: (value: File) => void) {
-      successCallback(file);
-    },
-  } as unknown as FileSystemFileEntry;
-}
-
-function createDirectoryEntry(name: string, fullPath: string, children: FileSystemEntry[]): FileSystemDirectoryEntry {
-  return {
-    isFile: false,
-    isDirectory: true,
-    name,
-    fullPath,
-    createReader() {
-      let consumed = false;
-      return {
-        readEntries(successCallback) {
-          if (consumed) {
-            successCallback([]);
-            return;
-          }
-
-          consumed = true;
-          successCallback(children);
-        },
-      } as FileSystemDirectoryReader;
-    },
-  } as unknown as FileSystemDirectoryEntry;
-}
-
-function createFileHandle(name: string, content: string): FileSystemFileHandle {
-  return {
-    kind: 'file',
-    name,
-    getFile: () => Promise.resolve(new File([content], name, { type: 'text/plain' })),
-  } as unknown as FileSystemFileHandle;
-}
-
-function createDirectoryHandle(
-  name: string,
-  entries: Array<FileSystemDirectoryHandle | FileSystemFileHandle>,
-): FileSystemDirectoryHandle {
-  return {
-    kind: 'directory',
-    name,
-    async *values() {
-      for (const entry of entries) {
-        yield entry;
-      }
-    },
-  } as unknown as FileSystemDirectoryHandle;
-}
 
 function createDropEvent(dataTransfer: Partial<DataTransfer>): React.DragEvent<HTMLDivElement> {
   return {
@@ -100,8 +48,8 @@ describe('useFileDragDrop', () => {
   });
 
   it('uses dropped File System handles when directory entries are exposed through the modern API', async () => {
-    const rootHandle = createDirectoryHandle('demo', [
-      createDirectoryHandle('src', [createFileHandle('app.ts', 'export const app = true;\n')]),
+    const rootHandle = createFileSystemDirectoryHandle('demo', [
+      createFileSystemDirectoryHandle('src', [createFileSystemFileHandle('app.ts', 'export const app = true;\n')]),
     ]);
     const item = {
       kind: 'file',
@@ -147,7 +95,9 @@ describe('useFileDragDrop', () => {
 
   it('reads dropped directory entries synchronously before async imports can invalidate drag data', async () => {
     const appFile = new File(['export const app = true;\n'], 'app.ts', { type: 'text/plain' });
-    const rootEntry = createDirectoryEntry('demo', '/demo', [createFileEntry('/demo/src/app.ts', appFile)]);
+    const rootEntry = createFileSystemDirectoryEntry('demo', '/demo', [
+      createFileSystemFileEntry('/demo/src/app.ts', appFile),
+    ]);
     const item = {
       kind: 'file',
       webkitGetAsEntry: vi.fn().mockReturnValue(rootEntry),
@@ -185,7 +135,9 @@ describe('useFileDragDrop', () => {
 
   it('snapshots dropped directory entries before async processing begins', async () => {
     const appFile = new File(['export const app = true;\n'], 'app.ts', { type: 'text/plain' });
-    const rootEntry = createDirectoryEntry('demo', '/demo', [createFileEntry('/demo/src/app.ts', appFile)]);
+    const rootEntry = createFileSystemDirectoryEntry('demo', '/demo', [
+      createFileSystemFileEntry('/demo/src/app.ts', appFile),
+    ]);
     const item = {
       kind: 'file',
       webkitGetAsEntry: vi.fn().mockReturnValueOnce(rootEntry).mockReturnValueOnce(null),

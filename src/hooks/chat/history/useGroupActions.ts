@@ -26,8 +26,10 @@ export const useGroupActions = ({ updateAndPersistGroups, updateAndPersistSessio
   const handleDeleteGroup = useCallback(
     (groupId: string) => {
       logService.info(`Deleting group: ${groupId}`);
-      updateAndPersistGroups((prev) => prev.filter((g) => g.id !== groupId));
-      updateAndPersistSessions((prev) => prev.map((s) => (s.groupId === groupId ? { ...s, groupId: null } : s)));
+      updateAndPersistGroups((prev) => prev.filter((group) => group.id !== groupId));
+      updateAndPersistSessions((prev) =>
+        prev.map((session) => (session.groupId === groupId ? { ...session, groupId: null } : session)),
+      );
     },
     [updateAndPersistGroups, updateAndPersistSessions],
   );
@@ -36,7 +38,9 @@ export const useGroupActions = ({ updateAndPersistGroups, updateAndPersistSessio
     (groupId: string, newTitle: string) => {
       if (!newTitle.trim()) return;
       logService.info(`Renaming group ${groupId} to "${newTitle}"`);
-      updateAndPersistGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, title: newTitle.trim() } : g)));
+      updateAndPersistGroups((prev) =>
+        prev.map((group) => (group.id === groupId ? { ...group, title: newTitle.trim() } : group)),
+      );
     },
     [updateAndPersistGroups],
   );
@@ -44,7 +48,9 @@ export const useGroupActions = ({ updateAndPersistGroups, updateAndPersistSessio
   const handleMoveSessionToGroup = useCallback(
     (sessionId: string, groupId: string | null) => {
       logService.info(`Moving session ${sessionId} to group ${groupId}`);
-      updateAndPersistSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, groupId } : s)));
+      updateAndPersistSessions((prev) =>
+        prev.map((session) => (session.id === sessionId ? { ...session, groupId } : session)),
+      );
     },
     [updateAndPersistSessions],
   );
@@ -52,7 +58,7 @@ export const useGroupActions = ({ updateAndPersistGroups, updateAndPersistSessio
   const handleToggleGroupExpansion = useCallback(
     (groupId: string) => {
       updateAndPersistGroups((prev) =>
-        prev.map((g) => (g.id === groupId ? { ...g, isExpanded: !(g.isExpanded ?? true) } : g)),
+        prev.map((group) => (group.id === groupId ? { ...group, isExpanded: !(group.isExpanded ?? true) } : group)),
       );
     },
     [updateAndPersistGroups],

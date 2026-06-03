@@ -50,7 +50,6 @@ export const ThinkingControl: FC<ThinkingControlProps> = ({
   const isMandatoryThinking = REQUIRED_THINKING_MODEL_IDS.includes(modelId);
   const canDisableThinking = !isMandatoryThinking && !isRobotics;
 
-  // Default ranges if config is missing (fallback for unknown models)
   const minBudget = budgetConfig?.min ?? 1024;
   const maxBudget = budgetConfig?.max ?? 32768;
 
@@ -58,7 +57,6 @@ export const ThinkingControl: FC<ThinkingControlProps> = ({
     thinkingBudget > 0 ? String(thinkingBudget) : String(minBudget),
   );
 
-  // Determine current mode
   const mode = thinkingBudget < 0 ? 'auto' : thinkingBudget === 0 ? 'off' : 'custom';
   const showThinkingControls = !isTtsModel && (!!budgetConfig || isGemini3 || isGemma);
   const gemmaThinkingLevel: ThinkingLevel = showThoughts ? 'HIGH' : 'MINIMAL';
@@ -70,14 +68,12 @@ export const ThinkingControl: FC<ThinkingControlProps> = ({
     }
   }, [thinkingBudget]);
 
-  // Force auto mode if mandatory thinking model is selected and budget is 0 (off)
   useEffect(() => {
     if (isMandatoryThinking && thinkingBudget === 0) {
       setThinkingBudget(-1);
     }
   }, [modelId, isMandatoryThinking, thinkingBudget, setThinkingBudget]);
 
-  // Ensure custom budget doesn't exceed max when switching models
   useEffect(() => {
     if (thinkingBudget > maxBudget) {
       setThinkingBudget(maxBudget);
@@ -114,25 +110,22 @@ export const ThinkingControl: FC<ThinkingControlProps> = ({
     } else if (newMode === 'off') {
       setThinkingBudget(0);
     } else {
-      // Custom Mode
-      // Restore last custom value or default to max/reasonable
-      let newBudget = parseInt(customBudgetValue, 10);
-      if (isNaN(newBudget) || newBudget <= 0) newBudget = maxBudget;
+      let nextBudget = parseInt(customBudgetValue, 10);
+      if (isNaN(nextBudget) || nextBudget <= 0) nextBudget = maxBudget;
 
-      // Clamp to valid range for current model
-      if (newBudget > maxBudget) newBudget = maxBudget;
-      if (newBudget < minBudget) newBudget = minBudget;
+      if (nextBudget > maxBudget) nextBudget = maxBudget;
+      if (nextBudget < minBudget) nextBudget = minBudget;
 
-      if (String(newBudget) !== customBudgetValue) setCustomBudgetValue(String(newBudget));
-      setThinkingBudget(newBudget);
+      if (String(nextBudget) !== customBudgetValue) setCustomBudgetValue(String(nextBudget));
+      setThinkingBudget(nextBudget);
     }
   };
 
-  const handleCustomBudgetChange = (val: string) => {
-    setCustomBudgetValue(val);
-    const numVal = parseInt(val, 10);
-    if (!isNaN(numVal) && numVal > 0) {
-      setThinkingBudget(numVal);
+  const handleCustomBudgetChange = (inputValue: string) => {
+    setCustomBudgetValue(inputValue);
+    const parsedBudget = parseInt(inputValue, 10);
+    if (!isNaN(parsedBudget) && parsedBudget > 0) {
+      setThinkingBudget(parsedBudget);
     }
   };
 

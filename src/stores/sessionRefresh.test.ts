@@ -1,17 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_MODEL_ID } from '@/constants/modelConfiguration';
 import type { SavedChatSession } from '@/types';
-import { createChatSettings } from '@/test/data/factories';
+import { createSavedChatSessionMetadata } from '@/test/data/factories';
 import { mergeSessionMetadata } from './sessionRefresh';
-
-const makeSession = (overrides: Partial<SavedChatSession> = {}): SavedChatSession => ({
-  id: 'session',
-  title: 'Session',
-  timestamp: 0,
-  messages: [],
-  settings: createChatSettings(),
-  ...overrides,
-});
 
 describe('sessionRefresh', () => {
   it('merges refreshed metadata without replacing active runtime messages', () => {
@@ -21,14 +12,14 @@ describe('sessionRefresh', () => {
       content: 'streaming',
       timestamp: new Date(),
     };
-    const previousSession = makeSession({
+    const previousSession = createSavedChatSessionMetadata({
       id: 'active',
       title: 'Local Title',
       timestamp: 1,
       messages: [runtimeMessage],
       settings: { temperature: 0.7 } as SavedChatSession['settings'],
     });
-    const incomingMetadata = makeSession({
+    const incomingMetadata = createSavedChatSessionMetadata({
       id: 'active',
       title: 'Persisted Title',
       timestamp: 2,
@@ -64,10 +55,13 @@ describe('sessionRefresh', () => {
 
     const merged = mergeSessionMetadata(
       [
-        makeSession({ id: 'loading', messages: [loadingMessage], timestamp: 1 }),
-        makeSession({ id: 'inactive', messages: [inactiveMessage], timestamp: 2 }),
+        createSavedChatSessionMetadata({ id: 'loading', messages: [loadingMessage], timestamp: 1 }),
+        createSavedChatSessionMetadata({ id: 'inactive', messages: [inactiveMessage], timestamp: 2 }),
       ],
-      [makeSession({ id: 'inactive', timestamp: 2 }), makeSession({ id: 'loading', timestamp: 1 })],
+      [
+        createSavedChatSessionMetadata({ id: 'inactive', timestamp: 2 }),
+        createSavedChatSessionMetadata({ id: 'loading', timestamp: 1 }),
+      ],
       {
         activeSessionId: null,
         loadingSessionIds: new Set(['loading']),
@@ -80,8 +74,11 @@ describe('sessionRefresh', () => {
 
   it('sorts merged sessions and preserves local sessions absent from refreshed metadata', () => {
     const merged = mergeSessionMetadata(
-      [makeSession({ id: 'local-only', timestamp: 3 })],
-      [makeSession({ id: 'old', timestamp: 1 }), makeSession({ id: 'pinned', timestamp: 2, isPinned: true })],
+      [createSavedChatSessionMetadata({ id: 'local-only', timestamp: 3 })],
+      [
+        createSavedChatSessionMetadata({ id: 'old', timestamp: 1 }),
+        createSavedChatSessionMetadata({ id: 'pinned', timestamp: 2, isPinned: true }),
+      ],
       {
         activeSessionId: null,
         loadingSessionIds: new Set(),

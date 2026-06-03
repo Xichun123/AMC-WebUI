@@ -15,7 +15,7 @@ import {
 import { createLocalPythonToolDeclaration } from '@/features/local-python/clientFunctionTool';
 import { useSettingsStore } from '@/stores/settingsStore';
 import {
-  getApiKeyErrorTranslationKey,
+  formatApiKeyErrorMessage,
   getGeminiKeyForRequest,
   isServerManagedApiEnabledForProxyRequests,
   parseApiKeys,
@@ -94,8 +94,7 @@ export const useTokenCountLogic = ({
       const keyResult = resolveTokenCountRequestKey(effectiveAppSettings, modelId);
 
       if ('error' in keyResult) {
-        const translationKey = getApiKeyErrorTranslationKey(keyResult.error);
-        setError(translationKey ? t(translationKey) : keyResult.error);
+        setError(formatApiKeyErrorMessage(keyResult.error, t));
         setIsLoading(false);
         return;
       }
@@ -127,9 +126,9 @@ export const useTokenCountLogic = ({
 
         const count = await countTokensApi(keyResult.key, modelId, contentParts, toCountTokensConfig(requestConfig));
         setTokenCount(count);
-      } catch (err) {
-        logService.error('Token calculation failed', err);
-        const message = err instanceof Error ? err.message : String(err);
+      } catch (tokenCountError) {
+        logService.error('Token calculation failed', tokenCountError);
+        const message = tokenCountError instanceof Error ? tokenCountError.message : String(tokenCountError);
         setError(t('token_count_error_with_message').replace('{message}', message));
       } finally {
         setIsLoading(false);
@@ -153,9 +152,9 @@ export const useTokenCountLogic = ({
     }
   }, [isOpen, initialText, initialFiles, currentModelId, performCalculation]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files).map((file) => ({
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      const newFiles = Array.from(event.target.files).map((file) => ({
         id: generateUniqueId(),
         name: file.name,
         type: file.type,

@@ -16,6 +16,7 @@ const EMPTY_EDITING_DRAFT: ChatDraft = {
   ttsContext: '',
 };
 const EMPTY_QUOTES: string[] = [];
+const FULLSCREEN_TEXTAREA_FOCUS_DELAY_MS = 50;
 
 const resolveSetStateAction = <T>(value: SetStateAction<T>, previous: T): T =>
   typeof value === 'function' ? (value as (prev: T) => T)(previous) : value;
@@ -134,7 +135,7 @@ export const useChatInputState = (activeSessionId: string | null, isEditing: boo
 
   const handleToggleFullscreen = useCallback(() => {
     if (!machineState.isFullscreen) {
-      setTimeout(() => textareaRef.current?.focus(), 50);
+      setTimeout(() => textareaRef.current?.focus(), FULLSCREEN_TEXTAREA_FOCUS_DELAY_MS);
     }
 
     dispatchMachineState(createToggleChatInputFullscreenAction());

@@ -8,6 +8,9 @@ interface PerformanceMetricsProps {
   hideTimer?: boolean;
 }
 
+const MIN_GENERATION_DURATION_SECONDS = 0.2;
+const LIVE_TIMER_REFRESH_MS = 100;
+
 export const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ message, hideTimer }) => {
   const { t } = useI18n();
   const {
@@ -32,7 +35,7 @@ export const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ message,
     if (!generationStartTime || !isLoading) return;
     const startTime = new Date(generationStartTime).getTime();
     const updateTimer = () => setLiveElapsedTime((Date.now() - startTime) / 1000);
-    const intervalId = setInterval(updateTimer, 100);
+    const intervalId = setInterval(updateTimer, LIVE_TIMER_REFRESH_MS);
     return () => clearInterval(intervalId);
   }, [generationStartTime, isLoading]);
 
@@ -46,24 +49,15 @@ export const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({ message,
     return liveElapsedTime;
   })();
 
-  // Calculate tokens per second
-  // Include thought tokens in speed calculation as they are generated content
   const generatedTokens = (completionTokens || 0) + (thoughtTokens || 0);
 
-  // Calculate generation duration excluding Time to First Token (TTFT)
-  // This gives the pure generation speed (decoding speed) rather than end-to-end latency
   let generationDuration = elapsedTime;
   if (firstTokenTimeMs !== undefined) {
     generationDuration = Math.max(0, elapsedTime - firstTokenTimeMs / 1000);
   }
 
-  // FIX: Prevent division by extremely small numbers which causes astronomical t/s values (Issue #24).
-  // This commonly happens in non-streaming mode where TTFT and EndTime are nearly identical,
-  // or when dealing with highly cached/fast responses under heavy JS thread load.
-  if (generationDuration < 0.2) {
-    // Fallback to total elapsed time if sensible, otherwise clamp to a minimum 0.2s
-    // to ensure we don't calculate millions of tokens per second.
-    generationDuration = Math.max(0.2, elapsedTime);
+  if (generationDuration < MIN_GENERATION_DURATION_SECONDS) {
+    generationDuration = Math.max(MIN_GENERATION_DURATION_SECONDS, elapsedTime);
   }
 
   const tokensPerSecond = generatedTokens > 0 && generationDuration > 0 ? generatedTokens / generationDuration : 0;

@@ -78,8 +78,8 @@ export const insertCitations = (text: string, metadata: unknown): string => {
         if (!source || !source.uri) return '';
 
         const titleAttr = `Source: ${source.title || source.uri}`.replace(/"/g, '&quot;');
-        // Use direct brackets in text for consistent coloring.
-        return `<a href="${source.uri}" target="_blank" rel="noopener noreferrer" class="citation-ref" title="${titleAttr}">[${chunkIndex + 1}]</a>`;
+        const citationLabel = `[${chunkIndex + 1}]`;
+        return `<a href="${source.uri}" target="_blank" rel="noopener noreferrer" class="citation-ref" title="${titleAttr}">${citationLabel}</a>`;
       })
       .join('');
 

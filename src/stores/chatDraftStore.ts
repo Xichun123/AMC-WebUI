@@ -6,6 +6,7 @@ import {
   registerPersistedStoreSync,
   removePersistentStorageItem,
 } from './persistentStorage';
+import { resolveUpdaterOrValue, type UpdaterOrValue } from './stateUpdaters';
 
 const CHAT_DRAFT_STORE_STORAGE_KEY = 'all_model_chat_drafts_v1';
 
@@ -14,8 +15,6 @@ export interface ChatDraft {
   quotes: string[];
   ttsContext: string;
 }
-
-type UpdaterOrValue<T> = T | ((prev: T) => T);
 
 interface ChatDraftState {
   drafts: Record<string, ChatDraft>;
@@ -58,9 +57,6 @@ const readLegacyQuotes = (key: string): string[] => {
     return [];
   }
 };
-
-const resolveValue = <T>(value: UpdaterOrValue<T>, previous: T) =>
-  typeof value === 'function' ? (value as (prev: T) => T)(previous) : value;
 
 const normalizeDraft = (draft: Partial<ChatDraft> | undefined): ChatDraft => ({
   inputText: typeof draft?.inputText === 'string' ? draft.inputText : '',
@@ -134,7 +130,7 @@ export const useChatDraftStore = create<ChatDraftState & ChatDraftActions>()(
         set((state) => ({
           drafts: setSessionDraft(state.drafts, sessionId, (draft) => ({
             ...draft,
-            inputText: resolveValue(value, draft.inputText),
+            inputText: resolveUpdaterOrValue(value, draft.inputText),
           })),
         })),
 
@@ -142,7 +138,9 @@ export const useChatDraftStore = create<ChatDraftState & ChatDraftActions>()(
         set((state) => ({
           drafts: setSessionDraft(state.drafts, sessionId, (draft) => ({
             ...draft,
-            quotes: resolveValue(value, draft.quotes).filter((quote): quote is string => typeof quote === 'string'),
+            quotes: resolveUpdaterOrValue(value, draft.quotes).filter(
+              (quote): quote is string => typeof quote === 'string',
+            ),
           })),
         })),
 
@@ -150,7 +148,7 @@ export const useChatDraftStore = create<ChatDraftState & ChatDraftActions>()(
         set((state) => ({
           drafts: setSessionDraft(state.drafts, sessionId, (draft) => ({
             ...draft,
-            ttsContext: resolveValue(value, draft.ttsContext),
+            ttsContext: resolveUpdaterOrValue(value, draft.ttsContext),
           })),
         })),
 

@@ -6,7 +6,7 @@ import { getKeyForRequest } from '@/utils/apiKeySelection';
 import { generateUniqueId } from '@/utils/chat/ids';
 import { usesRemoteFileReference } from '@/utils/chat/fileTransferStrategy';
 import { createMessage, createNewSession } from '@/utils/chat/session';
-import type { SessionsUpdater } from './types';
+import type { SessionsUpdater } from './messageSenderTypes';
 
 export interface PreparedModelRequest {
   ok: true;

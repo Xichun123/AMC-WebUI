@@ -1,7 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
-import { countLines, listProjectSourceFiles, projectRoot, readProjectFile } from './projectFiles';
+import {
+  countLines,
+  listProjectSourceFiles,
+  listProjectSourceFilesExcept,
+  projectRoot,
+  readProjectFile,
+} from './projectFiles';
+
+const thisTestFile = 'src/test/architecture/projectStructureBoundaries.test.ts';
 
 const extractConstNumber = (source: string, constName: string): number | null => {
   const match = source.match(new RegExp(`const\\s+${constName}\\s*=\\s*(\\d+)`));
@@ -46,9 +54,7 @@ describe('project structure boundaries', () => {
   });
 
   it('keeps domain hooks out of the ambiguous hooks/features directory', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/projectStructureBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
 
     expect(fs.existsSync(path.join(projectRoot, 'src/hooks/features'))).toBe(false);
 
@@ -67,9 +73,7 @@ describe('project structure boundaries', () => {
       'src/hooks/useSlashCommands.ts',
       'src/hooks/useVoiceInput.ts',
     ];
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/projectStructureBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
 
     for (const relativePath of relocatedDomainHooks) {
       expect(fs.existsSync(path.join(projectRoot, relativePath)), relativePath).toBe(false);
@@ -84,9 +88,7 @@ describe('project structure boundaries', () => {
   });
 
   it('uses the icons directory index instead of a CustomIcons compatibility barrel', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/projectStructureBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
 
     expect(fs.existsSync(path.join(projectRoot, 'src/components/icons/index.ts'))).toBe(true);
     expect(fs.existsSync(path.join(projectRoot, 'src/components/icons/CustomIcons.tsx'))).toBe(false);
@@ -144,9 +146,7 @@ describe('project structure boundaries', () => {
   });
 
   it('keeps OpenAI-compatible file names and imports on the same lower-camel spelling', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/projectStructureBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
     const discouragedOpenAiSpelling = `open${'AI'}`;
     const openAiFilenameOffenders = sourceFiles.filter((relativePath) =>
       path.basename(relativePath).includes(discouragedOpenAiSpelling),
@@ -160,9 +160,7 @@ describe('project structure boundaries', () => {
   });
 
   it('keeps prompt runtime helpers with the prompt feature code', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/projectStructureBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
 
     expect(fs.existsSync(path.join(projectRoot, 'src/features/prompts/promptRegistry.ts'))).toBe(true);
     expect(fs.existsSync(path.join(projectRoot, 'src/constants/promptHelpers.ts'))).toBe(false);
@@ -191,9 +189,7 @@ describe('project structure boundaries', () => {
   });
 
   it('keeps Live API hook names on the same Api casing as the rest of the codebase', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/projectStructureBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
     const discouragedLiveApiSpellings = [`Live${'API'}`, `live${'API'}`, `useLive${'API'}`];
     const liveApiFilenameOffenders = sourceFiles.filter((relativePath) =>
       discouragedLiveApiSpellings.some((spelling) => path.basename(relativePath).includes(spelling)),
@@ -229,9 +225,7 @@ describe('project structure boundaries', () => {
   });
 
   it('keeps model icon rendering on component filename casing', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/projectStructureBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
 
     expect(fs.existsSync(path.join(projectRoot, 'src/components/shared/ModelIcon.tsx'))).toBe(true);
     expect(fs.existsSync(path.join(projectRoot, 'src/components/shared/modelIcons.tsx'))).toBe(false);
@@ -244,9 +238,7 @@ describe('project structure boundaries', () => {
   });
 
   it('keeps file card UI metadata with shared file preview components', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/projectStructureBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
 
     expect(fs.existsSync(path.join(projectRoot, 'src/components/shared/file-preview/fileCardMeta.ts'))).toBe(true);
     expect(fs.existsSync(path.join(projectRoot, 'src/utils/fileCardUtils.ts'))).toBe(false);
@@ -260,9 +252,7 @@ describe('project structure boundaries', () => {
   });
 
   it('keeps UI hook filenames on the same Ui acronym casing as other local acronyms', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/projectStructureBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
     const coreHookFileNames = fs.readdirSync(path.join(projectRoot, 'src/hooks/core'));
     const rootHookFileNames = fs.readdirSync(path.join(projectRoot, 'src/hooks'));
     const messageListHookFileNames = fs.readdirSync(path.join(projectRoot, 'src/components/chat/message-list/hooks'));
@@ -303,9 +293,7 @@ describe('project structure boundaries', () => {
       ['src/hooks/text-selection/liveArtifactSelection.ts', 'src/utils/text-selection/liveArtifactSelection.ts'],
       ['src/hooks/text-selection/selectionClipboard.ts', 'src/utils/text-selection/selectionClipboard.ts'],
     ];
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/projectStructureBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
 
     const colocatedTestModules = new Set([
       'src/utils/chat-input/chatInputStateMachine.ts',
@@ -351,9 +339,7 @@ describe('project structure boundaries', () => {
   });
 
   it('keeps file utilities split by responsibility instead of behind fileHelpers', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/projectStructureBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
 
     for (const relativePath of [
       'src/utils/fileClipboard.ts',
@@ -399,9 +385,7 @@ describe('project structure boundaries', () => {
   });
 
   it('names markdown utility files by their concrete responsibilities', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/projectStructureBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
 
     expect(fs.existsSync(path.join(projectRoot, 'src/utils/previewableMarkdown.ts'))).toBe(true);
     expect(fs.existsSync(path.join(projectRoot, 'src/utils/markdownSegments.ts'))).toBe(true);

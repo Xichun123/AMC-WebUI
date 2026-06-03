@@ -10,7 +10,7 @@ import { IGNORED_DIRS, IGNORED_EXTENSIONS } from './defaultIgnorePatterns';
 import { IMPORT_CONTEXT_LANGUAGE_MAP } from './languageMap';
 import { compareFilePaths, sortTreeNodes } from './treeSorting';
 import { countLines, estimateTokens } from './textStats';
-import type { AnalysisSummary, FileContent, FileNode, ProcessedFiles, SecurityFinding } from './types';
+import type { AnalysisSummary, FileContent, FileNode, ProcessedFiles, SecurityFinding } from './importContextTypes';
 
 export interface ImportContextBuildOptions {
   includeEmptyDirectories?: boolean;

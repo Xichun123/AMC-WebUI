@@ -1,24 +1,16 @@
 import { DEFAULT_CHAT_SETTINGS } from '@/constants/settingsDefaults';
+import { sanitizeSessionModel as sanitizeSessionModelWithFallback, sortSessionsInPlace } from '@/stores/sessionModels';
 import type { AppSettings, ChatSettings, SavedChatSession } from '@/types';
-import { resolveSupportedModelId } from '@/utils/modelSorting';
 
-export const sortSessionsByPinnedAndTimestamp = (sessions: SavedChatSession[]) =>
-  [...sessions].sort((a, b) => {
-    if (a.isPinned && !b.isPinned) return -1;
-    if (!a.isPinned && b.isPinned) return 1;
-    return b.timestamp - a.timestamp;
-  });
+export const sortSessionsByPinnedAndTimestamp = (sessions: SavedChatSession[]) => sortSessionsInPlace([...sessions]);
 
-export const sanitizeSessionModel = (session: SavedChatSession): SavedChatSession => ({
-  ...session,
-  settings: {
-    ...session.settings,
-    modelId: resolveSupportedModelId(session.settings?.modelId, DEFAULT_CHAT_SETTINGS.modelId),
-  },
-});
+export const sanitizeSessionModel = (session: SavedChatSession): SavedChatSession =>
+  sanitizeSessionModelWithFallback(session, DEFAULT_CHAT_SETTINGS.modelId);
 
 const getMostRecentTemplateSession = (sessions: SavedChatSession[], excludeSessionId?: string | null) =>
-  [...sessions].filter((session) => session.id !== excludeSessionId).sort((a, b) => b.timestamp - a.timestamp)[0];
+  [...sessions]
+    .filter((session) => session.id !== excludeSessionId)
+    .sort((leftSession, rightSession) => rightSession.timestamp - leftSession.timestamp)[0];
 
 interface CreateSettingsForNewChatOptions {
   appSettings: AppSettings;

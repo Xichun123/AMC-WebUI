@@ -64,13 +64,13 @@ export const MermaidBlock: React.FC<MermaidBlockProps> = ({
         });
         setError('');
         setIsRendering(false);
-      } catch (e) {
+      } catch (error) {
         if (!isMounted) return;
 
         if (isMessageLoading) {
           setIsRendering(true);
         } else {
-          const errorMessage = e instanceof Error ? e.message : t('diagram_render_mermaid_failed');
+          const errorMessage = error instanceof Error ? error.message : t('diagram_render_mermaid_failed');
           setError(errorMessage.replace(/.*error:\s*/, ''));
           setSvg('');
           setIsRendering(false);
@@ -90,8 +90,8 @@ export const MermaidBlock: React.FC<MermaidBlockProps> = ({
     try {
       const { exportSvgAsImage } = await import('@/utils/export/image');
       await exportSvgAsImage(svg, `mermaid-diagram-${Date.now()}.jpg`, 3, 'image/jpeg');
-    } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : t('diagram_export_jpg_failed');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : t('diagram_export_jpg_failed');
       setError(errorMessage);
     } finally {
       setIsDownloading(false);

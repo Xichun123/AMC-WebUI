@@ -49,6 +49,7 @@ describe('chat runtime and session structure boundaries', () => {
 
   it('keeps chat session loading helpers named by responsibility', () => {
     const sessionLoaderSource = readProjectFile('src/hooks/chat/history/useSessionLoader.ts');
+    const sessionLoaderSettingsSource = readProjectFile('src/hooks/chat/history/sessionLoaderSettings.ts');
 
     expect(fs.existsSync(path.join(projectRoot, 'src/hooks/chat/history/sessionLoaderSettings.ts'))).toBe(true);
     expect(fs.existsSync(path.join(projectRoot, 'src/hooks/chat/history/sessionLoaderDrafts.ts'))).toBe(true);
@@ -59,5 +60,7 @@ describe('chat runtime and session structure boundaries', () => {
     expect(sessionLoaderSource).not.toContain('const sortSessionsByPinnedAndTimestamp =');
     expect(sessionLoaderSource).not.toContain('const sanitizeSessionModel =');
     expect(sessionLoaderSource).not.toContain('const toSessionMetadata =');
+    expect(sessionLoaderSettingsSource).toContain("from '@/stores/sessionModels'");
+    expect(sessionLoaderSettingsSource).not.toContain('resolveSupportedModelId');
   });
 });

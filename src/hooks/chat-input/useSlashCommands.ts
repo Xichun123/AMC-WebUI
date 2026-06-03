@@ -239,7 +239,6 @@ export const useSlashCommands = ({
     (command: Command) => {
       if (!command) return;
 
-      // Execute the command action immediately
       command.action();
 
       if (command.name === 'model') {
@@ -249,14 +248,11 @@ export const useSlashCommands = ({
 
       resetSlashCommandState();
 
-      const isDynamicModelCommand = availableModels.some((m) => m.name === command.name);
+      const isDynamicModelCommand = availableModels.some((model) => model.name === command.name);
 
-      // If the command is meant to clear the input (i.e. not a template command or dynamic model selection)
-      // we explicitly clear the text.
-      // Dynamic model commands handle their own clearing in their action definition (see handleInputChange).
+      // Template and dynamic model commands manage their own input text.
       if (!INPUT_POPULATING_COMMANDS.has(command.name) && !isDynamicModelCommand) {
-        // Use setTimeout to ensure the input clear happens after the event loop tick
-        // This solves issues where Enter key press might interfere with state updates
+        // Clear after the event loop tick so Enter handling cannot race the state update.
         setTimeout(() => {
           setInputText('');
         }, 0);
@@ -279,7 +275,7 @@ export const useSlashCommands = ({
 
       if (commandName === 'model') {
         const keyword = args.join(' ').toLowerCase();
-        const filteredModels = availableModels.filter((m) => m.name.toLowerCase().includes(keyword));
+        const filteredModels = availableModels.filter((model) => model.name.toLowerCase().includes(keyword));
         const modelCommands = buildModelCommands(filteredModels, onSelectModel, setInputText, onMessageSent);
 
         setSlashCommandState({
@@ -326,7 +322,7 @@ export const useSlashCommands = ({
         return false;
       }
 
-      const model = availableModels.find((m) => m.name.toLowerCase().includes(keyword));
+      const model = availableModels.find((availableModel) => availableModel.name.toLowerCase().includes(keyword));
       if (!model) {
         return false;
       }

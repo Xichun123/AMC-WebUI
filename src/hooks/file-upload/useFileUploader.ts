@@ -7,7 +7,7 @@ import {
 } from '@/types';
 import { logService } from '@/services/logService';
 import { releaseManagedObjectUrl } from '@/services/objectUrlManager';
-import { getApiKeyErrorTranslationKey, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
+import { formatApiKeyErrorMessage, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
 import {
   buildFileUploadPreflight,
   checkBatchNeedsApiKey,
@@ -54,7 +54,6 @@ export const useFileUploader = ({
         return;
       }
 
-      // Calculate if ANY file requires API upload to handle key rotation logic first
       const needsApiKeyForUpload = checkBatchNeedsApiKey(preflight.filesToUpload, appSettings);
       const filesRequiringApi = getFilesRequiringFileApi(preflight.filesToUpload, appSettings);
 
@@ -62,15 +61,14 @@ export const useFileUploader = ({
       if (needsApiKeyForUpload) {
         const keyResult = getGeminiKeyForRequest(appSettings, currentChatSettings);
         if ('error' in keyResult) {
-          const translationKey = getApiKeyErrorTranslationKey(keyResult.error);
-          setAppFileError(translationKey ? t(translationKey) : keyResult.error);
+          setAppFileError(formatApiKeyErrorMessage(keyResult.error, t));
           logService.error('Cannot process files: API key not configured.');
           return;
         }
         keyToUse = keyResult.key;
         if (keyResult.isNewKey && !isOpenAICompatibleApiActive(appSettings)) {
           logService.info('New API key selected for this session due to file upload.');
-          setCurrentChatSettings((prev) => ({ ...prev, lockedApiKey: keyToUse! }));
+          setCurrentChatSettings((previousSettings) => ({ ...previousSettings, lockedApiKey: keyToUse! }));
         }
       }
 

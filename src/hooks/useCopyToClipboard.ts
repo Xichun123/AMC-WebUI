@@ -20,8 +20,8 @@ export const useCopyToClipboard = (resetDuration = 2000) => {
           setIsCopied(false);
           timeoutRef.current = null;
         }, resetDuration);
-      } catch (err) {
-        logService.error('Failed to copy text:', err);
+      } catch (clipboardError) {
+        logService.error('Failed to copy text:', clipboardError);
         setIsCopied(false);
       }
     },

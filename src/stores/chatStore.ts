@@ -25,8 +25,8 @@ import {
 import { persistSessionChanges } from './sessionPersistenceEffects';
 import { setupChatStoreSync } from './chatStoreSync';
 import { createChatUiSlice, type ChatUiSliceActions, type ChatUiSliceState } from './chatStoreSlices';
+import { resolveUpdaterOrValue, type UpdaterOrValue } from './stateUpdaters';
 
-type UpdaterOrValue<T> = T | ((prev: T) => T);
 type SessionUpdateOptions = { persist?: boolean };
 type MessagePatchOrUpdater = Partial<ChatMessage> | ((message: ChatMessage) => ChatMessage);
 export type { SessionHistoryMode };
@@ -34,8 +34,6 @@ export interface SetActiveSessionOptions {
   history?: SessionHistoryMode;
 }
 
-// ── Internal refs (not in Zustand state to avoid re-renders) ──
-// Typed as MutableRefObject so downstream hooks see the correct shape
 const _activeJobs: { current: Map<string, AbortController> } = { current: new Map() };
 const _userScrolledUp: { current: boolean } = { current: false };
 const _fileDrafts: { current: Record<string, UploadedFile[]> } = { current: {} };
@@ -43,28 +41,23 @@ const _localLoadingSessionIds = new Set<string>();
 const _sessionPersistVersion = new Map<string, number>();
 let _fileOperationGeneration = 0;
 
-// ── Store types ──
 interface ChatState extends ChatUiSliceState {
-  // Session Data
   savedSessions: SavedChatSession[];
   savedGroups: ChatGroup[];
   activeSessionId: string | null;
   activeMessages: ChatMessage[];
 
-  // Read-only refs (accessed via helpers, not reactive)
   _activeJobs: { current: Map<string, AbortController> };
   _userScrolledUp: { current: boolean };
   _fileDrafts: { current: Record<string, UploadedFile[]> };
 }
 
 interface ChatActions extends ChatUiSliceActions {
-  // Session setters
-  setSavedSessions: (v: UpdaterOrValue<SavedChatSession[]>) => void;
-  setSavedGroups: (v: UpdaterOrValue<ChatGroup[]>) => void;
+  setSavedSessions: (value: UpdaterOrValue<SavedChatSession[]>) => void;
+  setSavedGroups: (value: UpdaterOrValue<ChatGroup[]>) => void;
   setActiveSessionId: (id: UpdaterOrValue<string | null>, options?: SetActiveSessionOptions) => void;
-  setActiveMessages: (v: UpdaterOrValue<ChatMessage[]>) => void;
+  setActiveMessages: (value: UpdaterOrValue<ChatMessage[]>) => void;
 
-  // Persistence
   updateAndPersistSessions: (
     updater: (prev: SavedChatSession[]) => SavedChatSession[],
     options?: SessionUpdateOptions,
@@ -98,12 +91,10 @@ interface ChatActions extends ChatUiSliceActions {
   getFileOperationGeneration: () => number;
   invalidateFileOperations: () => void;
 
-  // Computed helpers (call getState inside)
   setCurrentChatSettings: ChatSettingsUpdater;
 }
 
 export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
-  // ── Initial State ──
   savedSessions: [],
   savedGroups: [],
   activeSessionId: null,
@@ -115,29 +106,27 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
   _userScrolledUp,
   _fileDrafts,
 
-  // ── Session Setters ──
-  setSavedSessions: (v) =>
-    set((s) => ({
-      savedSessions: typeof v === 'function' ? v(s.savedSessions) : v,
+  setSavedSessions: (value) =>
+    set((state) => ({
+      savedSessions: resolveUpdaterOrValue(value, state.savedSessions),
     })),
 
-  setSavedGroups: (v) =>
-    set((s) => ({
-      savedGroups: typeof v === 'function' ? v(s.savedGroups) : v,
+  setSavedGroups: (value) =>
+    set((state) => ({
+      savedGroups: resolveUpdaterOrValue(value, state.savedGroups),
     })),
 
   setActiveSessionId: (value, options) => {
-    const nextValue = typeof value === 'function' ? value(get().activeSessionId) : value;
+    const nextValue = resolveUpdaterOrValue(value, get().activeSessionId);
     set({ activeSessionId: nextValue });
     syncActiveSessionRoute(nextValue, options?.history ?? 'auto');
   },
 
-  setActiveMessages: (v) =>
-    set((s) => ({
-      activeMessages: typeof v === 'function' ? v(s.activeMessages) : v,
+  setActiveMessages: (value) =>
+    set((state) => ({
+      activeMessages: resolveUpdaterOrValue(value, state.activeMessages),
     })),
 
-  // ── Persistence Actions ──
   refreshSessions: async () => {
     try {
       const metadataList = await dbService.getAllSessionMetadata();
@@ -157,8 +146,8 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
           loadingSessionIds,
         }),
       );
-    } catch (e) {
-      logService.error('Failed to refresh sessions from DB', { error: e });
+    } catch (refreshError) {
+      logService.error('Failed to refresh sessions from DB', { error: refreshError });
     }
   },
 
@@ -166,8 +155,8 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     try {
       const groups = await dbService.getAllGroups();
       set({ savedGroups: groups });
-    } catch (e) {
-      logService.error('Failed to refresh groups from DB', { error: e });
+    } catch (refreshError) {
+      logService.error('Failed to refresh groups from DB', { error: refreshError });
     }
   },
 
@@ -178,17 +167,17 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
       _localLoadingSessionIds.delete(sessionId);
     }
 
-    set((s) => {
-      const next = new Set(s.loadingSessionIds);
+    set((state) => {
+      const next = new Set(state.loadingSessionIds);
       if (isLoading) next.add(sessionId);
       else next.delete(sessionId);
 
       const nextSavedSessions =
-        !isLoading && sessionId !== s.activeSessionId
-          ? s.savedSessions.map((session) =>
+        !isLoading && sessionId !== state.activeSessionId
+          ? state.savedSessions.map((session) =>
               session.id === sessionId && session.messages.length > 0 ? { ...session, messages: [] } : session,
             )
-          : s.savedSessions;
+          : state.savedSessions;
 
       return {
         loadingSessionIds: next,
@@ -216,7 +205,7 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     sortSessionsInPlace(newFullSessions);
 
     if (activeSessionId) {
-      const newActiveSession = newFullSessions.find((s) => s.id === activeSessionId);
+      const newActiveSession = newFullSessions.find((session) => session.id === activeSessionId);
       if (newActiveSession && newActiveSession.messages !== activeMessages) {
         set({ activeMessages: newActiveSession.messages });
       }
@@ -238,11 +227,12 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
           saveSession: dbService.saveSession.bind(dbService),
           deleteSession: dbService.deleteSession.bind(dbService),
           broadcastSyncMessage,
-        }).catch((e) => logService.error('Failed to persist session updates', { error: e }));
+        }).catch((persistenceError) =>
+          logService.error('Failed to persist session updates', { error: persistenceError }),
+        );
       }
     }
 
-    // 6. Return Metadata Only (strip messages)
     const metadataOnly = stripStoredSessionMessages(newFullSessions, activeSessionId, loadingSessionIds);
 
     set({ savedSessions: metadataOnly });
@@ -299,7 +289,7 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     dbService
       .setAllGroups(newGroups)
       .then(() => broadcastSyncMessage({ type: 'GROUPS_UPDATED' }))
-      .catch((e) => logService.error('Failed to persist group updates', { error: e }));
+      .catch((persistenceError) => logService.error('Failed to persist group updates', { error: persistenceError }));
     set({ savedGroups: newGroups });
   },
 
@@ -307,7 +297,10 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     const { activeSessionId } = get();
     if (!activeSessionId) return;
     get().updateAndPersistSessions((prevSessions) =>
-      updateSessionByIdInSessions(prevSessions, activeSessionId, (s) => ({ ...s, settings: updater(s.settings) })),
+      updateSessionByIdInSessions(prevSessions, activeSessionId, (session) => ({
+        ...session,
+        settings: updater(session.settings),
+      })),
     );
   },
 }));

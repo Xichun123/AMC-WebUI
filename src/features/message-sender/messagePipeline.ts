@@ -11,7 +11,7 @@ import { createMessage, generateSessionTitle, performOptimisticSessionUpdate } f
 import { insertMessageAfter, updateMessageInSession } from '@/utils/chat/sessionMutations';
 import { emitCompletionFeedback, type CompletionFeedback } from './completionFeedback';
 import { createLoadingModelMessage } from './useMessageLifecycle';
-import type { SessionsUpdater } from './types';
+import type { SessionsUpdater } from './messageSenderTypes';
 
 interface StartOptimisticMessageTurnParams {
   activeSessionId: string | null;
@@ -50,7 +50,7 @@ interface CompleteModelMessageParams {
   patch: Partial<ChatMessage> | ((message: ChatMessage) => ChatMessage);
 }
 
-type MessageLifecycleRunner = <T>(params: {
+export type MessageLifecycleRunner = <T>(params: {
   sessionId: string;
   generationId: string;
   abortController: AbortController;

@@ -14,6 +14,8 @@ interface UseHistoryClearerProps {
   activeJobs: MutableRefObject<Map<string, AbortController>>;
 }
 
+const CACHE_CLEAR_RELOAD_DELAY_MS = 50;
+
 export const useHistoryClearer = ({
   savedSessions,
   setSavedSessions,
@@ -31,8 +33,8 @@ export const useHistoryClearer = ({
     // Cleanup all blobs only after persistence succeeds so a failed clear
     // does not leave the still-visible UI with revoked previews.
     savedSessions.forEach((session) => {
-      session.messages.forEach((msg) => {
-        cleanupFilePreviewUrls(msg.files);
+      session.messages.forEach((message) => {
+        cleanupFilePreviewUrls(message.files);
       });
     });
 
@@ -41,8 +43,8 @@ export const useHistoryClearer = ({
       removeSessionScopedLocalStorageEntries(sessionIds);
       useChatDraftStore.getState().clearSessionDrafts(sessionIds);
       logService.info(`Cleaned up session-scoped LocalStorage entries for ${savedSessions.length} sessions.`);
-    } catch (e) {
-      logService.error('Failed to clean up localStorage:', e);
+    } catch (cleanupError) {
+      logService.error('Failed to clean up localStorage:', cleanupError);
     }
 
     setSavedSessions([]);
@@ -84,7 +86,7 @@ export const useHistoryClearer = ({
     }
 
     await dbService.clearAllData();
-    setTimeout(() => window.location.reload(), 50);
+    setTimeout(() => window.location.reload(), CACHE_CLEAR_RELOAD_DELAY_MS);
   }, [activeJobs]);
 
   return {

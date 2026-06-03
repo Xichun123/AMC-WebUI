@@ -1,7 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
-import { listProjectSourceFiles, projectRoot, readProjectFile } from './projectFiles';
+import { countLines, listProjectSourceFilesExcept, projectRoot, readProjectFile } from './projectFiles';
+
+const thisTestFile = 'src/test/architecture/namingStructureOptimizations.test.ts';
 
 describe('naming and structure optimization guardrails', () => {
   it('keeps the custom Select component on an explicit prop contract', () => {
@@ -15,9 +17,7 @@ describe('naming and structure optimization guardrails', () => {
   });
 
   it('keeps create-file editor state and constants with the create-file modal', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/namingStructureOptimizations.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
 
     expect(fs.existsSync(path.join(projectRoot, 'src/components/modals/create-file/useCreateFileEditor.ts'))).toBe(
       true,
@@ -82,6 +82,21 @@ describe('naming and structure optimization guardrails', () => {
     expect(useMessageSenderSource).not.toContain('sendTtsImagenMessage');
   });
 
+  it('names message sender shared contracts after their feature boundary', () => {
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
+
+    expect(fs.existsSync(path.join(projectRoot, 'src/features/message-sender/messageSenderTypes.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/features/message-sender/types.ts'))).toBe(false);
+
+    for (const relativePath of sourceFiles) {
+      const source = readProjectFile(relativePath);
+      expect(source, relativePath).not.toContain('@/features/message-sender/types');
+      if (relativePath.startsWith('src/features/message-sender/')) {
+        expect(source, relativePath).not.toContain("from './importContextTypes'");
+      }
+    }
+  });
+
   it('names composer auxiliary action buttons after their role', () => {
     const chatInputActionsSource = readProjectFile('src/components/chat/input/ChatInputActions.tsx');
 
@@ -114,9 +129,7 @@ describe('naming and structure optimization guardrails', () => {
   });
 
   it('names API key selection helpers after their key-rotation role', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/namingStructureOptimizations.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
 
     expect(fs.existsSync(path.join(projectRoot, 'src/utils/apiKeySelection.ts'))).toBe(true);
     expect(fs.existsSync(path.join(projectRoot, 'src/utils/apiUtils.ts'))).toBe(false);
@@ -129,9 +142,7 @@ describe('naming and structure optimization guardrails', () => {
   });
 
   it('names chat input clipboard parsing after its composer paste role', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/namingStructureOptimizations.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
 
     expect(fs.existsSync(path.join(projectRoot, 'src/utils/chat-input/clipboardData.ts'))).toBe(true);
     expect(fs.existsSync(path.join(projectRoot, 'src/utils/clipboardUtils.ts'))).toBe(false);
@@ -144,9 +155,7 @@ describe('naming and structure optimization guardrails', () => {
   });
 
   it('names single-purpose primitives after their responsibility', () => {
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/namingStructureOptimizations.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
 
     expect(fs.existsSync(path.join(projectRoot, 'src/utils/durationFormat.ts'))).toBe(true);
     expect(fs.existsSync(path.join(projectRoot, 'src/utils/fileTypeClassification.ts'))).toBe(true);
@@ -192,5 +201,123 @@ describe('naming and structure optimization guardrails', () => {
     expect(useAppSource).toContain('export interface AppViewModel');
     expect(useAppSource).toContain('export const useApp = (): AppViewModel');
     expect(useAppSource).not.toContain('export type AppViewModel = ReturnType<typeof useApp>');
+  });
+
+  it('keeps OpenAI-compatible model list editing split by responsibility', () => {
+    const editorSource = readProjectFile(
+      'src/components/settings/sections/api-config/OpenAICompatibleModelListEditor.tsx',
+    );
+    const managerSource = readProjectFile(
+      'src/components/settings/sections/api-config/OpenAICompatibleModelManagerModal.tsx',
+    );
+    const currentModelsPanelSource = readProjectFile(
+      'src/components/settings/sections/api-config/OpenAICompatibleCurrentModelsPanel.tsx',
+    );
+    const importPanelSource = readProjectFile(
+      'src/components/settings/sections/api-config/OpenAICompatibleModelImportPanel.tsx',
+    );
+    const fetchResultSource = readProjectFile(
+      'src/components/settings/sections/api-config/OpenAICompatibleModelFetchResult.tsx',
+    );
+    const utilsSource = readProjectFile(
+      'src/components/settings/sections/api-config/openaiCompatibleModelListState.ts',
+    );
+
+    expect(
+      fs.existsSync(
+        path.join(projectRoot, 'src/components/settings/sections/api-config/OpenAICompatibleModelManagerModal.tsx'),
+      ),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(projectRoot, 'src/components/settings/sections/api-config/OpenAICompatibleCurrentModelsPanel.tsx'),
+      ),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(projectRoot, 'src/components/settings/sections/api-config/OpenAICompatibleModelImportPanel.tsx'),
+      ),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(projectRoot, 'src/components/settings/sections/api-config/OpenAICompatibleModelFetchResult.tsx'),
+      ),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(projectRoot, 'src/components/settings/sections/api-config/openaiCompatibleModelListState.ts'),
+      ),
+    ).toBe(true);
+    expect(editorSource).toContain("from './OpenAICompatibleModelManagerModal'");
+    expect(editorSource).toContain("from './OpenAICompatibleModelFetchResult'");
+    expect(editorSource).toContain("from './openaiCompatibleModelListState'");
+    expect(editorSource).toContain('onFetchModelsForImportPreview?:');
+    expect(managerSource).toContain("from './OpenAICompatibleCurrentModelsPanel'");
+    expect(managerSource).toContain("from './OpenAICompatibleModelImportPanel'");
+    expect(countLines(managerSource)).toBeLessThan(140);
+    expect(editorSource).not.toContain('settingsOpenAICompatibleBatchPasteTitle');
+    expect(editorSource).not.toContain('settingsOpenAICompatibleFetchedPreviewTitle');
+    expect(editorSource).not.toContain('parsePastedOpenAICompatibleModelIds');
+    expect(editorSource).not.toContain('dedupeOpenAICompatibleModelOptions');
+    expect(managerSource).not.toContain('settingsOpenAICompatibleBatchPasteTitle');
+    expect(managerSource).not.toContain('settingsOpenAICompatibleFetchedPreviewTitle');
+    expect(managerSource).not.toContain('parsePastedOpenAICompatibleModelIds');
+    expect(managerSource).not.toContain('dedupeOpenAICompatibleModelOptions');
+    expect(currentModelsPanelSource).toContain('settingsOpenAICompatibleCurrentModels');
+    expect(currentModelsPanelSource).toContain('openaiCompatibleModelMatchesSearch');
+    expect(importPanelSource).toContain('settingsOpenAICompatibleBatchPasteTitle');
+    expect(importPanelSource).toContain('settingsOpenAICompatibleFetchedPreviewTitle');
+    expect(importPanelSource).toContain('parsePastedOpenAICompatibleModelIds');
+    expect(importPanelSource).toContain('dedupeOpenAICompatibleModelOptions');
+    expect(fetchResultSource).toContain('OpenAICompatibleModelFetchResult');
+    expect(utilsSource).toContain('export const parsePastedOpenAICompatibleModelIds');
+    expect(utilsSource).toContain('export const dedupeOpenAICompatibleModelOptions');
+  });
+
+  it('keeps OpenAI-compatible API settings in the API config subcomponent', () => {
+    const apiConfigSource = readProjectFile('src/components/settings/sections/ApiConfigSection.tsx');
+    const openaiCompatibleSettingsSource = readProjectFile(
+      'src/components/settings/sections/api-config/OpenAICompatibleApiSettingsPanel.tsx',
+    );
+
+    expect(
+      fs.existsSync(
+        path.join(projectRoot, 'src/components/settings/sections/api-config/OpenAICompatibleApiSettingsPanel.tsx'),
+      ),
+    ).toBe(true);
+    expect(apiConfigSource).toContain("from './api-config/OpenAICompatibleApiSettingsPanel'");
+    expect(apiConfigSource).toContain('<OpenAICompatibleApiSettingsPanel');
+    expect(apiConfigSource).not.toContain('buildOpenAICompatibleChatCompletionsUrl');
+    expect(apiConfigSource).not.toContain('getOpenAICompatibleBaseUrlWarning');
+    expect(apiConfigSource).not.toContain('DEFAULT_OPENAI_COMPATIBLE_BASE_URL');
+    expect(apiConfigSource).not.toContain('settingsOpenAICompatibleRequestUrlPreview');
+    expect(openaiCompatibleSettingsSource).toContain('buildOpenAICompatibleChatCompletionsUrl');
+    expect(openaiCompatibleSettingsSource).toContain('getOpenAICompatibleBaseUrlWarning');
+    expect(openaiCompatibleSettingsSource).toContain('DEFAULT_OPENAI_COMPATIBLE_BASE_URL');
+    expect(openaiCompatibleSettingsSource).toContain('settingsOpenAICompatibleRequestUrlPreview');
+  });
+
+  it('keeps user message collapse state outside the markdown renderer component', () => {
+    const messageListSource = readProjectFile('src/components/chat/MessageList.tsx');
+    const messageTextSource = readProjectFile('src/components/message/content/MessageText.tsx');
+    const collapseSource = readProjectFile('src/components/message/content/userMessageCollapse.ts');
+    const hookSource = readProjectFile('src/components/chat/message-list/hooks/useExpandedUserMessages.ts');
+
+    expect(fs.existsSync(path.join(projectRoot, 'src/components/message/content/userMessageCollapse.ts'))).toBe(true);
+    expect(
+      fs.existsSync(path.join(projectRoot, 'src/components/chat/message-list/hooks/useExpandedUserMessages.ts')),
+    ).toBe(true);
+    expect(messageListSource).toContain("from './message-list/hooks/useExpandedUserMessages'");
+    expect(messageListSource).toContain('const userMessageCollapse = useExpandedUserMessages(activeSessionId);');
+    expect(messageTextSource).toContain("from './userMessageCollapse'");
+    expect(messageTextSource).toContain('userMessageCollapse?: UserMessageCollapseController;');
+    expect(messageTextSource).not.toContain('useState<Set');
+    expect(messageTextSource).not.toContain('localExpandedUserMessageKeys');
+    expect(messageTextSource).not.toContain('expandedUserMessageKeys?:');
+    expect(messageTextSource).not.toContain('onToggleUserMessageExpanded?:');
+    expect(collapseSource).toContain('export interface UserMessageCollapseController');
+    expect(collapseSource).toContain('USER_MESSAGE_COLLAPSE_LINE_THRESHOLD');
+    expect(collapseSource).toContain('shouldCollapseUserMessageContent');
+    expect(hookSource).toContain('export const useExpandedUserMessages');
   });
 });

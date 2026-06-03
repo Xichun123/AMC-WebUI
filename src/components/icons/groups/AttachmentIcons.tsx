@@ -1,7 +1,6 @@
 import React from 'react';
 import { type IconProps, StrokeIcon } from '@/components/icons/iconPrimitives';
 
-// 1. Upload from Device (File Up)
 export const IconUpload: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>
     <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
@@ -11,7 +10,6 @@ export const IconUpload: React.FC<IconProps> = (props) => (
   </StrokeIcon>
 );
 
-// 2. Gallery (Image)
 export const IconGallery: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>
     <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
@@ -20,7 +18,6 @@ export const IconGallery: React.FC<IconProps> = (props) => (
   </StrokeIcon>
 );
 
-// 3. Take Photo (Camera)
 export const IconCamera: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>
     <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
@@ -28,7 +25,6 @@ export const IconCamera: React.FC<IconProps> = (props) => (
   </StrokeIcon>
 );
 
-// 4. Screenshot (Viewfinder / Scan)
 export const IconScreenshot: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>
     <path d="M3 7V5a2 2 0 0 1 2-2h2" />
@@ -39,7 +35,6 @@ export const IconScreenshot: React.FC<IconProps> = (props) => (
   </StrokeIcon>
 );
 
-// 5. Record Audio (Microphone)
 export const IconMicrophone: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>
     <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
@@ -49,7 +44,6 @@ export const IconMicrophone: React.FC<IconProps> = (props) => (
   </StrokeIcon>
 );
 
-// 6. Add by File ID (Link)
 export const IconLink: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>
     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -57,7 +51,6 @@ export const IconLink: React.FC<IconProps> = (props) => (
   </StrokeIcon>
 );
 
-// 7. Add YouTube Video
 export const IconYoutube: React.FC<IconProps> = ({ color, ...props }) => (
   <StrokeIcon color={color} {...props}>
     <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
@@ -65,7 +58,6 @@ export const IconYoutube: React.FC<IconProps> = ({ color, ...props }) => (
   </StrokeIcon>
 );
 
-// 8. Create Text File (File Edit)
 export const IconFileEdit: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>
     <path d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5" />
@@ -74,7 +66,6 @@ export const IconFileEdit: React.FC<IconProps> = (props) => (
   </StrokeIcon>
 );
 
-// 10. Import Zip (Package / Archive)
 export const IconZip: React.FC<IconProps> = (props) => (
   <StrokeIcon {...props}>
     <path d="m7.5 4.27 9 5.15" />

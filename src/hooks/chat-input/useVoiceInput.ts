@@ -65,7 +65,6 @@ export const useVoiceInput = ({
           const transcribedText = await onTranscribeAudio(fileToTranscribe);
 
           if (transcribedText) {
-            // Use the shared hook with padding enabled for voice input
             insertText(transcribedText.trim(), { ensurePadding: true });
           }
         } catch (error) {

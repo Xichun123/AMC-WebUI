@@ -6,22 +6,8 @@ import { renderHook } from '@/test/render/renderer';
 import { useSettingsUiStore } from '@/stores/settingsUiStore';
 
 describe('useSettingsLogic', () => {
-  let storage: Map<string, string>;
-
   beforeEach(() => {
-    storage = new Map<string, string>();
-    vi.stubGlobal('localStorage', {
-      getItem: (key: string) => storage.get(key) ?? null,
-      setItem: (key: string, value: string) => {
-        storage.set(key, value);
-      },
-      removeItem: (key: string) => {
-        storage.delete(key);
-      },
-      clear: () => {
-        storage.clear();
-      },
-    });
+    localStorage.clear();
     useSettingsUiStore.setState({
       activeTab: 'models',
       scrollPositions: {},
@@ -81,7 +67,7 @@ describe('useSettingsLogic', () => {
   });
 
   it('restores legacy grouped chat tabs to the models tab', () => {
-    storage.set('chatSettingsLastTab', 'chat');
+    localStorage.setItem('chatSettingsLastTab', 'chat');
 
     const { result, unmount } = renderHook(() =>
       useSettingsLogic({
@@ -100,7 +86,7 @@ describe('useSettingsLogic', () => {
   });
 
   it('restores the removed model behavior tab to the models tab', () => {
-    storage.set('chatSettingsLastTab', 'generation');
+    localStorage.setItem('chatSettingsLastTab', 'generation');
 
     const { result, unmount } = renderHook(() =>
       useSettingsLogic({
@@ -119,7 +105,7 @@ describe('useSettingsLogic', () => {
   });
 
   it('restores the legacy Canvas tab to the models tab', () => {
-    storage.set('chatSettingsLastTab', 'canvas');
+    localStorage.setItem('chatSettingsLastTab', 'canvas');
 
     const { result, unmount } = renderHook(() =>
       useSettingsLogic({
@@ -138,7 +124,7 @@ describe('useSettingsLogic', () => {
   });
 
   it('restores the merged language and voice tab to the models tab', () => {
-    storage.set('chatSettingsLastTab', 'languageVoice');
+    localStorage.setItem('chatSettingsLastTab', 'languageVoice');
 
     const { result, unmount } = renderHook(() =>
       useSettingsLogic({

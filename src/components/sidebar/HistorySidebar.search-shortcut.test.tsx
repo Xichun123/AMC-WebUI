@@ -2,6 +2,7 @@ import { act } from 'react';
 import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { describe, expect, it, vi } from 'vitest';
 import { FOCUS_HISTORY_SEARCH_EVENT } from '@/constants/shortcuts';
+import { createHistorySidebarProps } from '@/test/sidebar/historySidebar';
 import { HistorySidebar } from './HistorySidebar';
 
 vi.mock('@formkit/auto-animate/react', () => ({
@@ -11,39 +12,16 @@ vi.mock('@formkit/auto-animate/react', () => ({
 describe('HistorySidebar search shortcut', () => {
   const renderer = setupTestRenderer({ providers: { language: 'en' } });
 
+  const renderSidebar = async (overrides: Parameters<typeof createHistorySidebarProps>[0] = {}) => {
+    await act(async () => {
+      renderer.root.render(<HistorySidebar {...createHistorySidebarProps({ isOpen: false, ...overrides })} />);
+    });
+  };
+
   it('opens and focuses chat search when the global focus event is dispatched', async () => {
     const onToggle = vi.fn();
 
-    await act(async () => {
-      renderer.root.render(
-        <HistorySidebar
-          isOpen={false}
-          onToggle={onToggle}
-          onAutoClose={vi.fn()}
-          sessions={[]}
-          groups={[]}
-          activeSessionId={null}
-          loadingSessionIds={new Set()}
-          generatingTitleSessionIds={new Set()}
-          onSelectSession={vi.fn()}
-          onNewChat={vi.fn()}
-          onDeleteSession={vi.fn()}
-          onRenameSession={vi.fn()}
-          onTogglePinSession={vi.fn()}
-          onDuplicateSession={vi.fn()}
-          onOpenExportModal={vi.fn()}
-          onAddNewGroup={vi.fn()}
-          onDeleteGroup={vi.fn()}
-          onRenameGroup={vi.fn()}
-          onMoveSessionToGroup={vi.fn()}
-          onToggleGroupExpansion={vi.fn()}
-          onOpenSettingsModal={vi.fn()}
-          themeId="pearl"
-          newChatShortcut=""
-          searchChatsShortcut="Ctrl + K"
-        />,
-      );
-    });
+    await renderSidebar({ onToggle, searchChatsShortcut: 'Ctrl + K' });
 
     await act(async () => {
       document.dispatchEvent(new Event(FOCUS_HISTORY_SEARCH_EVENT));
@@ -57,36 +35,7 @@ describe('HistorySidebar search shortcut', () => {
   });
 
   it('shows the chat search shortcut in the collapsed search tooltip', async () => {
-    await act(async () => {
-      renderer.root.render(
-        <HistorySidebar
-          isOpen={false}
-          onToggle={vi.fn()}
-          onAutoClose={vi.fn()}
-          sessions={[]}
-          groups={[]}
-          activeSessionId={null}
-          loadingSessionIds={new Set()}
-          generatingTitleSessionIds={new Set()}
-          onSelectSession={vi.fn()}
-          onNewChat={vi.fn()}
-          onDeleteSession={vi.fn()}
-          onRenameSession={vi.fn()}
-          onTogglePinSession={vi.fn()}
-          onDuplicateSession={vi.fn()}
-          onOpenExportModal={vi.fn()}
-          onAddNewGroup={vi.fn()}
-          onDeleteGroup={vi.fn()}
-          onRenameGroup={vi.fn()}
-          onMoveSessionToGroup={vi.fn()}
-          onToggleGroupExpansion={vi.fn()}
-          onOpenSettingsModal={vi.fn()}
-          themeId="pearl"
-          newChatShortcut=""
-          searchChatsShortcut="Ctrl + K"
-        />,
-      );
-    });
+    await renderSidebar({ searchChatsShortcut: 'Ctrl + K' });
 
     const searchButton = renderer.container.querySelector<HTMLButtonElement>('button[aria-label="Search (Ctrl + K)"]');
     expect(searchButton).not.toBeNull();
@@ -94,36 +43,7 @@ describe('HistorySidebar search shortcut', () => {
   });
 
   it('keeps the collapsed sidebar toggle aligned with the expanded header toggle', async () => {
-    await act(async () => {
-      renderer.root.render(
-        <HistorySidebar
-          isOpen={false}
-          onToggle={vi.fn()}
-          onAutoClose={vi.fn()}
-          sessions={[]}
-          groups={[]}
-          activeSessionId={null}
-          loadingSessionIds={new Set()}
-          generatingTitleSessionIds={new Set()}
-          onSelectSession={vi.fn()}
-          onNewChat={vi.fn()}
-          onDeleteSession={vi.fn()}
-          onRenameSession={vi.fn()}
-          onTogglePinSession={vi.fn()}
-          onDuplicateSession={vi.fn()}
-          onOpenExportModal={vi.fn()}
-          onAddNewGroup={vi.fn()}
-          onDeleteGroup={vi.fn()}
-          onRenameGroup={vi.fn()}
-          onMoveSessionToGroup={vi.fn()}
-          onToggleGroupExpansion={vi.fn()}
-          onOpenSettingsModal={vi.fn()}
-          themeId="pearl"
-          newChatShortcut=""
-          searchChatsShortcut=""
-        />,
-      );
-    });
+    await renderSidebar();
 
     const openToggles = renderer.container.querySelectorAll<HTMLButtonElement>(
       'button[aria-label="Open history sidebar"]',
@@ -134,36 +54,7 @@ describe('HistorySidebar search shortcut', () => {
   });
 
   it('marks the hidden expanded sidebar pane inert when collapsed', async () => {
-    await act(async () => {
-      renderer.root.render(
-        <HistorySidebar
-          isOpen={false}
-          onToggle={vi.fn()}
-          onAutoClose={vi.fn()}
-          sessions={[]}
-          groups={[]}
-          activeSessionId={null}
-          loadingSessionIds={new Set()}
-          generatingTitleSessionIds={new Set()}
-          onSelectSession={vi.fn()}
-          onNewChat={vi.fn()}
-          onDeleteSession={vi.fn()}
-          onRenameSession={vi.fn()}
-          onTogglePinSession={vi.fn()}
-          onDuplicateSession={vi.fn()}
-          onOpenExportModal={vi.fn()}
-          onAddNewGroup={vi.fn()}
-          onDeleteGroup={vi.fn()}
-          onRenameGroup={vi.fn()}
-          onMoveSessionToGroup={vi.fn()}
-          onToggleGroupExpansion={vi.fn()}
-          onOpenSettingsModal={vi.fn()}
-          themeId="pearl"
-          newChatShortcut=""
-          searchChatsShortcut=""
-        />,
-      );
-    });
+    await renderSidebar();
 
     const hiddenExpandedPane = renderer.container.querySelector<HTMLElement>(
       '[data-history-sidebar-expanded-pane="true"][aria-hidden="true"]',

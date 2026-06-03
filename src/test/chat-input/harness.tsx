@@ -155,6 +155,11 @@ vi.mock('@/hooks/live-api/useLiveApi', () => ({
 vi.mock('@/utils/apiKeySelection', () => ({
   getKeyForRequest: mockApiUtils.getKeyForRequest,
   getGeminiKeyForRequest: mockApiUtils.getKeyForRequest,
+  formatApiKeyErrorMessage: (error: string, translate: (translationKey: string) => string) => {
+    if (error === 'API Key not configured.') return translate('apiRuntime_keyNotConfigured');
+    if (error === 'No valid API keys found.') return translate('apiRuntime_noValidKeysFound');
+    return error;
+  },
 }));
 
 vi.mock('@/services/api/generation/textApi', () => ({
@@ -320,7 +325,7 @@ vi.mock('@/components/chat/input/ChatInputArea', async () => {
   return { ChatInputArea };
 });
 
-export const ChatInputTestProvider = ({ value, children }: { value: ChatAreaProviderValue; children: ReactNode }) => {
+const ChatInputTestProvider = ({ value, children }: { value: ChatAreaProviderValue; children: ReactNode }) => {
   applyChatAreaProviderValue(value);
   mockChatInputUiSettings.showInputTranslationButton = value.input.appSettings.showInputTranslationButton ?? false;
   mockChatInputUiSettings.showInputPasteButton = value.input.appSettings.showInputPasteButton ?? true;
@@ -337,6 +342,12 @@ export const ChatInputTestProvider = ({ value, children }: { value: ChatAreaProv
 
   return <ChatRuntimeTestProvider value={value}>{versionedChildren}</ChatRuntimeTestProvider>;
 };
+
+export const createChatInputRenderer =
+  (renderer: { root: { render: (ui: ReactNode) => void } }, children: ReactNode) =>
+  (providerValue: ChatAreaProviderValue) => {
+    renderer.root.render(<ChatInputTestProvider value={providerValue}>{children}</ChatInputTestProvider>);
+  };
 
 export const createProviderValue = (commandedInput: InputCommand | null) =>
   createChatAreaProviderValue({

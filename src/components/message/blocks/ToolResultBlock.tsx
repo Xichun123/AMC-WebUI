@@ -13,6 +13,8 @@ interface ToolResultBlockProps extends React.HTMLAttributes<HTMLDivElement> {
   onImageClick?: (file: UploadedFile) => void;
 }
 
+const DOWNLOAD_FEEDBACK_MS = 2000;
+
 export const ToolResultBlock: React.FC<ToolResultBlockProps> = ({
   className,
   children,
@@ -51,7 +53,7 @@ export const ToolResultBlock: React.FC<ToolResultBlockProps> = ({
     triggerDownload(url, `execution-output-${Date.now()}.${extension}`);
 
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), DOWNLOAD_FEEDBACK_MS);
   };
 
   const generatedFiles = files?.filter((file) => file.name.startsWith('generated-')) || [];

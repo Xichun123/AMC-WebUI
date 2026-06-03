@@ -1,7 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
-import { listProjectSourceFiles, projectRoot, readProjectFile } from './projectFiles';
+import { listProjectSourceFiles, listProjectSourceFilesExcept, projectRoot, readProjectFile } from './projectFiles';
+
+const thisTestFile = 'src/test/architecture/detailQualityBoundaries.test.ts';
 
 describe('detail quality boundaries', () => {
   it('reuses dropped-item snapshotting without pulling folder import code into the initial bundle', () => {
@@ -125,9 +127,7 @@ describe('detail quality boundaries', () => {
     expect(fs.existsSync(path.join(projectRoot, 'src/utils/htmlPreview.ts'))).toBe(false);
     expect(fs.existsSync(path.join(projectRoot, 'src/utils/htmlPreviewScripts.ts'))).toBe(false);
 
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/detailQualityBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
     const oldImportOffenders = sourceFiles.filter((relativePath) => {
       const source = readProjectFile(relativePath);
       return source.includes('@/utils/htmlPreview') || source.includes('./htmlPreview');
@@ -152,6 +152,7 @@ describe('detail quality boundaries', () => {
   it('keeps import-context shared details split into named helper modules', () => {
     const expectedHelperFiles = [
       'src/utils/import-context/defaultIgnorePatterns.ts',
+      'src/utils/import-context/importContextTypes.ts',
       'src/utils/import-context/languageMap.ts',
       'src/utils/import-context/textStats.ts',
       'src/utils/import-context/treeSorting.ts',
@@ -163,10 +164,12 @@ describe('detail quality boundaries', () => {
     }
 
     expect(fs.existsSync(path.join(projectRoot, 'src/utils/import-context/shared.ts'))).toBe(false);
+    expect(fs.existsSync(path.join(projectRoot, 'src/utils/import-context/types.ts'))).toBe(false);
 
     for (const relativePath of importContextFiles) {
       const source = readProjectFile(relativePath);
       expect(source, relativePath).not.toContain("from './shared'");
+      expect(source, relativePath).not.toContain("from './types'");
     }
   });
 
@@ -199,9 +202,7 @@ describe('detail quality boundaries', () => {
     expect(fs.existsSync(path.join(projectRoot, 'src/constants/appConstants.ts'))).toBe(false);
     expect(fs.existsSync(path.join(projectRoot, 'src/constants/styleClasses.ts'))).toBe(false);
 
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/detailQualityBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
     const broadConstantImportOffenders = sourceFiles.filter((relativePath) => {
       const source = readProjectFile(relativePath);
       return source.includes('@/constants/appConstants') || source.includes('@/constants/styleClasses');
@@ -256,9 +257,7 @@ describe('detail quality boundaries', () => {
       expect(fs.existsSync(path.join(projectRoot, relativePath)), relativePath).toBe(false);
     }
 
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/detailQualityBoundaries.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
     const retiredHelperImportOffenders = sourceFiles.filter((relativePath) => {
       const source = readProjectFile(relativePath);
       return (

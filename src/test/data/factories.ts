@@ -70,8 +70,6 @@ export const createAppSettings = (overrides: Partial<AppSettings> = {}): AppSett
   liveArtifactsSystemPrompt: '',
   liveArtifactsSystemPrompts: {
     inline: '',
-    full: '',
-    fullHtml: '',
   },
   isPasteRichTextAsMarkdownEnabled: true,
   isSystemAudioRecordingEnabled: false,
@@ -102,6 +100,15 @@ export const createSavedChatSession = (overrides: Partial<SavedChatSession> = {}
   title: 'Session',
   timestamp: new Date('2026-04-12T00:00:00.000Z').getTime(),
   messages: [createChatMessage()],
+  settings: createChatSettings(),
+  ...overrides,
+});
+
+export const createSavedChatSessionMetadata = (overrides: Partial<SavedChatSession> = {}): SavedChatSession => ({
+  id: 'session',
+  title: 'Session',
+  timestamp: 0,
+  messages: [],
   settings: createChatSettings(),
   ...overrides,
 });

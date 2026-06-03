@@ -1,9 +1,9 @@
 import { act } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SavedChatSession, Theme } from '@/types';
-import { DEFAULT_CHAT_SETTINGS } from '@/constants/settingsDefaults';
+import type { Theme } from '@/types';
 import { useChatSessionExport } from './useChatSessionExport';
 import { renderHook } from '@/test/render/renderer';
+import { createSavedChatSessionMetadata } from '@/test/data/factories';
 
 const exportHtmlStringAsFile = vi.fn();
 const exportTextStringAsFile = vi.fn();
@@ -25,29 +25,30 @@ vi.mock('@/utils/export/runtime', () => ({
   })),
 }));
 
-const makeSession = (): SavedChatSession => ({
-  id: 'session-1',
-  title: 'Long Chat',
-  timestamp: Date.now(),
-  settings: {
-    ...DEFAULT_CHAT_SETTINGS,
-    modelId: 'gemini-test',
-  },
-  messages: [
-    {
-      id: 'message-visible',
-      role: 'user',
-      content: 'currently mounted',
-      timestamp: new Date('2026-04-26T00:00:00.000Z'),
+const makeSession = () =>
+  createSavedChatSessionMetadata({
+    id: 'session-1',
+    title: 'Long Chat',
+    timestamp: Date.now(),
+    settings: {
+      ...createSavedChatSessionMetadata().settings,
+      modelId: 'gemini-test',
     },
-    {
-      id: 'message-virtualized-away',
-      role: 'model',
-      content: 'not mounted in virtuoso',
-      timestamp: new Date('2026-04-26T00:01:00.000Z'),
-    },
-  ],
-});
+    messages: [
+      {
+        id: 'message-visible',
+        role: 'user',
+        content: 'currently mounted',
+        timestamp: new Date('2026-04-26T00:00:00.000Z'),
+      },
+      {
+        id: 'message-virtualized-away',
+        role: 'model',
+        content: 'not mounted in virtuoso',
+        timestamp: new Date('2026-04-26T00:01:00.000Z'),
+      },
+    ],
+  });
 
 describe('useChatSessionExport', () => {
   beforeEach(() => {

@@ -4,11 +4,11 @@ import { Clock, MonitorPlay, Info } from 'lucide-react';
 
 interface VideoConfigProps {
   startOffset: string;
-  setStartOffset: (val: string) => void;
+  setStartOffset: (startOffset: string) => void;
   endOffset: string;
-  setEndOffset: (val: string) => void;
+  setEndOffset: (endOffset: string) => void;
   fps: string;
-  setFps: (val: string) => void;
+  setFps: (fps: string) => void;
 }
 
 export const VideoConfig: React.FC<VideoConfigProps> = ({
@@ -32,7 +32,7 @@ export const VideoConfig: React.FC<VideoConfigProps> = ({
             <input
               type="text"
               value={startOffset}
-              onChange={(e) => setStartOffset(e.target.value)}
+              onChange={(event) => setStartOffset(event.target.value)}
               placeholder={t('videoSettings_placeholder')}
               className="w-full bg-[var(--theme-bg-input)] border border-[var(--theme-border-secondary)] rounded-lg pl-9 pr-3 py-2 text-sm text-[var(--theme-text-primary)] focus:ring-2 focus:ring-[var(--theme-border-focus)] outline-none"
             />
@@ -47,7 +47,7 @@ export const VideoConfig: React.FC<VideoConfigProps> = ({
             <input
               type="text"
               value={endOffset}
-              onChange={(e) => setEndOffset(e.target.value)}
+              onChange={(event) => setEndOffset(event.target.value)}
               placeholder={t('videoSettings_placeholder')}
               className="w-full bg-[var(--theme-bg-input)] border border-[var(--theme-border-secondary)] rounded-lg pl-9 pr-3 py-2 text-sm text-[var(--theme-text-primary)] focus:ring-2 focus:ring-[var(--theme-border-focus)] outline-none"
             />
@@ -69,7 +69,7 @@ export const VideoConfig: React.FC<VideoConfigProps> = ({
             min="0.1"
             step="0.1"
             value={fps}
-            onChange={(e) => setFps(e.target.value)}
+            onChange={(event) => setFps(event.target.value)}
             placeholder={t('videoSettings_fps_placeholder')}
             className="w-full bg-[var(--theme-bg-input)] border border-[var(--theme-border-secondary)] rounded-lg pl-9 pr-3 py-2 text-sm text-[var(--theme-text-primary)] focus:ring-2 focus:ring-[var(--theme-border-focus)] outline-none"
           />

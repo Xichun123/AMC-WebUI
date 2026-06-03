@@ -1,4 +1,4 @@
-import type { FileNode } from './types';
+import type { FileNode } from './importContextTypes';
 
 const naturalCollator = new Intl.Collator(undefined, {
   numeric: true,

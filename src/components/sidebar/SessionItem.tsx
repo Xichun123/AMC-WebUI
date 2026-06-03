@@ -28,6 +28,8 @@ interface SessionItemProps {
   setActiveMenu: (id: string | null) => void;
 }
 
+const RIGHT_CLICK_MENU_FEEDBACK_MS = 200;
+
 export const SessionItem: React.FC<SessionItemProps> = (props) => {
   const { t } = useI18n();
   const {
@@ -61,7 +63,7 @@ export const SessionItem: React.FC<SessionItemProps> = (props) => {
     e.preventDefault();
     setIsRightClickAnimating(true);
     setActiveMenu(session.id);
-    setTimeout(() => setIsRightClickAnimating(false), 200);
+    setTimeout(() => setIsRightClickAnimating(false), RIGHT_CLICK_MENU_FEEDBACK_MS);
   };
 
   return (

@@ -6,6 +6,8 @@ interface ThinkingTimerProps {
   startTime: Date;
 }
 
+const THINKING_TIMER_POLL_INTERVAL_MS = 100;
+
 export const ThinkingTimer: React.FC<ThinkingTimerProps> = ({ startTime }) => {
   const { t } = useI18n();
   const [seconds, setSeconds] = useState(() => Math.floor((Date.now() - new Date(startTime).getTime()) / 1000));
@@ -13,12 +15,9 @@ export const ThinkingTimer: React.FC<ThinkingTimerProps> = ({ startTime }) => {
   useEffect(() => {
     const start = new Date(startTime).getTime();
 
-    // Use a faster polling interval (100ms) instead of 1000ms.
-    // During heavy streaming/rendering, a 1s interval often drifts or gets delayed,
-    // causing the timer to appear "stuck" and then jump 2 seconds.
     const interval = setInterval(() => {
       setSeconds(Math.floor((Date.now() - start) / 1000));
-    }, 100);
+    }, THINKING_TIMER_POLL_INTERVAL_MS);
 
     return () => clearInterval(interval);
   }, [startTime]);

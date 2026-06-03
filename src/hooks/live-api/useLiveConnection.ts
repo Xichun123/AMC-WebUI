@@ -54,11 +54,11 @@ interface UseLiveConnectionProps {
   tools: Tool[];
   initializeAudio: (
     onAudioData: (data: Float32Array) => void,
-  ) => Promise<void | { audioCtx: AudioContext; inputCtx: AudioContext }>;
+  ) => Promise<void | { outputAudioContext: AudioContext; inputAudioContext: AudioContext }>;
   cleanupAudio: () => void;
   clearBufferedAudio?: () => void;
   stopVideo: () => void;
-  handleMessage: (msg: LiveServerMessage) => void;
+  handleMessage: (message: LiveServerMessage) => void;
   onClose?: () => void;
   onTranscript?: LiveTranscriptHandler;
   setSessionHandle: (handle: string | null) => void;
@@ -220,9 +220,9 @@ export const useLiveConnection = ({
                   data: base64Data,
                 },
               });
-            } catch (e) {
+            } catch (audioSendError) {
               // Catch synchronous send errors (e.g. if socket closed between checks)
-              logService.warn('Failed to send audio frame:', e);
+              logService.warn('Failed to send audio frame:', audioSendError);
             }
           });
         }
@@ -239,18 +239,18 @@ export const useLiveConnection = ({
           onopen: () => {
             logService.info('Live API Connected', { tools: tools?.length ?? 0, resumed: !!sessionHandleRef.current });
           },
-          onmessage: (msg) => {
-            if (msg.setupComplete) {
+          onmessage: (message) => {
+            if (message.setupComplete) {
               setIsConnected(true);
               setIsReconnecting(false);
               setErrorState(null);
               retryCountRef.current = 0;
               resolveSetupComplete();
             }
-            handleMessage(msg);
+            handleMessage(message);
           },
-          onclose: (e) => {
-            logService.info('Live API Closed', e);
+          onclose: (event) => {
+            logService.info('Live API Closed', event);
             sessionRef.current = null;
             rejectSetupComplete(new Error('Live API connection closed before setup completed.'));
 
@@ -273,10 +273,11 @@ export const useLiveConnection = ({
               if (onClose) onClose();
             }
           },
-          onerror: (err) => {
-            logService.error('Live API Error', err);
+          onerror: (error) => {
+            logService.error('Live API Error', error);
+            const connectionError = error instanceof Error ? error : new Error('Connection error');
             sessionRef.current = null;
-            rejectSetupComplete(err instanceof Error ? err : new Error('Connection error'));
+            rejectSetupComplete(connectionError);
 
             setIsConnected(false);
 
@@ -288,8 +289,8 @@ export const useLiveConnection = ({
             if (!isUserDisconnectRef.current) {
               triggerReconnect();
             } else {
-              if (err.message) {
-                setRawError(err.message);
+              if (connectionError.message) {
+                setRawError(connectionError.message);
               } else {
                 setTranslationError('liveStatus_connection_error');
               }
@@ -319,7 +320,7 @@ export const useLiveConnection = ({
 
       isConnectingRef.current = false;
       return true;
-    } catch (err) {
+    } catch (connectionError) {
       const wasUserDisconnect = isUserDisconnectRef.current || !isConnectingRef.current;
       isConnectingRef.current = false;
       clearSetupCompleteWaiters();
@@ -330,18 +331,18 @@ export const useLiveConnection = ({
         return false;
       }
 
-      logService.error('Failed to connect to Live API', err);
+      logService.error('Failed to connect to Live API', connectionError);
 
       if (
-        err instanceof LiveApiAuthConfigurationError ||
-        (err instanceof Error && err.name === 'LiveApiAuthConfigurationError')
+        connectionError instanceof LiveApiAuthConfigurationError ||
+        (connectionError instanceof Error && connectionError.name === 'LiveApiAuthConfigurationError')
       ) {
         setIsReconnecting(false);
-        const authError = err as LiveApiAuthConfigurationError & { code?: string };
+        const authError = connectionError as LiveApiAuthConfigurationError & { code?: string };
         if (authError.code === 'MISSING_API_KEY') {
           setTranslationError('liveStatus_missing_api_key');
-        } else if (err.message) {
-          setRawError(err.message);
+        } else if (connectionError.message) {
+          setRawError(connectionError.message);
         } else {
           setTranslationError('liveStatus_failed_to_start');
         }
@@ -353,8 +354,8 @@ export const useLiveConnection = ({
       if (!isUserDisconnectRef.current) {
         triggerReconnect();
       } else {
-        if (err instanceof Error && err.message) {
-          setRawError(err.message);
+        if (connectionError instanceof Error && connectionError.message) {
+          setRawError(connectionError.message);
         } else {
           setTranslationError('liveStatus_failed_to_start');
         }
@@ -396,8 +397,8 @@ export const useLiveConnection = ({
         session.sendRealtimeInput({ text });
         logService.info('Sent text to Live API', { textLength: text.length });
         return true;
-      } catch (e) {
-        logService.error('Failed to send text to Live API', e);
+      } catch (sendTextError) {
+        logService.error('Failed to send text to Live API', sendTextError);
         return false;
       }
     },
@@ -438,8 +439,8 @@ export const useLiveConnection = ({
         });
         logService.info('Sent client content to Live API', { partCount: parts.length });
         return true;
-      } catch (e) {
-        logService.error('Failed to send client content to Live API', e);
+      } catch (sendContentError) {
+        logService.error('Failed to send client content to Live API', sendContentError);
         return false;
       }
     },

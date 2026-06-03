@@ -50,8 +50,8 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
       const fileName = `recording-${new Date().toISOString().slice(0, 19).replace(/[:]/g, '-')}.webm`;
       const file = new File([audioBlob], fileName, { type: 'audio/webm' });
       await onRecord(file);
-    } catch (e) {
-      logService.error('Failed to save audio recording.', e);
+    } catch (saveError) {
+      logService.error('Failed to save audio recording.', saveError);
       alert(t('audioRecorder_failedToSave'));
       setIsSaving(false);
     }

@@ -4,6 +4,8 @@ interface AudioVisualizerProps {
   stream: MediaStream | null;
 }
 
+const AUDIO_CONTEXT_INIT_DELAY_MS = 50;
+
 export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ stream }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -73,8 +75,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ stream }) => {
       draw();
     };
 
-    // Slight delay to ensure canvas is mounted and dimensions are correct
-    const timeoutId = setTimeout(initAudio, 50);
+    const timeoutId = setTimeout(initAudio, AUDIO_CONTEXT_INIT_DELAY_MS);
 
     return () => {
       clearTimeout(timeoutId);

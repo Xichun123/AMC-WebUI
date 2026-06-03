@@ -45,6 +45,20 @@ interface LiveModelStreamInput {
   type: 'content' | 'thought';
 }
 
+const LIVE_API_INITIAL_FIRST_TOKEN_TIME_MS = 0;
+
+const hasLiveTranscriptPayload = ({
+  apiPart,
+  audioUrl,
+  generatedFiles,
+  text,
+}: {
+  apiPart?: Part;
+  audioUrl?: string | null;
+  generatedFiles?: UploadedFile[];
+  text: string;
+}) => Boolean(text || audioUrl || generatedFiles?.length || apiPart);
+
 const reduceLiveModelStreamInput = (
   streamState: MessageStreamState,
   { apiPart, generatedFiles, text, type }: LiveModelStreamInput,
@@ -152,7 +166,6 @@ export const useMessageUpdates = ({
     (text: string, files: UploadedFile[] = []) => {
       let currentSessionId = activeSessionId || pendingSessionIdRef.current;
 
-      // Auto-create session if sending message from New Chat state
       if (!currentSessionId) {
         const newSession = createNewSession({ ...DEFAULT_CHAT_SETTINGS, ...appSettings, ...currentChatSettings });
         currentSessionId = newSession.id;
@@ -168,10 +181,10 @@ export const useMessageUpdates = ({
         appendMessageToSession(currentSessionId, newMessage);
       } else {
         updateAndPersistSessions((prev) =>
-          updateSessionById(prev, currentSessionId, (s) => ({
-            ...s,
-            messages: [...s.messages, newMessage],
-            timestamp: Date.now(), // Update timestamp to move to top
+          updateSessionById(prev, currentSessionId, (session) => ({
+            ...session,
+            messages: [...session.messages, newMessage],
+            timestamp: Date.now(),
           })),
         );
       }
@@ -199,9 +212,9 @@ export const useMessageUpdates = ({
       apiPart?: Part,
     ) => {
       let currentSessionId = activeSessionId || pendingSessionIdRef.current;
+      const hasPayload = hasLiveTranscriptPayload({ apiPart, audioUrl, generatedFiles, text });
 
-      // Auto-create session if receiving any live output in New Chat state.
-      if (!currentSessionId && (text || audioUrl || (generatedFiles && generatedFiles.length > 0) || apiPart)) {
+      if (!currentSessionId && hasPayload) {
         const newSession = createNewSession(
           { ...DEFAULT_CHAT_SETTINGS, ...appSettings, ...currentChatSettings },
           [],
@@ -211,7 +224,6 @@ export const useMessageUpdates = ({
         pendingSessionIdRef.current = currentSessionId;
         setActiveSessionId(currentSessionId);
 
-        // Inject new session immediately
         updateAndPersistSessions((prev) => [newSession, ...prev]);
       }
 
@@ -219,23 +231,19 @@ export const useMessageUpdates = ({
 
       updateAndPersistSessions(
         (prev) =>
-          updateSessionById(prev, currentSessionId, (s) => {
-            // Determine which ID we are currently tracking for this role
+          updateSessionById(prev, currentSessionId, (session) => {
             const currentId =
               role === 'user' ? liveConversationRefs.current.userId : liveConversationRefs.current.modelId;
-            const messages = [...s.messages];
+            const messages = [...session.messages];
 
-            let messageIndex = currentId ? messages.findIndex((m) => m.id === currentId) : -1;
+            let messageIndex = currentId ? messages.findIndex((message) => message.id === currentId) : -1;
 
-            // Only create or update if there is actual text content (or thoughts)
-            // OR if there is an audioUrl to attach (e.g. at the end of a turn even if no text change)
-            if (text || audioUrl || (generatedFiles && generatedFiles.length > 0) || apiPart) {
+            if (hasPayload) {
               if (messageIndex === -1) {
                 const generationStartTime = new Date();
-                // Start a new message for this turn
                 const newMessage = createMessage(role === 'user' ? 'user' : 'model', '', {
-                  isLoading: true, // Mark as loading to indicate active stream/live status
-                  firstTokenTimeMs: 0, // Initialize TTFT to 0 for Live API
+                  isLoading: true,
+                  firstTokenTimeMs: LIVE_API_INITIAL_FIRST_TOKEN_TIME_MS,
                   generationStartTime,
                   audioSrc: audioUrl || undefined,
                   audioAutoplay: audioUrl ? false : undefined,
@@ -248,7 +256,10 @@ export const useMessageUpdates = ({
                   });
                   streamState = reduceLiveModelStreamInput(streamState, { apiPart, generatedFiles, text, type });
                   liveStreamStateRefs.current.model = streamState;
-                  Object.assign(newMessage, getMessageUpdatesFromStreamState(streamState, 0));
+                  Object.assign(
+                    newMessage,
+                    getMessageUpdatesFromStreamState(streamState, LIVE_API_INITIAL_FIRST_TOKEN_TIME_MS),
+                  );
                 } else {
                   newMessage.content = type === 'content' ? text : '';
                   newMessage.thoughts = type === 'thought' ? text : undefined;
@@ -262,47 +273,55 @@ export const useMessageUpdates = ({
 
                 messageIndex = messages.length - 1;
               } else {
-                const msg = messages[messageIndex];
+                const existingMessage = messages[messageIndex];
                 const updates: Partial<ChatMessage> = {};
 
                 if (role === 'model' && (apiPart || text || generatedFiles?.length)) {
                   let streamState =
                     liveStreamStateRefs.current.model ??
                     createMessageStreamState({
-                      generationId: msg.id,
-                      generationStartTime: msg.generationStartTime || msg.timestamp,
+                      generationId: existingMessage.id,
+                      generationStartTime: existingMessage.generationStartTime || existingMessage.timestamp,
                     });
 
                   if (!liveStreamStateRefs.current.model) {
                     streamState = {
                       ...streamState,
-                      content: msg.content || '',
-                      thoughts: msg.thoughts || '',
-                      apiParts: msg.apiParts || [],
-                      files: msg.files || [],
-                      firstTokenTimeMs: msg.firstTokenTimeMs,
+                      content: existingMessage.content || '',
+                      thoughts: existingMessage.thoughts || '',
+                      apiParts: existingMessage.apiParts || [],
+                      files: existingMessage.files || [],
+                      firstTokenTimeMs: existingMessage.firstTokenTimeMs,
                     };
                   }
 
                   streamState = reduceLiveModelStreamInput(streamState, { apiPart, generatedFiles, text, type });
 
                   liveStreamStateRefs.current.model = streamState;
-                  Object.assign(updates, getMessageUpdatesFromStreamState(streamState, msg.firstTokenTimeMs));
+                  Object.assign(
+                    updates,
+                    getMessageUpdatesFromStreamState(streamState, existingMessage.firstTokenTimeMs),
+                  );
 
-                  if (streamState.thoughts && !msg.thinkingTimeMs && streamState.firstContentPartTime) {
+                  if (streamState.thoughts && !existingMessage.thinkingTimeMs && streamState.firstContentPartTime) {
                     updates.thinkingTimeMs =
-                      streamState.firstContentPartTime.getTime() - (msg.generationStartTime || msg.timestamp).getTime();
+                      streamState.firstContentPartTime.getTime() -
+                      (existingMessage.generationStartTime || existingMessage.timestamp).getTime();
                   }
                 } else if (text) {
                   if (type === 'thought') {
-                    updates.thoughts = (msg.thoughts || '') + text;
+                    updates.thoughts = (existingMessage.thoughts || '') + text;
                   } else {
                     // If we are switching to content from thoughts, and thinkingTimeMs isn't set yet
                     // This effectively "stops" the thinking timer
-                    if (msg.thoughts && !msg.thinkingTimeMs && msg.generationStartTime) {
-                      updates.thinkingTimeMs = new Date().getTime() - msg.generationStartTime.getTime();
+                    if (
+                      existingMessage.thoughts &&
+                      !existingMessage.thinkingTimeMs &&
+                      existingMessage.generationStartTime
+                    ) {
+                      updates.thinkingTimeMs = new Date().getTime() - existingMessage.generationStartTime.getTime();
                     }
-                    updates.content = msg.content + text;
+                    updates.content = existingMessage.content + text;
                   }
                 }
 
@@ -311,26 +330,26 @@ export const useMessageUpdates = ({
                   updates.audioAutoplay = false; // Disable autoplay for Live API generated audio
                 }
                 if (generatedFiles?.length) {
-                  updates.files = mergeUniqueFiles(updates.files || msg.files, generatedFiles);
+                  updates.files = mergeUniqueFiles(updates.files || existingMessage.files, generatedFiles);
                 }
 
-                messages[messageIndex] = { ...msg, ...updates };
+                messages[messageIndex] = { ...existingMessage, ...updates };
               }
             }
 
             // If the turn is complete (isFinal=true), mark the message as not loading and clear the ref
             if (isFinal) {
               if (messageIndex !== -1) {
-                const updatedMsg = messages[messageIndex];
+                const updatedMessage = messages[messageIndex];
 
                 // Finalize thinking time if not already set (e.g. if the message was ONLY thoughts)
-                let finalThinkingTime = updatedMsg.thinkingTimeMs;
-                if (updatedMsg.thoughts && !finalThinkingTime && updatedMsg.generationStartTime) {
-                  finalThinkingTime = new Date().getTime() - updatedMsg.generationStartTime.getTime();
+                let finalThinkingTime = updatedMessage.thinkingTimeMs;
+                if (updatedMessage.thoughts && !finalThinkingTime && updatedMessage.generationStartTime) {
+                  finalThinkingTime = new Date().getTime() - updatedMessage.generationStartTime.getTime();
                 }
 
                 messages[messageIndex] = {
-                  ...updatedMsg,
+                  ...updatedMessage,
                   isLoading: false,
                   generationEndTime: new Date(),
                   thinkingTimeMs: finalThinkingTime,
@@ -345,9 +364,9 @@ export const useMessageUpdates = ({
             }
 
             return {
-              ...s,
+              ...session,
               messages,
-              timestamp: Date.now(), // Update timestamp on live activity to keep session active/top
+              timestamp: Date.now(),
             };
           }),
         { persist: isFinal },

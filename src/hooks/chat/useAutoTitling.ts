@@ -122,7 +122,7 @@ export const useAutoTitling = ({
         if (newTitle && newTitle.trim()) {
           logService.info(`Generated new title for session ${sessionId}: "${newTitle}"`);
           updateAndPersistSessions((prev) =>
-            prev.map((s) => (s.id === sessionId ? { ...s, title: newTitle.trim() } : s)),
+            prev.map((session) => (session.id === sessionId ? { ...session, title: newTitle.trim() } : session)),
           );
         } else {
           logService.warn(`Title generation for session ${sessionId} returned an empty string.`);
@@ -131,7 +131,9 @@ export const useAutoTitling = ({
         logService.error(`Failed to auto-generate title for session ${sessionId}`, { error });
         const localTitle = generateSessionTitle(messages);
         if (localTitle && localTitle !== 'New Chat') {
-          updateAndPersistSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, title: localTitle } : s)));
+          updateAndPersistSessions((prev) =>
+            prev.map((session) => (session.id === sessionId ? { ...session, title: localTitle } : session)),
+          );
         }
       } finally {
         setGeneratingTitleSessionIds((prev) => {

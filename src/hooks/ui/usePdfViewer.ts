@@ -5,12 +5,22 @@ import { MOBILE_BREAKPOINT_PX } from '@/constants/layout';
 import { ensurePdfWorkerConfigured } from '@/utils/pdfRuntime';
 import { useI18n } from '@/contexts/I18nContext';
 
+const PDF_TABLET_BREAKPOINT_PX = 1024;
+const INITIAL_MOBILE_SCALE = 0.6;
+const INITIAL_TABLET_SCALE = 0.8;
+const INITIAL_DESKTOP_SCALE = 1.1;
+const PDF_ZOOM_STEP = 0.2;
+const MIN_PDF_SCALE = 0.4;
+const MAX_PDF_SCALE = 3.0;
+const PDF_ROTATION_STEP_DEGREES = 90;
+const FULL_ROTATION_DEGREES = 360;
+
 const getInitialScale = () => {
-  if (typeof window === 'undefined') return 1.0;
+  if (typeof window === 'undefined') return INITIAL_DESKTOP_SCALE;
   const width = window.innerWidth;
-  if (width < MOBILE_BREAKPOINT_PX) return 0.6;
-  if (width < 1024) return 0.8;
-  return 1.1;
+  if (width < MOBILE_BREAKPOINT_PX) return INITIAL_MOBILE_SCALE;
+  if (width < PDF_TABLET_BREAKPOINT_PX) return INITIAL_TABLET_SCALE;
+  return INITIAL_DESKTOP_SCALE;
 };
 
 export const usePdfViewer = (_file: UploadedFile) => {
@@ -23,7 +33,9 @@ export const usePdfViewer = (_file: UploadedFile) => {
   const [rotation, setRotation] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showSidebar, setShowSidebar] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 1024);
+  const [showSidebar, setShowSidebar] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth >= PDF_TABLET_BREAKPOINT_PX,
+  );
 
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
@@ -72,28 +84,28 @@ export const usePdfViewer = (_file: UploadedFile) => {
     setIsLoading(false);
   };
 
-  const onDocumentLoadError = (err: Error) => {
+  const onDocumentLoadError = (error: Error) => {
     setIsLoading(false);
-    setError(t('pdf_load_failed_with_message').replace('{message}', err.message));
-    logService.error('PDF Load Error:', err);
+    setError(t('pdf_load_failed_with_message').replace('{message}', error.message));
+    logService.error('PDF Load Error:', error);
   };
 
-  const scrollToPage = (pageNum: number) => {
-    const el = pageRefs.current.get(pageNum);
-    if (el) {
-      el.scrollIntoView({ behavior: 'auto', block: 'start' });
-      setCurrentPage(pageNum);
+  const scrollToPage = (pageNumber: number) => {
+    const pageElement = pageRefs.current.get(pageNumber);
+    if (pageElement) {
+      pageElement.scrollIntoView({ behavior: 'auto', block: 'start' });
+      setCurrentPage(pageNumber);
     }
   };
 
   const previousPage = () => {
-    const prev = Math.max(1, currentPage - 1);
-    scrollToPage(prev);
+    const previousPageNumber = Math.max(1, currentPage - 1);
+    scrollToPage(previousPageNumber);
   };
 
   const nextPage = () => {
-    const next = Math.min(numPages || 1, currentPage + 1);
-    scrollToPage(next);
+    const nextPageNumber = Math.min(numPages || 1, currentPage + 1);
+    scrollToPage(nextPageNumber);
   };
 
   const handlePageInputCommit = (pageInput: string) => {
@@ -103,10 +115,11 @@ export const usePdfViewer = (_file: UploadedFile) => {
     }
   };
 
-  const handleZoomIn = () => setScale((prev) => Math.min(prev + 0.2, 3.0));
-  const handleZoomOut = () => setScale((prev) => Math.max(prev - 0.2, 0.4));
-  const handleRotate = () => setRotation((prev) => (prev + 90) % 360);
-  const toggleSidebar = () => setShowSidebar((prev) => !prev);
+  const handleZoomIn = () => setScale((previousScale) => Math.min(previousScale + PDF_ZOOM_STEP, MAX_PDF_SCALE));
+  const handleZoomOut = () => setScale((previousScale) => Math.max(previousScale - PDF_ZOOM_STEP, MIN_PDF_SCALE));
+  const handleRotate = () =>
+    setRotation((previousRotation) => (previousRotation + PDF_ROTATION_STEP_DEGREES) % FULL_ROTATION_DEGREES);
+  const toggleSidebar = () => setShowSidebar((isSidebarVisible) => !isSidebarVisible);
 
   const setPageRef = useCallback((pageNum: number, element: HTMLDivElement | null) => {
     if (element) {

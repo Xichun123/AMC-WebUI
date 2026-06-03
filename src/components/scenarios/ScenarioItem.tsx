@@ -117,7 +117,7 @@ const ActionButton = ({
   label,
   scenario,
 }: {
-  onClick: (s: SavedScenario) => void;
+  onClick: (scenario: SavedScenario) => void;
   icon: React.ElementType;
   label: string;
   scenario: SavedScenario;

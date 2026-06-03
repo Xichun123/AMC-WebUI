@@ -20,6 +20,9 @@ interface UseCreateFileEditorProps {
   isPasteRichTextAsMarkdownEnabled: boolean;
 }
 
+const EDITOR_CONTENT_DEBOUNCE_MS = 300;
+const EDITOR_FOCUS_DELAY_MS = 100;
+
 export const useCreateFileEditor = ({
   initialContent,
   initialFilename,
@@ -74,9 +77,8 @@ export const useCreateFileEditor = ({
   const isPdf = extension === '.pdf';
   const supportsRichPreview = ['.md', '.markdown', '.pdf'].includes(extension);
 
-  // Debounce content
   useEffect(() => {
-    const handler = setTimeout(() => setDebouncedEditorContent(textContent), 300);
+    const handler = setTimeout(() => setDebouncedEditorContent(textContent), EDITOR_CONTENT_DEBOUNCE_MS);
     return () => clearTimeout(handler);
   }, [textContent]);
 
@@ -136,8 +138,8 @@ export const useCreateFileEditor = ({
   const insertImageFile = useCallback((file: File, startPos: number, endPos: number = startPos) => {
     const placeholder = createInlineImagePlaceholder(nextImageIndexRef.current++);
     const reader = new FileReader();
-    reader.onload = (evt) => {
-      const dataUrl = evt.target?.result as string;
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
       if (dataUrl) {
         imagePlaceholdersRef.current.set(placeholder, dataUrl);
         const imageName = file.name || `image-${Date.now()}.png`;
@@ -162,17 +164,17 @@ export const useCreateFileEditor = ({
   }, []);
 
   const handlePaste = useCallback(
-    (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
       const textarea = textareaRef.current;
-      const items = e.clipboardData?.items;
+      const items = event.clipboardData?.items;
 
-      // 1. Handle Images
       if (items) {
-        for (let i = 0; i < items.length; i++) {
-          if (isImageMimeType(items[i].type)) {
-            const file = items[i].getAsFile();
+        for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+          const item = items[itemIndex];
+          if (isImageMimeType(item.type)) {
+            const file = item.getAsFile();
             if (file) {
-              e.preventDefault();
+              event.preventDefault();
               const start = textarea ? textarea.selectionStart : textContent.length;
               const end = textarea ? textarea.selectionEnd : textContent.length;
               insertImageFile(file, start, end);
@@ -182,11 +184,10 @@ export const useCreateFileEditor = ({
         }
       }
 
-      // 2. Handle Rich Text
       if (isPasteRichTextAsMarkdownEnabled !== false) {
-        const htmlContent = e.clipboardData.getData('text/html');
+        const htmlContent = event.clipboardData.getData('text/html');
         if (htmlContent && /<[a-z][\s\S]*>/i.test(htmlContent)) {
-          e.preventDefault();
+          event.preventDefault();
           const start = textarea ? textarea.selectionStart : textContent.length;
           const end = textarea ? textarea.selectionEnd : textContent.length;
 
@@ -210,23 +211,25 @@ export const useCreateFileEditor = ({
   );
 
   const handleDrop = useCallback(
-    (e: React.DragEvent, isDragging: boolean) => {
+    (event: React.DragEvent, isDragging: boolean) => {
       if (!isDragging) return;
 
-      const items = e.dataTransfer.items;
+      const items = event.dataTransfer.items;
       let file: File | null = null;
 
       if (items) {
-        for (let i = 0; i < items.length; i++) {
-          if (items[i].kind === 'file' && isImageMimeType(items[i].type)) {
-            file = items[i].getAsFile();
+        for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+          const item = items[itemIndex];
+          if (item.kind === 'file' && isImageMimeType(item.type)) {
+            file = item.getAsFile();
             break;
           }
         }
-      } else if (e.dataTransfer.files) {
-        for (let i = 0; i < e.dataTransfer.files.length; i++) {
-          if (isImageMimeType(e.dataTransfer.files[i].type)) {
-            file = e.dataTransfer.files[i];
+      } else if (event.dataTransfer.files) {
+        for (let fileIndex = 0; fileIndex < event.dataTransfer.files.length; fileIndex++) {
+          const candidateFile = event.dataTransfer.files[fileIndex];
+          if (isImageMimeType(candidateFile.type)) {
+            file = candidateFile;
             break;
           }
         }
@@ -240,7 +243,6 @@ export const useCreateFileEditor = ({
     [insertImageFile, textContent],
   );
 
-  // Focus Management
   useEffect(() => {
     const shouldFocus = !isPreviewMode || window.innerWidth >= 1024;
     if (shouldFocus) {
@@ -252,15 +254,15 @@ export const useCreateFileEditor = ({
             textareaRef.current.setSelectionRange(textLength, textLength);
           }
         }
-      }, 100);
+      }, EDITOR_FOCUS_DELAY_MS);
       return () => clearTimeout(timer);
     }
     return undefined;
   }, [isEditing, isPreviewMode]);
 
-  // Auto-disable preview for unsupported types
   useEffect(() => {
-    if (!supportsRichPreview && isPreviewMode) {
+    const shouldDisableUnsupportedPreview = !supportsRichPreview && isPreviewMode;
+    if (shouldDisableUnsupportedPreview) {
       setIsPreviewMode(false);
     }
   }, [supportsRichPreview, isPreviewMode]);

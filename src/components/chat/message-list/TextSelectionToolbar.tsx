@@ -111,8 +111,8 @@ export const TextSelectionToolbar: React.FC<TextSelectionToolbarProps> = ({
       if (url) {
         audioState.play(url);
       }
-    } catch (err) {
-      logService.error('TTS Failed:', err);
+    } catch (ttsError) {
+      logService.error('TTS Failed:', ttsError);
     } finally {
       audioState.setIsLoading(false);
     }

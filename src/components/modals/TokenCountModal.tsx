@@ -42,7 +42,7 @@ export const TokenCountModal: React.FC<TokenCountModalProps> = (props) => {
     setTokenCount,
   } = useTokenCountLogic(props);
 
-  const displayModelName = availableModels.find((m) => m.id === selectedModelId)?.name || selectedModelId;
+  const displayModelName = availableModels.find((model) => model.id === selectedModelId)?.name || selectedModelId;
 
   return (
     <Modal

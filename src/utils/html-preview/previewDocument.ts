@@ -15,6 +15,7 @@ const KATEX_STYLE_ATTRIBUTE = 'data-amc-katex';
 const PREVIEW_CONTENT_SECURITY_POLICY =
   "default-src 'none'; img-src https: data: blob:; style-src 'unsafe-inline' https:; script-src 'unsafe-inline' https: blob:; font-src https: data:; media-src https: data: blob:; connect-src https: data: blob:; worker-src blob:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'";
 const PREVIEW_CONTENT_SECURITY_POLICY_META = `<meta http-equiv="Content-Security-Policy" content="${PREVIEW_CONTENT_SECURITY_POLICY}">`;
+const PREVIEW_BASE_FONT_SIZE_ATTRIBUTE = 'data-amc-live-artifact-base-font-size';
 const MATH_IGNORED_ANCESTOR_SELECTOR = 'script,style,textarea,pre,code,kbd,samp,.katex';
 const TEX_MATH_SIGNAL_REGEX = /[\\^_{}=+\-*/<>|]|[A-Za-z]\d|\d[A-Za-z]|[\u0370-\u03ff]/;
 const TEX_MATH_ENVIRONMENT_NAMES =
@@ -202,37 +203,68 @@ const injectPreviewSecurityPolicy = (srcDoc: string): string => {
   return `<!DOCTYPE html><html><head>${PREVIEW_CONTENT_SECURITY_POLICY_META}</head><body>${srcDoc}</body></html>`;
 };
 
-const prepareHtmlPreviewSrcDoc = (srcDoc: string): string => renderPreviewMath(injectPreviewSecurityPolicy(srcDoc));
+const buildPreviewBaseFontSizeStyle = (baseFontSize?: number): string => {
+  if (typeof baseFontSize !== 'number' || !Number.isFinite(baseFontSize)) {
+    return '';
+  }
+
+  const fontSize = Math.max(1, Math.round(baseFontSize));
+  return `<style ${PREVIEW_BASE_FONT_SIZE_ATTRIBUTE}="true">:root{--amc-live-artifact-font-size:${fontSize}px;font-size:var(--amc-live-artifact-font-size);}body{font-size:var(--amc-live-artifact-font-size);}</style>`;
+};
+
+const injectPreviewBaseFontSize = (srcDoc: string, baseFontSize?: number): string => {
+  const style = buildPreviewBaseFontSizeStyle(baseFontSize);
+  if (!style || srcDoc.includes(PREVIEW_BASE_FONT_SIZE_ATTRIBUTE)) {
+    return srcDoc;
+  }
+
+  if (srcDoc.includes(PREVIEW_CONTENT_SECURITY_POLICY_META)) {
+    return srcDoc.replace(PREVIEW_CONTENT_SECURITY_POLICY_META, `${PREVIEW_CONTENT_SECURITY_POLICY_META}${style}`);
+  }
+
+  if (/<head\b[^>]*>/i.test(srcDoc)) {
+    return srcDoc.replace(/<head\b[^>]*>/i, (headTag) => `${headTag}${style}`);
+  }
+
+  if (/<html\b[^>]*>/i.test(srcDoc)) {
+    return srcDoc.replace(/<html\b[^>]*>/i, (htmlTag) => `${htmlTag}<head>${style}</head>`);
+  }
+
+  return `<!DOCTYPE html><html><head>${style}</head><body>${srcDoc}</body></html>`;
+};
+
+const prepareHtmlPreviewSrcDoc = (srcDoc: string, baseFontSize?: number): string =>
+  renderPreviewMath(injectPreviewBaseFontSize(injectPreviewSecurityPolicy(srcDoc), baseFontSize));
 
 export const buildStreamingHtmlPreviewRenderPayload = (htmlContent: string): string => {
   return renderPreviewMath(htmlContent);
 };
 
-export const buildHtmlPreviewSrcDoc = (htmlContent: string): string => {
+export const buildHtmlPreviewSrcDoc = (htmlContent: string, options: { baseFontSize?: number } = {}): string => {
   let srcDoc: string;
 
   if (!htmlContent) {
     srcDoc = `<!DOCTYPE html><html><body>${PREVIEW_BRIDGE_SCRIPT}</body></html>`;
-    return prepareHtmlPreviewSrcDoc(srcDoc);
+    return prepareHtmlPreviewSrcDoc(srcDoc, options.baseFontSize);
   }
 
   if (/<\/body>/i.test(htmlContent)) {
     srcDoc = htmlContent.replace(/<\/body>/i, `${PREVIEW_BRIDGE_SCRIPT}</body>`);
-    return prepareHtmlPreviewSrcDoc(srcDoc);
+    return prepareHtmlPreviewSrcDoc(srcDoc, options.baseFontSize);
   }
 
   if (/<\/html>/i.test(htmlContent)) {
     srcDoc = htmlContent.replace(/<\/html>/i, `${PREVIEW_BRIDGE_SCRIPT}</html>`);
-    return prepareHtmlPreviewSrcDoc(srcDoc);
+    return prepareHtmlPreviewSrcDoc(srcDoc, options.baseFontSize);
   }
 
   srcDoc = `<!DOCTYPE html><html><body>${htmlContent}${PREVIEW_BRIDGE_SCRIPT}</body></html>`;
-  return prepareHtmlPreviewSrcDoc(srcDoc);
+  return prepareHtmlPreviewSrcDoc(srcDoc, options.baseFontSize);
 };
 
-export const buildStreamingHtmlPreviewSrcDoc = (): string => {
+export const buildStreamingHtmlPreviewSrcDoc = (options: { baseFontSize?: number } = {}): string => {
   const srcDoc = `<!DOCTYPE html><html><body><div data-amc-stream-preview-root="true"></div>${PREVIEW_BRIDGE_SCRIPT}${STREAMING_PREVIEW_RUNNER_SCRIPT}</body></html>`;
-  return prepareHtmlPreviewSrcDoc(srcDoc);
+  return prepareHtmlPreviewSrcDoc(srcDoc, options.baseFontSize);
 };
 
 export const createStaticPreviewSnapshotContainer = (

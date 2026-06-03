@@ -1,3 +1,5 @@
+import { ttsStyleTranslations } from '@/i18n/voiceStyleTranslations';
+
 const modelSettings = {
   settingsModelParameters: { en: 'Defaults for New Chats', zh: '新对话默认值' },
   settingsDefaultModel: { en: 'Primary Chat Model', zh: '主对话模型' },
@@ -95,10 +97,6 @@ const modelSettings = {
     en: 'When enabled, prompts sent to an Imagen model will generate four independent image variations at once. This will consume more API credits.',
     zh: '启用后，使用 Imagen 模型将一次性生成四张独立的图片变体。这将消耗更多 API 用量。',
   },
-  settings_liveArtifactsPromptMode_label: { en: 'Live Artifacts Prompt Version', zh: 'Live Artifacts 提示词版本' },
-  settings_liveArtifactsPromptMode_inline: { en: 'Inline HTML Only', zh: '仅嵌入 HTML' },
-  settings_liveArtifactsPromptMode_full: { en: 'Full or Inline HTML', zh: '完整或嵌入 HTML' },
-  settings_liveArtifactsPromptMode_fullHtml: { en: 'Complete HTML Only', zh: '仅完整 HTML' },
   settings_liveArtifactsSystemPrompt_label: { en: 'Live Artifacts Prompt', zh: 'Live Artifacts 提示词' },
   settings_liveArtifactsSystemPrompt_placeholder: {
     en: 'The current built-in prompt appears here; edit it to customize this version.',
@@ -180,28 +178,6 @@ const modelSettings = {
     en: 'Gemma 4 on the Gemini API uses thinkingConfig.thinkingLevel with two supported levels here: MINIMAL and HIGH.',
     zh: 'Gemma 4 在 Gemini API 中这里使用 thinkingConfig.thinkingLevel，两档分别是 MINIMAL 和 HIGH。',
   },
-  // TTS Voice Styles
-  tts_style_bright: { en: 'Bright', zh: '明亮' },
-  tts_style_upbeat: { en: 'Upbeat', zh: '欢快' },
-  tts_style_informative: { en: 'Informative', zh: '信息丰富' },
-  tts_style_firm: { en: 'Firm', zh: '坚定' },
-  tts_style_excitable: { en: 'Excitable', zh: '激动' },
-  tts_style_youthful: { en: 'Youthful', zh: '年轻' },
-  tts_style_breezy: { en: 'Breezy', zh: '轻快' },
-  tts_style_easy_going: { en: 'Easy-going', zh: '随和' },
-  tts_style_breathy: { en: 'Breathy', zh: '气声' },
-  tts_style_clear: { en: 'Clear', zh: '清晰' },
-  tts_style_smooth: { en: 'Smooth', zh: '平滑' },
-  tts_style_gravelly: { en: 'Gravelly', zh: '沙哑' },
-  tts_style_soft: { en: 'Soft', zh: '温柔' },
-  tts_style_even: { en: 'Even', zh: '平稳' },
-  tts_style_mature: { en: 'Mature', zh: '成熟' },
-  tts_style_forward: { en: 'Forward', zh: '直接' },
-  tts_style_friendly: { en: 'Friendly', zh: '友好' },
-  tts_style_casual: { en: 'Casual', zh: '随意' },
-  tts_style_gentle: { en: 'Gentle', zh: '温和' },
-  tts_style_lively: { en: 'Lively', zh: '活泼' },
-  tts_style_knowledgeable: { en: 'Knowledgeable', zh: '知识渊博' },
-  tts_style_warm: { en: 'Warm', zh: '温暖' },
+  ...ttsStyleTranslations,
 };
 export default modelSettings;

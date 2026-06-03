@@ -13,11 +13,11 @@ import { useChatState } from '@/hooks/chat/useChatState';
 import { useChatHeaderRuntime } from './chat-runtime/ChatRuntimeContext';
 
 export const ChatArea: React.FC = () => {
-  const appSettings = useSettingsStore((s) => s.appSettings);
-  const themeId = useSettingsStore((s) => s.currentTheme.id);
+  const appSettings = useSettingsStore((state) => state.appSettings);
+  const themeId = useSettingsStore((state) => state.currentTheme.id);
   const { currentChatSettings, isLoading } = useChatState(appSettings);
-  const isSwitchingModel = useChatStore((s) => s.isSwitchingModel);
-  const isHistorySidebarOpen = useUIStore((s) => s.isHistorySidebarOpen);
+  const isSwitchingModel = useChatStore((state) => state.isSwitchingModel);
+  const isHistorySidebarOpen = useUIStore((state) => state.isHistorySidebarOpen);
   const {
     isAppDraggingOver,
     modelsLoadingError,

@@ -1,9 +1,8 @@
-import { act, type PropsWithChildren, type SetStateAction } from 'react';
+import { act, type PropsWithChildren } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AppViewModel } from '@/hooks/app/useApp';
-import type { AppSettings } from '@/types';
 import { renderHook } from '@/test/render/renderer';
-import { createAppSettings, createChatSettings, createTheme } from '@/test/data/factories';
+import { createAppSettings, createChatAreaProviderValue, createChatRuntimeApp } from '@/test/chat-area/fixtures';
 import { ChatRuntimeProvider, useChatHeaderRuntime } from './chat-runtime/ChatRuntimeContext';
 import { CHAT_INPUT_TEXTAREA_SELECTOR } from '@/constants/storageKeys';
 
@@ -47,7 +46,12 @@ const renderChatHeaderRuntime = (app: AppViewModel) =>
     wrapper: ({ children }: PropsWithChildren) => <ChatRuntimeProvider app={app}>{children}</ChatRuntimeProvider>,
   });
 
-const buildApp = (overrides: Partial<AppViewModel> = {}) => {
+type BuildAppOverrides = Omit<Partial<AppViewModel>, 'chatState'> & {
+  chatState?: Partial<AppViewModel['chatState']>;
+};
+
+const buildApp = (overrides: BuildAppOverrides = {}) => {
+  const { chatState: chatStateOverrides, ...appOverrides } = overrides;
   const appSettings = createAppSettings({
     isOpenAICompatibleApiEnabled: true,
     apiMode: 'openai-compatible',
@@ -59,145 +63,33 @@ const buildApp = (overrides: Partial<AppViewModel> = {}) => {
     ],
   });
   const handleSelectModelInHeader = vi.fn();
-  const setAppSettings = vi.fn<(value: SetStateAction<AppSettings>) => void>();
+  const setAppSettings = vi.fn<AppViewModel['setAppSettings']>();
+  const app = createChatRuntimeApp(
+    createChatAreaProviderValue({
+      header: {
+        availableModels: [{ id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash Preview' }],
+        currentModelName: 'GPT-5.5',
+        isPipSupported: false,
+      },
+      input: {
+        appSettings,
+        currentChatSettings: { modelId: 'gemini-3-flash-preview' },
+        onSelectModel: handleSelectModelInHeader,
+      },
+    }),
+  );
 
   return {
+    ...app,
     appSettings,
     setAppSettings,
-    currentTheme: createTheme(),
-    language: 'en',
-    t: vi.fn((key: string) => key),
-    uiState: {
-      isHistorySidebarOpen: false,
-      setIsHistorySidebarOpen: vi.fn(),
-      setIsHistorySidebarOpenTransient: vi.fn(),
-      isSettingsModalOpen: false,
-      setIsSettingsModalOpen: vi.fn(),
-      isPreloadedMessagesModalOpen: false,
-      setIsPreloadedMessagesModalOpen: vi.fn(),
-      isLogViewerOpen: false,
-      setIsLogViewerOpen: vi.fn(),
-      handleTouchStart: vi.fn(),
-      handleTouchEnd: vi.fn(),
-    },
-    pipState: {
-      isPipSupported: false,
-      isPipActive: false,
-      togglePip: vi.fn(),
-      pipContainer: null,
-      pipWindow: null,
-    },
-    eventsState: {
-      installPromptEvent: null,
-      handleInstallPwa: vi.fn(),
-      installState: { state: 'installed', canInstall: false },
-      needRefresh: false,
-      updateDismissed: false,
-      dismissUpdateBanner: vi.fn(),
-      handleRefreshApp: vi.fn(),
-    },
-    chatState: {
-      activeChat: undefined,
-      activeSessionId: 'session-1',
-      apiModels: [{ id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash Preview' }],
-      currentChatSettings: createChatSettings({ modelId: 'gemini-3-flash-preview' }),
-      messages: [],
-      isLoading: false,
-      editingMessageId: null,
-      editMode: 'resend',
-      commandedInput: null,
-      isAppDraggingOver: false,
-      isProcessingDrop: false,
-      selectedFiles: [],
-      appFileError: null,
-      isAppProcessingFile: false,
-      savedSessions: [],
-      savedGroups: [],
-      savedScenarios: [],
-      loadingSessionIds: new Set(),
-      generatingTitleSessionIds: new Set(),
-      isModelsLoading: false,
-      modelsLoadingError: null,
-      isSwitchingModel: false,
-      aspectRatio: '1:1',
-      imageSize: '1K',
-      updateAndPersistSessions: vi.fn(),
-      updateAndPersistGroups: vi.fn(),
-      scrollContainerRef: { current: null },
-      loadChatSession: vi.fn(),
-      handleSendMessage: vi.fn(),
-      setScrollContainerRef: vi.fn(),
-      handleEditMessage: vi.fn(),
-      handleDeleteMessage: vi.fn(),
-      handleRetryMessage: vi.fn(),
-      handleUpdateMessageFile: vi.fn(),
-      handleContinueGeneration: vi.fn(),
-      handleForkMessage: vi.fn(),
-      handleQuickTTS: vi.fn(),
-      handleStopGenerating: vi.fn(),
-      handleCancelEdit: vi.fn(),
-      setCommandedInput: vi.fn(),
-      handleProcessAndAddFiles: vi.fn(),
-      handleAddFileById: vi.fn(),
-      handleCancelFileUpload: vi.fn(),
-      handleTranscribeAudio: vi.fn(),
-      toggleGoogleSearch: vi.fn(),
-      toggleCodeExecution: vi.fn(),
-      toggleLocalPython: vi.fn(),
-      toggleUrlContext: vi.fn(),
-      toggleDeepSearch: vi.fn(),
-      handleClearCurrentChat: vi.fn(),
-      handleTogglePinCurrentSession: vi.fn(),
-      handleTogglePinSession: vi.fn(),
-      handleRetryLastTurn: vi.fn(),
-      handleEditLastUserMessage: vi.fn(),
-      setCurrentChatSettings: vi.fn(),
-      handleAddUserMessage: vi.fn(),
-      handleLiveTranscript: vi.fn(),
-      liveClientFunctions: {},
-      handleUpdateMessageContent: vi.fn(),
-      startNewChat: vi.fn(),
-      handleDeleteChatHistorySession: vi.fn(),
-      handleRenameSession: vi.fn(),
-      handleDuplicateSession: vi.fn(),
-      handleAddNewGroup: vi.fn(),
-      handleDeleteGroup: vi.fn(),
-      handleRenameGroup: vi.fn(),
-      handleMoveSessionToGroup: vi.fn(),
-      handleToggleGroupExpansion: vi.fn(),
-      clearCacheAndReload: vi.fn(),
-      clearAllHistory: vi.fn(),
-      handleSaveAllScenarios: vi.fn(),
-      handleLoadPreloadedScenario: vi.fn(),
-      setApiModels: vi.fn(),
-      handleSelectModelInHeader,
-      handleAppDragEnter: vi.fn(),
-      handleAppDragOver: vi.fn(),
-      handleAppDragLeave: vi.fn(),
-      handleAppDrop: vi.fn(),
-    },
-    activeChat: undefined,
-    sidePanelContent: null,
-    handleOpenSidePanel: vi.fn(),
-    handleCloseSidePanel: vi.fn(),
-    isExportModalOpen: false,
-    setIsExportModalOpen: vi.fn(),
-    exportStatus: 'idle',
-    handleExportChat: vi.fn(),
-    sessionTitle: 'Session',
-    handleSaveSettings: vi.fn(),
-    handleSaveCurrentChatSettings: vi.fn(),
-    handleLoadLiveArtifactsPromptAndSave: vi.fn(),
-    handleToggleBBoxMode: vi.fn(),
-    handleToggleGuideMode: vi.fn(),
-    handleSuggestionClick: vi.fn(),
-    isLiveArtifactsPromptActive: false,
-    isLiveArtifactsPromptBusy: false,
-    handleSetThinkingLevel: vi.fn(),
     getCurrentModelDisplayName: vi.fn(() => 'GPT-5.5'),
-    handleExportAllScenarios: vi.fn(),
-    handleImportAllScenarios: vi.fn(),
-    ...overrides,
+    ...appOverrides,
+    chatState: {
+      ...app.chatState,
+      handleSelectModelInHeader,
+      ...chatStateOverrides,
+    },
   } satisfies AppViewModel;
 };
 

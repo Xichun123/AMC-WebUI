@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, Loader2, XCircle } from 'lucide-react';
+import { Activity, CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
 import { Select } from '@/components/shared/Select';
 import { type ModelOption } from '@/types';
@@ -42,9 +42,9 @@ export const ApiConnectionTester: React.FC<ApiConnectionTesterProps> = ({
               }
               className="mb-0"
             >
-              {availableModels.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
+              {availableModels.map((model) => (
+                <option key={model.id} value={model.id}>
+                  {model.name}
                 </option>
               ))}
             </Select>
@@ -72,19 +72,7 @@ export const ApiConnectionTester: React.FC<ApiConnectionTesterProps> = ({
 
       {testStatus === 'success' && (
         <div className="flex items-center gap-2 p-2 rounded-lg bg-green-500/10 border border-green-500/20 text-green-600 text-sm animate-in fade-in slide-in-from-top-1">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
+          <CheckCircle2 size={16} />
           <span>{t('apiConfig_testSuccess')}</span>
         </div>
       )}

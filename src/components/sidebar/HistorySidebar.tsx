@@ -175,7 +175,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = (props) => {
   });
 
   const ungroupedSessions = sessionsByGroupId.get(null) || [];
-  const pinnedUngrouped = ungroupedSessions.filter((s) => s.isPinned);
+  const pinnedUngrouped = ungroupedSessions.filter((session) => session.isPinned);
   const { categories, categoryOrder } = categorizedUngroupedSessions;
 
   const sessionItemSharedProps = {

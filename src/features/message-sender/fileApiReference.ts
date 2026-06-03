@@ -4,6 +4,7 @@ import { getFileMetadataApi, uploadFileApi } from '@/services/api/fileApi';
 import { getUploadLifecycleForGeminiState } from '@/utils/file-upload/fileUploadPolicy';
 import { logService } from '@/services/logService';
 import { usesRemoteFileReference } from '@/utils/chat/fileTransferStrategy';
+import { formatMessageSenderText } from './i18nFormat';
 
 const FILE_API_REFRESH_LEEWAY_MS = 5 * 60 * 1000;
 
@@ -29,6 +30,12 @@ type EnsureFilesApiReferencesResult =
       errorKey: FileApiReferenceErrorKey;
       fileName?: string;
     };
+
+interface FileReferenceErrorResult {
+  ok: false;
+  errorKey: string;
+  fileName?: string;
+}
 
 const getFileApiExpirationTime = (file: GeminiFile): string | undefined => {
   const expirationTime = (file as { expirationTime?: unknown }).expirationTime;
@@ -228,4 +235,12 @@ export const ensureFilesApiReferences = async ({
   }
 
   return { ok: true, files: nextFiles };
+};
+
+export const formatFileReferenceErrorMessage = (
+  result: FileReferenceErrorResult,
+  translate: (key: string) => string,
+): string => {
+  const template = translate(result.errorKey);
+  return result.fileName ? formatMessageSenderText(template, { filename: result.fileName }) : template;
 };

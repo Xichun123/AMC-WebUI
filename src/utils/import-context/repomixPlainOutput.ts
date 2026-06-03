@@ -1,4 +1,4 @@
-import type { FileContent, FileNode, ProcessedFiles } from './types';
+import type { FileContent, FileNode, ProcessedFiles } from './importContextTypes';
 import { compareTreeNodes } from './treeSorting';
 
 const PLAIN_SEPARATOR = '='.repeat(16);

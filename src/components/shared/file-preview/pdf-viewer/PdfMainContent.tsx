@@ -11,7 +11,7 @@ interface PdfMainContentProps {
   isLoading: boolean;
   error: string | null;
   onLoadSuccess: (data: { numPages: number }) => void;
-  onLoadError: (err: Error) => void;
+  onLoadError: (error: Error) => void;
   setPageRef: (pageNum: number, element: HTMLDivElement | null) => void;
   containerRef: MutableRefObject<HTMLDivElement | null>;
 }

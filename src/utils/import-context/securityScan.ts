@@ -1,4 +1,4 @@
-import type { SecurityFinding, SecurityFindingSeverity } from './types';
+import type { SecurityFinding, SecurityFindingSeverity } from './importContextTypes';
 
 interface SecurityRule {
   ruleId: string;

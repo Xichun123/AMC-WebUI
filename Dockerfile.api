@@ -6,6 +6,7 @@ COPY package.json package-lock.json .npmrc ./
 RUN npm ci
 
 COPY server ./server
+COPY shared ./shared
 COPY tsconfig.json ./
 RUN npm run build:api
 
@@ -21,4 +22,4 @@ COPY --from=builder /app/server/dist /app/server/dist
 
 EXPOSE 3001
 
-CMD ["node", "server/dist/index.js"]
+CMD ["node", "server/dist/server/src/index.js"]

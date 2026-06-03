@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ChatMessage, SavedChatSession } from '@/types';
-import { createChatSettings } from '@/test/data/factories';
+import { createSavedChatSessionMetadata } from '@/test/data/factories';
 import {
   createVirtualFullSessions,
   getSessionPersistenceChanges,
@@ -16,25 +16,16 @@ const makeMessage = (overrides: Partial<ChatMessage> = {}): ChatMessage => ({
   ...overrides,
 });
 
-const makeSession = (overrides: Partial<SavedChatSession> = {}): SavedChatSession => ({
-  id: 'session',
-  title: 'Session',
-  timestamp: 0,
-  messages: [],
-  settings: createChatSettings(),
-  ...overrides,
-});
-
 describe('sessionPersistence', () => {
   it('builds a virtual full session list using active messages', () => {
     const activeMessages = [makeMessage({ id: 'active-message' })];
-    const inactiveSession = makeSession({
+    const inactiveSession = createSavedChatSessionMetadata({
       id: 'inactive',
       messages: [makeMessage({ id: 'inactive-message' })],
     });
 
     const virtualSessions = createVirtualFullSessions(
-      [makeSession({ id: 'active', messages: [] }), inactiveSession],
+      [createSavedChatSessionMetadata({ id: 'active', messages: [] }), inactiveSession],
       'active',
       activeMessages,
     );
@@ -44,10 +35,10 @@ describe('sessionPersistence', () => {
   });
 
   it('detects modified sessions by reference and removed sessions by id', () => {
-    const unchanged = makeSession({ id: 'unchanged' });
-    const changedBefore = makeSession({ id: 'changed', title: 'Before' });
+    const unchanged = createSavedChatSessionMetadata({ id: 'unchanged' });
+    const changedBefore = createSavedChatSessionMetadata({ id: 'changed', title: 'Before' });
     const changedAfter = { ...changedBefore, title: 'After' };
-    const removed = makeSession({ id: 'removed' });
+    const removed = createSavedChatSessionMetadata({ id: 'removed' });
 
     const changes = getSessionPersistenceChanges([unchanged, changedBefore, removed], [changedAfter, unchanged]);
 
@@ -57,13 +48,13 @@ describe('sessionPersistence', () => {
 
   it('restores persisted messages when saving a metadata-only inactive session', () => {
     const persistedMessage = makeMessage({ id: 'persisted-message' });
-    const metadataUpdate = makeSession({
+    const metadataUpdate = createSavedChatSessionMetadata({
       id: 'archive',
       title: 'Updated Title',
       messages: [],
       settings: { temperature: 0.3 } as SavedChatSession['settings'],
     });
-    const persistedSession = makeSession({
+    const persistedSession = createSavedChatSessionMetadata({
       id: 'archive',
       title: 'Old Title',
       messages: [persistedMessage],
@@ -87,9 +78,9 @@ describe('sessionPersistence', () => {
 
     const stored = stripStoredSessionMessages(
       [
-        makeSession({ id: 'active', messages: [activeMessage] }),
-        makeSession({ id: 'loading', messages: [loadingMessage] }),
-        makeSession({ id: 'inactive', messages: [inactiveMessage] }),
+        createSavedChatSessionMetadata({ id: 'active', messages: [activeMessage] }),
+        createSavedChatSessionMetadata({ id: 'loading', messages: [loadingMessage] }),
+        createSavedChatSessionMetadata({ id: 'inactive', messages: [inactiveMessage] }),
       ],
       'active',
       new Set(['loading']),

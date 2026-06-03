@@ -17,6 +17,12 @@ interface Ripple {
   size: number;
 }
 
+const RIPPLE_RESET_DELAY_MS = 600;
+const SEND_BUTTON_ICON_SIZE = 18;
+const QUEUE_BUTTON_ICON_SIZE = SEND_BUTTON_ICON_SIZE - 1;
+const STOP_ICON_SIZE = 10;
+const SEND_BUTTON_SIZE_CLASS = '!h-10 !w-10';
+
 export const SendControls: React.FC = () => {
   const { isLoading, isWaitingForUpload } = useChatInputActionsContext();
   const { canSend, canQueueMessage, onFastSendMessage, onQueueMessage, onCancelPendingUploadSend } =
@@ -25,14 +31,12 @@ export const SendControls: React.FC = () => {
   const editMode = useChatStore((state) => state.editMode);
   const { onStopGenerating, onCancelEdit } = useChatInputRuntime();
   const { t } = useI18n();
-  const iconSize = 18;
   const [ripples, setRipples] = useState<Ripple[]>([]);
   const rippleIdRef = useRef(0);
-  const mainButtonSizeClass = '!h-10 !w-10';
 
   useEffect(() => {
     if (ripples.length > 0) {
-      const timeout = setTimeout(() => setRipples([]), 600);
+      const timeout = setTimeout(() => setRipples([]), RIPPLE_RESET_DELAY_MS);
       return () => clearTimeout(timeout);
     }
     return undefined;
@@ -141,7 +145,7 @@ export const SendControls: React.FC = () => {
           disabled={!canQueueMessage}
           tabIndex={canQueueMessage ? 0 : -1}
         >
-          <CornerDownLeft size={iconSize - 1} strokeWidth={2} />
+          <CornerDownLeft size={QUEUE_BUTTON_ICON_SIZE} strokeWidth={2} />
         </button>
       </div>
 
@@ -161,7 +165,7 @@ export const SendControls: React.FC = () => {
           disabled={!isEditing}
           tabIndex={isEditing ? 0 : -1}
         >
-          <X size={iconSize} strokeWidth={2} />
+          <X size={SEND_BUTTON_ICON_SIZE} strokeWidth={2} />
         </button>
       </div>
 
@@ -170,7 +174,7 @@ export const SendControls: React.FC = () => {
         onClick={handleClick}
         onContextMenu={handleContextMenu}
         disabled={!isStop && isDisabled}
-        className={`${CHAT_INPUT_BUTTON_CLASS} ${mainButtonSizeClass} ${bgClass} ${shapeClass} relative overflow-hidden transition-colors duration-150 shadow-sm`}
+        className={`${CHAT_INPUT_BUTTON_CLASS} ${SEND_BUTTON_SIZE_CLASS} ${bgClass} ${shapeClass} relative overflow-hidden transition-colors duration-150 shadow-sm`}
         aria-label={label}
         title={title}
       >
@@ -187,10 +191,10 @@ export const SendControls: React.FC = () => {
           />
         ))}
 
-        {renderIcon(isStop, IconStop, { size: 10 })}
-        {renderIcon(isUpload, Ban, { size: iconSize - 1, strokeWidth: 2 })}
-        {renderIcon(isEdit, editMode === 'update' ? Save : Edit2, { size: iconSize, strokeWidth: 2 })}
-        {renderIcon(isSend, ArrowUp, { size: iconSize, strokeWidth: 2 })}
+        {renderIcon(isStop, IconStop, { size: STOP_ICON_SIZE })}
+        {renderIcon(isUpload, Ban, { size: QUEUE_BUTTON_ICON_SIZE, strokeWidth: 2 })}
+        {renderIcon(isEdit, editMode === 'update' ? Save : Edit2, { size: SEND_BUTTON_ICON_SIZE, strokeWidth: 2 })}
+        {renderIcon(isSend, ArrowUp, { size: SEND_BUTTON_ICON_SIZE, strokeWidth: 2 })}
       </button>
     </div>
   );

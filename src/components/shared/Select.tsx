@@ -76,8 +76,8 @@ export const Select: React.FC<SelectProps> = ({
     });
   }, [children]);
 
-  const selectedOption = options.find((opt) => String(opt.value) === String(value));
-  const selectedIndex = options.findIndex((opt) => String(opt.value) === String(value));
+  const selectedOption = options.find((option) => String(option.value) === String(value));
+  const selectedIndex = options.findIndex((option) => String(option.value) === String(value));
 
   const findEnabledIndex = (startIndex: number, directionStep = 1) => {
     if (options.length === 0) return -1;
@@ -109,8 +109,8 @@ export const Select: React.FC<SelectProps> = ({
     setOpenState(false);
   };
 
-  const handleSelect = (val: string) => {
-    onChange({ target: { value: val } });
+  const handleSelect = (selectedValue: string) => {
+    onChange({ target: { value: selectedValue } });
     closeSelect();
   };
 
@@ -197,7 +197,7 @@ export const Select: React.FC<SelectProps> = ({
   const finalWrapperClasses = wrapperClassName || defaultWrapperClasses;
 
   const dropdownPositionClass = direction === 'up' ? 'bottom-full mb-1' : 'top-full mt-1';
-  const optionId = (idx: number) => `${listboxId}-option-${idx}`;
+  const optionId = (optionIndex: number) => `${listboxId}-option-${optionIndex}`;
 
   return (
     <div className={containerClasses}>
@@ -243,29 +243,29 @@ export const Select: React.FC<SelectProps> = ({
             className={`absolute ${dropdownPositionClass} left-0 z-50 w-full bg-[var(--theme-bg-secondary)] border border-[var(--theme-border-primary)] rounded-xl shadow-premium overflow-hidden flex flex-col ${dropdownClassName || 'max-h-[300px]'}`}
           >
             <div id={listboxId} role="listbox" className="overflow-y-auto custom-scrollbar p-1">
-              {options.map((opt, idx) => {
-                const isSelected = String(opt.value) === String(value);
-                const isActive = activeIndex === idx;
+              {options.map((option, optionIndex) => {
+                const isSelected = String(option.value) === String(value);
+                const isActive = activeIndex === optionIndex;
 
                 return (
                   <button
-                    key={`${opt.value}-${idx}`}
-                    id={optionId(idx)}
+                    key={`${option.value}-${optionIndex}`}
+                    id={optionId(optionIndex)}
                     type="button"
                     role="option"
                     aria-selected={isSelected}
-                    aria-disabled={opt.disabled}
-                    onClick={() => handleSelect(opt.value)}
-                    disabled={opt.disabled}
+                    aria-disabled={option.disabled}
+                    onClick={() => handleSelect(option.value)}
+                    disabled={option.disabled}
                     className={`w-full text-left px-3 py-2 text-sm rounded-lg flex items-center justify-between transition-colors ${
                       isSelected
                         ? 'bg-[var(--theme-bg-tertiary)] text-[var(--theme-text-primary)] font-medium'
                         : 'text-[var(--theme-text-secondary)] hover:bg-[var(--theme-bg-tertiary)]/50 hover:text-[var(--theme-text-primary)]'
                     } ${isActive && !isSelected ? 'bg-[var(--theme-bg-tertiary)]/50 text-[var(--theme-text-primary)]' : ''} ${
-                      opt.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                      option.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                     }`}
                   >
-                    <span className="truncate w-full block">{opt.label}</span>
+                    <span className="truncate w-full block">{option.label}</span>
                     {isSelected && (
                       <Check size={14} className="text-[var(--theme-text-link)] flex-shrink-0 ml-2" strokeWidth={1.5} />
                     )}

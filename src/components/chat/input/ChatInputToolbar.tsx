@@ -59,8 +59,8 @@ const ChatInputToolbarComponent: React.FC = () => {
   const mediaResolution = currentChatSettings.mediaResolution;
   const generateQuadImages = appSettings.generateQuadImages ?? false;
   const setTtsVoice = (voice: string) => setCurrentChatSettings((prev) => ({ ...prev, ttsVoice: voice }));
-  const setMediaResolution = (res: typeof mediaResolution) =>
-    setCurrentChatSettings((prev) => ({ ...prev, mediaResolution: res }));
+  const setMediaResolution = (resolution: typeof mediaResolution) =>
+    setCurrentChatSettings((prev) => ({ ...prev, mediaResolution: resolution }));
   const showAspectRatio = (isImageGenerationModel || isGemini3ImageModel) && !!aspectRatio;
   const showImageSize = supportedImageSizes && supportedImageSizes.length > 0 && !!imageSize;
   const showImageOutputMode = isImageGenerationModel && !isRealImagenModel && !!imageOutputMode;

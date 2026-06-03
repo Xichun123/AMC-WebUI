@@ -1,8 +1,9 @@
-import { act } from 'react';
+import { act, useState } from 'react';
 import { setupProviderTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MessageText } from './MessageText';
 import { createAppSettings } from '@/test/data/factories';
+import type { UserMessageCollapseKey } from './userMessageCollapse';
 
 const { mockUseMessageStream } = vi.hoisted(() => ({
   mockUseMessageStream: vi.fn(() => ({
@@ -343,9 +344,12 @@ describe('MessageText', () => {
       { length: 10 },
       (_, index) => `Line ${index + 1}: Please inspect this part carefully.`,
     ).join('\n');
+    const StatefulMessageText = () => {
+      const [expandedUserMessageKeys, setExpandedUserMessageKeys] = useState<Set<UserMessageCollapseKey>>(
+        () => new Set(),
+      );
 
-    act(() => {
-      renderer.render(
+      return (
         <MessageText
           message={{
             id: 'message-long-user',
@@ -363,8 +367,26 @@ describe('MessageText', () => {
           isMermaidRenderingEnabled={true}
           isGraphvizRenderingEnabled={true}
           onOpenSidePanel={vi.fn()}
-        />,
+          userMessageCollapse={{
+            expandedUserMessageKeys,
+            onToggleUserMessageExpanded: (key) => {
+              setExpandedUserMessageKeys((expandedKeys) => {
+                const nextExpandedKeys = new Set(expandedKeys);
+                if (nextExpandedKeys.has(key)) {
+                  nextExpandedKeys.delete(key);
+                } else {
+                  nextExpandedKeys.add(key);
+                }
+                return nextExpandedKeys;
+              });
+            },
+          }}
+        />
       );
+    };
+
+    act(() => {
+      renderer.render(<StatefulMessageText />);
     });
 
     const collapseRegion = renderer.container.querySelector('[data-user-message-collapsed="true"]');
@@ -383,6 +405,57 @@ describe('MessageText', () => {
     expect(renderer.container.querySelector<HTMLButtonElement>('[aria-label="Collapse"]')?.textContent).toContain(
       'Collapse',
     );
+  });
+
+  it('keeps long user messages expanded when controlled state is restored after remount', () => {
+    const content = Array.from(
+      { length: 10 },
+      (_, index) => `Line ${index + 1}: Keep this expanded after virtualization remounts.`,
+    ).join('\n');
+    const onToggleUserMessageExpanded = vi.fn();
+
+    const renderMessage = (expandedUserMessageKeys: ReadonlySet<UserMessageCollapseKey>) => (
+      <MessageText
+        message={{
+          id: 'message-long-user-controlled',
+          role: 'user',
+          content,
+          timestamp: new Date('2026-04-21T00:00:00.000Z'),
+        }}
+        showThoughts={false}
+        appSettings={createAppSettings({ autoFullscreenHtml: false, hideThinkingInContext: false })}
+        themeId="pearl"
+        baseFontSize={16}
+        onImageClick={vi.fn()}
+        onOpenHtmlPreview={vi.fn()}
+        expandCodeBlocksByDefault={false}
+        isMermaidRenderingEnabled={true}
+        isGraphvizRenderingEnabled={true}
+        onOpenSidePanel={vi.fn()}
+        userMessageCollapse={{ expandedUserMessageKeys, onToggleUserMessageExpanded }}
+      />
+    );
+
+    act(() => {
+      renderer.render(renderMessage(new Set()));
+    });
+
+    const toggle = renderer.container.querySelector<HTMLButtonElement>('[aria-label="Expand"]');
+
+    act(() => {
+      toggle?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const collapseKey = onToggleUserMessageExpanded.mock.calls[0]?.[0];
+    expect(collapseKey).toMatch(/^message-long-user-controlled:/);
+
+    act(() => {
+      renderer.unmount();
+      renderer.render(renderMessage(new Set([collapseKey])));
+    });
+
+    expect(renderer.container.querySelector('[data-user-message-collapsed="false"]')).toBeInTheDocument();
+    expect(renderer.container.querySelector<HTMLButtonElement>('[aria-label="Collapse"]')).toBeInTheDocument();
   });
 
   it('does not collapse long model messages', () => {

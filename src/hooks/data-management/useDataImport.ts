@@ -82,17 +82,17 @@ export const useDataImport = ({
   t,
 }: UseDataImportProps) => {
   const handleImportFile = useCallback(
-    <T extends { type: string }>(file: File, expectedType: T['type'], onValid: (data: T) => void) => {
+    <T extends { type: string }>(file: File, expectedType: T['type'], onValid: (importPayload: T) => void) => {
       logService.info(`Importing ${expectedType} from file: ${file.name}`);
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = (event) => {
         try {
-          const text = e.target?.result as string;
-          const data = JSON.parse(text);
-          if (data && data.type === expectedType) {
-            onValid(data);
+          const text = event.target?.result as string;
+          const importPayload = JSON.parse(text);
+          if (importPayload && importPayload.type === expectedType) {
+            onValid(importPayload);
           } else {
-            const foundType = typeof data?.type === 'string' ? data.type : t('export_not_applicable');
+            const foundType = typeof importPayload?.type === 'string' ? importPayload.type : t('export_not_applicable');
             throw new Error(
               t('settingsImport_invalidFileFormat')
                 .replace('{expectedType}', expectedType)
@@ -109,8 +109,8 @@ export const useDataImport = ({
           );
         }
       };
-      reader.onerror = (e) => {
-        logService.error(`Failed to read ${expectedType} file`, { error: e });
+      reader.onerror = (event) => {
+        logService.error(`Failed to read ${expectedType} file`, { error: event });
         alert(t('settingsImport_error'));
       };
       reader.readAsText(file);
@@ -134,18 +134,18 @@ export const useDataImport = ({
       handleImportFile<ImportedHistoryPayload>(file, 'AllModelChat-History', (data) => {
         if (data.history && Array.isArray(data.history)) {
           updateAndPersistSessions((prev) => {
-            const existingIds = new Set(prev.map((s) => s.id));
+            const existingIds = new Set(prev.map((session) => session.id));
             const newSessions = data.history
               .map(normalizeImportedSession)
-              .filter((s: SavedChatSession) => !existingIds.has(s.id));
+              .filter((session: SavedChatSession) => !existingIds.has(session.id));
             return [...prev, ...newSessions];
           });
 
           if (data.groups && Array.isArray(data.groups)) {
             const importedGroups = data.groups.map(normalizeImportedGroup);
             updateAndPersistGroups((prev) => {
-              const existingIds = new Set(prev.map((g) => g.id));
-              const newGroups = importedGroups.filter((g: ChatGroup) => !existingIds.has(g.id));
+              const existingIds = new Set(prev.map((group) => group.id));
+              const newGroups = importedGroups.filter((group: ChatGroup) => !existingIds.has(group.id));
               return [...prev, ...newGroups];
             });
           }

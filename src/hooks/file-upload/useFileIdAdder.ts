@@ -7,7 +7,7 @@ import {
 } from '@/types';
 import { SUPPORTED_UPLOAD_MIME_TYPES } from '@/constants/fileTypeSupport';
 import { logService } from '@/services/logService';
-import { getApiKeyErrorTranslationKey, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
+import { formatApiKeyErrorMessage, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
 import { generateUniqueId } from '@/utils/chat/ids';
 import { getFileMetadataApi } from '@/services/api/fileApi';
 import {
@@ -37,13 +37,7 @@ export const useFileIdAdder = ({
 }: UseFileIdAdderProps) => {
   const { t } = useI18n();
 
-  const translateApiKeyError = useCallback(
-    (error: string) => {
-      const translationKey = getApiKeyErrorTranslationKey(error);
-      return translationKey ? t(translationKey) : error;
-    },
-    [t],
-  );
+  const translateApiKeyError = useCallback((error: string) => formatApiKeyErrorMessage(error, t), [t]);
 
   const addFileById = useCallback(
     async (fileApiId: string) => {

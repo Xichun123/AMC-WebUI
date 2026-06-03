@@ -8,7 +8,6 @@ export const useTextAreaInsert = (
     (text: string, options: { ensurePadding?: boolean } = {}) => {
       const textarea = textareaRef.current;
       if (!textarea) {
-        // Fallback: Append if no ref available
         setInputText((prev) => prev + text);
         return;
       }

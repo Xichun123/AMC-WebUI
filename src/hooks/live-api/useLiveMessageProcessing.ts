@@ -30,14 +30,12 @@ export const useLiveMessageProcessing = ({
 }: UseLiveMessageProcessingProps) => {
   const { handleToolCall, cancelToolCalls } = useLiveTools({ clientFunctions, sessionRef, onGeneratedFiles });
 
-  // Buffer for audio chunks to create a downloadable file later
   const audioChunksRef = useRef<string[]>([]);
 
   const finalizeAudio = useCallback(() => {
     if (audioChunksRef.current.length > 0 && onTranscript) {
       const wavUrl = createWavBlobFromPCMChunks(audioChunksRef.current);
       if (wavUrl) {
-        // Send the final audio URL to be attached to the message
         onTranscript('', 'model', true, 'content', wavUrl);
       }
       audioChunksRef.current = [];
@@ -49,20 +47,18 @@ export const useLiveMessageProcessing = ({
   }, []);
 
   const handleMessage = useCallback(
-    async (msg: LiveServerMessage) => {
-      // 1. Handle Text/Code/Audio Content (Gemini 3.1 may return multiple parts per event)
-      if (msg.serverContent?.modelTurn?.parts) {
-        for (const part of msg.serverContent.modelTurn.parts) {
-          const anyPart = part as ThoughtSupportingPart;
+    async (message: LiveServerMessage) => {
+      if (message.serverContent?.modelTurn?.parts) {
+        for (const part of message.serverContent.modelTurn.parts) {
+          const thoughtPart = part as ThoughtSupportingPart;
 
           if (part.inlineData?.data) {
             audioChunksRef.current.push(part.inlineData.data);
             await playAudioChunk(part.inlineData.data);
           }
 
-          // Handle thoughts vs content
-          if (anyPart.thought && onTranscript) {
-            const thoughtText = typeof anyPart.thought === 'string' ? anyPart.thought : anyPart.text || '';
+          if (thoughtPart.thought && onTranscript) {
+            const thoughtText = typeof thoughtPart.thought === 'string' ? thoughtPart.thought : thoughtPart.text || '';
             if (thoughtText) {
               onTranscript(thoughtText, 'model', false, 'thought');
             }
@@ -83,42 +79,16 @@ export const useLiveMessageProcessing = ({
         }
       }
 
-      // 2. Handle Tool Calls (Client-side Function Calling)
-      if (msg.toolCall) {
-        await handleToolCall(msg.toolCall);
+      if (message.toolCall) {
+        await handleToolCall(message.toolCall);
       }
 
-      if (msg.toolCallCancellation?.ids?.length) {
-        cancelToolCalls(msg.toolCallCancellation.ids);
+      if (message.toolCallCancellation?.ids?.length) {
+        cancelToolCalls(message.toolCallCancellation.ids);
       }
 
-      // 3. Handle Interruption
-      if (msg.serverContent?.interrupted) {
+      if (message.serverContent?.interrupted) {
         stopAudioPlayback();
-        // Finalize what we have so far
-        finalizeAudio();
-        if (onTranscript) {
-          onTranscript('', 'user', true, 'content'); // Mark user turn as done
-          onTranscript('', 'model', true, 'content'); // Mark model turn as done
-        }
-      }
-
-      // 4. Handle Transcriptions (ASR for user, TTS transcript for model audio)
-      if (msg.serverContent?.inputTranscription && onTranscript) {
-        const text = msg.serverContent.inputTranscription.text;
-        if (text) {
-          onTranscript(text, 'user', false, 'content');
-        }
-      }
-      if (msg.serverContent?.outputTranscription && onTranscript) {
-        const text = msg.serverContent.outputTranscription.text;
-        if (text) {
-          onTranscript(text, 'model', false, 'content');
-        }
-      }
-
-      // 5. Handle Turn Complete (Finalize transcripts in UI)
-      if (msg.serverContent?.turnComplete) {
         finalizeAudio();
         if (onTranscript) {
           onTranscript('', 'user', true, 'content');
@@ -126,20 +96,38 @@ export const useLiveMessageProcessing = ({
         }
       }
 
-      // 6. Handle GoAway for proactive reconnection
-      if (msg.goAway) {
-        onGoAway?.(msg.goAway);
+      if (message.serverContent?.inputTranscription && onTranscript) {
+        const text = message.serverContent.inputTranscription.text;
+        if (text) {
+          onTranscript(text, 'user', false, 'content');
+        }
+      }
+      if (message.serverContent?.outputTranscription && onTranscript) {
+        const text = message.serverContent.outputTranscription.text;
+        if (text) {
+          onTranscript(text, 'model', false, 'content');
+        }
       }
 
-      // 7. Handle Session Resumption Update
+      if (message.serverContent?.turnComplete) {
+        finalizeAudio();
+        if (onTranscript) {
+          onTranscript('', 'user', true, 'content');
+          onTranscript('', 'model', true, 'content');
+        }
+      }
+
+      if (message.goAway) {
+        onGoAway?.(message.goAway);
+      }
+
       if (
-        msg.sessionResumptionUpdate &&
-        msg.sessionResumptionUpdate.resumable &&
-        msg.sessionResumptionUpdate.newHandle
+        message.sessionResumptionUpdate &&
+        message.sessionResumptionUpdate.resumable &&
+        message.sessionResumptionUpdate.newHandle
       ) {
-        const newHandle = msg.sessionResumptionUpdate.newHandle;
+        const newHandle = message.sessionResumptionUpdate.newHandle;
         setSessionHandle(newHandle);
-        // sessionHandleRef is updated via Effect in parent, but we update it here too for immediate consistency
         sessionHandleRef.current = newHandle;
       }
     },

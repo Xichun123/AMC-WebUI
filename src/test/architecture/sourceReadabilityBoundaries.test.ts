@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
-import { listProjectSourceFiles, projectRoot, readProjectFile } from './projectFiles';
+import { listProjectSourceFiles, listProjectSourceFilesExcept, projectRoot, readProjectFile } from './projectFiles';
 
 const SEND_CONTROLS_OBVIOUS_COMMENT_PATTERNS = [
   '{/* Cancel Edit Button',
@@ -56,8 +56,19 @@ const AUDIO_RECORDER_OBVIOUS_JSX_COMMENTS = [
 ];
 
 const TOKEN_COUNT_MODAL_OBVIOUS_JSX_COMMENTS = ['{/* Header */}', '{/* Model Selection */}', '{/* Error Display */}'];
+const AMBIGUOUS_CATCH_NAME_PATTERN = /\bcatch \((?:e|err)\)/;
+const thisTestFile = 'src/test/architecture/sourceReadabilityBoundaries.test.ts';
 
 describe('source readability boundaries', () => {
+  it('names caught errors after their local failure context', () => {
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
+    const offenders = sourceFiles.filter((relativePath) =>
+      AMBIGUOUS_CATCH_NAME_PATTERN.test(readProjectFile(relativePath)),
+    );
+
+    expect(offenders).toEqual([]);
+  });
+
   it('keeps chat input context type contracts out of the context runtime module', () => {
     const contextSource = readProjectFile('src/components/chat/input/ChatInputContext.tsx');
     const contextTypesSource = readProjectFile('src/components/chat/input/chatInputContextTypes.ts');
@@ -270,6 +281,8 @@ describe('source readability boundaries', () => {
     expect(imageViewerSource).not.toContain('{/* Bottom Controls */}');
     expect(apiConnectionTesterSource).not.toContain('Optional Model Selector for Testing');
     expect(apiConnectionTesterSource).not.toContain('{/* Test Results */}');
+    expect(apiConnectionTesterSource).toContain('CheckCircle2');
+    expect(apiConnectionTesterSource).not.toContain('<svg');
     expect(themeLanguageSelectorSource).not.toContain('{/* Theme Selector */}');
     expect(themeLanguageSelectorSource).not.toContain('{/* Language Selector */}');
     expect(graphvizBlockSource).not.toContain('修复关键点');

@@ -67,8 +67,8 @@ export const parseApiKeys = (apiKeysString: string | null): string[] => {
   if (!apiKeysString) return [];
   return apiKeysString
     .split(/[\n,]+/)
-    .map((k) => k.trim().replace(/^["']|["']$/g, ''))
-    .filter((k) => k.length > 0);
+    .map((apiKey) => apiKey.trim().replace(/^["']|["']$/g, ''))
+    .filter((apiKey) => apiKey.length > 0);
 };
 
 export const getKeyForRequest = (
@@ -127,8 +127,8 @@ export const getKeyForRequest = (
     if (storedIndex !== null) {
       lastUsedIndex = parseInt(storedIndex, 10);
     }
-  } catch (e) {
-    logService.error('Could not parse last used API key index', e);
+  } catch (storageError) {
+    logService.error('Could not parse last used API key index', storageError);
   }
 
   if (isNaN(lastUsedIndex) || lastUsedIndex < 0 || lastUsedIndex >= availableKeys.length) {
@@ -143,8 +143,8 @@ export const getKeyForRequest = (
     targetIndex = (lastUsedIndex + 1) % availableKeys.length;
     try {
       localStorage.setItem(API_KEY_LAST_USED_INDEX_KEY, targetIndex.toString());
-    } catch (e) {
-      logService.error('Could not save last used API key index', e);
+    } catch (storageError) {
+      logService.error('Could not save last used API key index', storageError);
     }
   }
 
@@ -168,7 +168,7 @@ export const getGeminiKeyForRequest = (
   });
 };
 
-export const getApiKeyErrorTranslationKey = (error: string): string | null => {
+const getApiKeyErrorTranslationKey = (error: string): string | null => {
   switch (error) {
     case 'API Key not configured.':
       return 'apiRuntime_keyNotConfigured';
@@ -177,4 +177,9 @@ export const getApiKeyErrorTranslationKey = (error: string): string | null => {
     default:
       return null;
   }
+};
+
+export const formatApiKeyErrorMessage = (error: string, translate: (translationKey: string) => string): string => {
+  const translationKey = getApiKeyErrorTranslationKey(error);
+  return translationKey ? translate(translationKey) : error;
 };

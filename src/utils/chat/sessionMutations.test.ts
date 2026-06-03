@@ -1,16 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { MediaResolution, type SavedChatSession } from '@/types';
-import { createChatSettings, createUploadedFile } from '@/test/data/factories';
+import { createSavedChatSessionMetadata, createUploadedFile } from '@/test/data/factories';
 import { insertMessageAfter, updateFileInMessage, updateMessageInSession, updateSessionById } from './sessionMutations';
 
-const makeSession = (id: string): SavedChatSession => ({
-  id,
-  title: id,
-  timestamp: 1,
-  groupId: null,
-  settings: createChatSettings(),
-  messages: [],
-});
+const makeSession = (id: string): SavedChatSession =>
+  createSavedChatSessionMetadata({
+    id,
+    title: id,
+    timestamp: 1,
+    groupId: null,
+  });
 
 describe('sessionMutations', () => {
   it('updates a session by id without rebuilding unrelated sessions', () => {

@@ -20,8 +20,6 @@ describe('DEFAULT_APP_SETTINGS', () => {
       ).liveArtifactsSystemPrompts,
     ).toEqual({
       inline: '',
-      full: '',
-      fullHtml: '',
     });
   });
 

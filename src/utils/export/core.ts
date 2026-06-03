@@ -1,5 +1,11 @@
 import { releaseManagedObjectUrl } from '@/services/objectUrlManager';
 
+const FALLBACK_EXPORT_FILENAME = 'export';
+const MAX_FILENAME_LENGTH = 100;
+const CONTROL_CHARACTER_MAX_CODE = 31;
+const ILLEGAL_FILENAME_CHARACTER_PATTERN = /[<>:"/\\|?*]/;
+const WINDOWS_TRAILING_FILENAME_CHARACTER_PATTERN = /[. ]+$/;
+
 /**
  * Triggers a file download in the browser.
  * @param href The URL or data URI of the file to download.
@@ -25,20 +31,18 @@ export const triggerDownload = (href: string, filename: string, revokeBlob: bool
  */
 export const sanitizeFilename = (name: string): string => {
   if (!name || typeof name !== 'string') {
-    return 'export';
+    return FALLBACK_EXPORT_FILENAME;
   }
-  // Remove illegal characters for filenames and control characters
-  let saneName = Array.from(name.trim(), (char) => {
-    if (char.charCodeAt(0) < 32) return '_';
-    return /[<>:"/\\|?*]/.test(char) ? '_' : char;
-  }).join('');
-  // Windows doesn't like filenames ending with a period or space.
-  saneName = saneName.replace(/[. ]+$/, '');
-  // Limit length to avoid issues with filesystems
-  if (saneName.length > 100) {
-    saneName = saneName.substring(0, 100);
-  }
-  return saneName || 'export';
+
+  const safeName = Array.from(name.trim(), (character) => {
+    const isControlCharacter = character.charCodeAt(0) <= CONTROL_CHARACTER_MAX_CODE;
+    return isControlCharacter || ILLEGAL_FILENAME_CHARACTER_PATTERN.test(character) ? '_' : character;
+  })
+    .join('')
+    .replace(WINDOWS_TRAILING_FILENAME_CHARACTER_PATTERN, '')
+    .slice(0, MAX_FILENAME_LENGTH);
+
+  return safeName || FALLBACK_EXPORT_FILENAME;
 };
 
 export const formatExportDateTime = (date: Date): string => `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;

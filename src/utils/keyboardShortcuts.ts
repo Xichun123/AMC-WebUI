@@ -35,17 +35,17 @@ export const formatShortcut = (shortcut: string): string[] => {
 
 type ShortcutKeyboardEvent = ReactKeyboardEvent | KeyboardEvent;
 
-const getEventKeyCombo = (e: ShortcutKeyboardEvent): string | null => {
-  if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return null;
+const getEventKeyCombo = (event: ShortcutKeyboardEvent): string | null => {
+  if (['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) return null;
 
   const parts: string[] = [];
 
-  if (e.ctrlKey) parts.push('ctrl');
-  if (e.metaKey) parts.push('meta');
-  if (e.altKey) parts.push('alt');
-  if (e.shiftKey) parts.push('shift');
+  if (event.ctrlKey) parts.push('ctrl');
+  if (event.metaKey) parts.push('meta');
+  if (event.altKey) parts.push('alt');
+  if (event.shiftKey) parts.push('shift');
 
-  let key = e.key;
+  let key = event.key;
   if (key === ' ') key = 'space';
   if (key === 'ArrowUp') key = 'arrowup';
   if (key === 'ArrowDown') key = 'arrowdown';
@@ -71,31 +71,31 @@ const getEventKeyCombo = (e: ShortcutKeyboardEvent): string | null => {
 
   if (isMac) {
     if (resultParts.includes('meta')) {
-      resultParts = resultParts.map((p) => (p === 'meta' ? 'mod' : p));
+      resultParts = resultParts.map((part) => (part === 'meta' ? 'mod' : part));
     }
   } else {
     if (resultParts.includes('ctrl')) {
-      resultParts = resultParts.map((p) => (p === 'ctrl' ? 'mod' : p));
+      resultParts = resultParts.map((part) => (part === 'ctrl' ? 'mod' : part));
     }
   }
 
   return resultParts.join('+');
 };
 
-export const recordKeyCombination = (e: ShortcutKeyboardEvent): string | null => {
-  e.preventDefault();
-  e.stopPropagation();
-  return getEventKeyCombo(e);
+export const recordKeyCombination = (event: ShortcutKeyboardEvent): string | null => {
+  event.preventDefault();
+  event.stopPropagation();
+  return getEventKeyCombo(event);
 };
 
-export const isShortcutPressed = (e: ShortcutKeyboardEvent, actionId: string, settings: AppSettings): boolean => {
+export const isShortcutPressed = (event: ShortcutKeyboardEvent, actionId: string, settings: AppSettings): boolean => {
   const customKey = settings.customShortcuts?.[actionId];
   const defaultKey = DEFAULT_SHORTCUTS[actionId];
   const targetKey = customKey !== undefined ? customKey : defaultKey;
 
   if (!targetKey) return false;
 
-  const pressedKey = getEventKeyCombo(e);
+  const pressedKey = getEventKeyCombo(event);
   return pressedKey === targetKey;
 };
 

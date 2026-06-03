@@ -32,7 +32,7 @@ interface ChatInputModalsProps {
   showTtsContextEditor?: boolean;
   onCloseTtsContextEditor?: () => void;
   ttsContext?: string;
-  setTtsContext?: (val: string) => void;
+  setTtsContext?: (context: string) => void;
 }
 
 const DEFAULT_TTS_CONTEXT_TEMPLATE = `# AUDIO PROFILE: [Name]

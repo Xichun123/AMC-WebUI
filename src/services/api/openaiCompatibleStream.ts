@@ -7,15 +7,15 @@ const parseSseDataLines = (buffer: string): { events: string[]; rest: string } =
 
   while (boundaryIndex !== -1) {
     const rawEvent = buffer.slice(searchStart, boundaryIndex);
-    const data = rawEvent
+    const eventData = rawEvent
       .split('\n')
       .map((line) => line.trimEnd())
       .filter((line) => line.startsWith('data:'))
       .map((line) => line.slice(5).trimStart())
       .join('\n');
 
-    if (data) {
-      events.push(data);
+    if (eventData) {
+      events.push(eventData);
     }
 
     searchStart = boundaryIndex + 2;

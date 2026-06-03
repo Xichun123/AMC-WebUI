@@ -108,15 +108,15 @@ export const ModelListEditor: React.FC<ModelListEditorProps> = ({
       return;
     }
 
-    const refinedModels = validModels.map((m) => {
+    const refinedModels = validModels.map((model) => {
       const refinedModel: ModelOption = {
-        id: m.id,
-        name: m.name || m.id,
-        isPinned: m.isPinned,
+        id: model.id,
+        name: model.name || model.id,
+        isPinned: model.isPinned,
       };
 
-      if (m.apiMode) {
-        refinedModel.apiMode = m.apiMode;
+      if (model.apiMode) {
+        refinedModel.apiMode = model.apiMode;
       }
 
       return refinedModel;
@@ -130,11 +130,11 @@ export const ModelListEditor: React.FC<ModelListEditorProps> = ({
     <>
       <div className="border border-[var(--theme-border-secondary)] rounded-xl bg-[var(--theme-bg-input)]/50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
         <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-2 space-y-2">
-          {tempModels.map((model, idx) => (
+          {tempModels.map((model, modelIndex) => (
             <ModelListEditorRow
               key={model._rowId}
               model={model}
-              index={idx}
+              index={modelIndex}
               showApiModeControls={showApiModeControls}
               onUpdate={handleUpdateTempModel}
               onDelete={handleDeleteModel}

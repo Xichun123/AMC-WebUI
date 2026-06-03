@@ -67,22 +67,20 @@ export const usePreloadedScenarios = ({
 
     const systemInstruction = scenarioToLoad.systemInstruction ?? DEFAULT_SYSTEM_INSTRUCTION;
 
-    // Create a new session from scratch with the scenario's data
     const sessionSettings = {
-      ...DEFAULT_CHAT_SETTINGS, // Start with defaults
-      ...appSettings, // Layer on current app settings
-      systemInstruction, // Override with scenario's system instruction
+      ...DEFAULT_CHAT_SETTINGS,
+      ...appSettings,
+      systemInstruction,
     };
 
     const title = scenarioToLoad.title || generateSessionTitle(messages) || 'New Chat';
 
     const newSession = createNewSession(sessionSettings, messages, title);
 
-    updateAndPersistSessions((prev) => [newSession, ...prev.filter((s) => s.id !== newSession.id)]);
+    updateAndPersistSessions((prev) => [newSession, ...prev.filter((session) => session.id !== newSession.id)]);
     setActiveSessionId(newSession.id);
     dbService.setActiveSessionId(newSession.id);
 
-    // Also update the global/default system prompt in app settings
     setAppSettings((prev) => ({
       ...prev,
       systemInstruction,

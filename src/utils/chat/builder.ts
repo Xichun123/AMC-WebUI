@@ -65,32 +65,30 @@ export const buildContentParts = async (
 }> => {
   const filesToProcess = files || [];
 
-  // Check if model supports per-part resolution (Gemini 3 family)
-  const isGemini3 = modelId && isGemini3Model(modelId);
+  const supportsPartMediaResolution = !!modelId && isGemini3Model(modelId);
 
   const processedResults = await Promise.all(
     filesToProcess.map(async (file) => {
-      const newFile = { ...file };
+      const enrichedFile = { ...file };
       let part: ContentPart | null = null;
 
       if (file.isProcessing || file.error || file.uploadState !== 'active') {
-        return { file: newFile, part };
+        return { file: enrichedFile, part };
       }
 
-      const fileKind = getFileKindFlags(file);
-      const { isImage, isVideo, isYoutube, isPdf } = fileKind;
-      // Check if file should be treated as text content (not base64 inlineData)
+      const fileKindFlags = getFileKindFlags(file);
+      const { isImage, isVideo, isYoutube, isPdf } = fileKindFlags;
       const isTextLike = isTextFile(file);
 
       if (usesRemoteFileReference(file) && file.fileUri) {
-        // 1. Files uploaded via API (or YouTube links)
+        // Remote file references are already available to Gemini by URI.
         if (isYoutube) {
           part = { fileData: { mimeType: 'video/mp4', fileUri: file.fileUri } };
         } else {
           part = { fileData: { mimeType: file.type, fileUri: file.fileUri } };
         }
       } else {
-        // 2. Files NOT uploaded via API (Inline handling)
+        // Local files are sent as text or inline data.
         const fileSource = file.rawFile;
         const urlSource = file.dataUrl;
 
@@ -110,8 +108,8 @@ export const buildContentParts = async (
                 const blob = await response.blob();
                 base64DataForApi = await blobToBase64(blob);
 
-                if (!newFile.rawFile) {
-                  newFile.rawFile = new File([blob], file.name, { type: file.type || 'text/plain' });
+                if (!enrichedFile.rawFile) {
+                  enrichedFile.rawFile = new File([blob], file.name, { type: file.type || 'text/plain' });
                 }
               } catch (error) {
                 logService.error(`Failed to fetch text blob and convert to base64 for ${file.name}`, { error });
@@ -129,13 +127,11 @@ export const buildContentParts = async (
           }
 
           if (!part) {
-            // Special handling for text/code: Read content and wrap in text part
             let textContent = '';
             if (fileSource && (fileSource instanceof File || fileSource instanceof Blob)) {
-              // If it's a File/Blob, read directly
               textContent = await fileToString(fileSource as File);
             } else if (urlSource) {
-              // Fallback: Fetch from URL if rawFile is missing
+              // Fetch from URL when rawFile is missing.
               const response = await fetch(urlSource);
               textContent = await response.text();
             }
@@ -144,12 +140,10 @@ export const buildContentParts = async (
             }
           }
         } else {
-          // Standard Inline Data (Images, PDFs, Audio, Video if small enough)
-          // STRICT ALLOWLIST for Inline Data to prevent API 400 errors (e.g. for .xlsx)
-          if (fileKind.isInlineData) {
+          // Only allow known inline media types to prevent API 400 errors.
+          if (fileKindFlags.isInlineData) {
             let base64DataForApi: string | undefined;
 
-            // Prioritize rawFile (Blob/File) for conversion
             if (fileSource && fileSource instanceof Blob) {
               try {
                 base64DataForApi = await blobToBase64(fileSource);
@@ -157,15 +151,14 @@ export const buildContentParts = async (
                 logService.error(`Failed to convert rawFile to base64 for ${file.name}`, { error });
               }
             } else if (urlSource) {
-              // Fallback: Fetch the blob from the URL (blob: or data:)
               try {
                 const response = await fetch(urlSource);
                 const blob = await response.blob();
                 base64DataForApi = await blobToBase64(blob);
 
-                // Self-repair: If we had to fetch because rawFile was missing, recreate it
-                if (!newFile.rawFile) {
-                  newFile.rawFile = new File([blob], file.name, { type: file.type });
+                // Recreate rawFile when persistence kept only a blob/data URL.
+                if (!enrichedFile.rawFile) {
+                  enrichedFile.rawFile = new File([blob], file.name, { type: file.type });
                 }
               } catch (error) {
                 logService.error(`Failed to fetch blob and convert to base64 for ${file.name}`, { error });
@@ -176,15 +169,14 @@ export const buildContentParts = async (
               part = { inlineData: { mimeType: file.type, data: base64DataForApi } };
             }
           } else {
-            // Fallback for unsupported binary types
             part = { text: `[Attachment: ${file.name} (Binary content not supported for direct reading)]` };
           }
         }
       }
 
-      // Inject video metadata if present and it's a video (works for both inline and fileUri video/youtube)
+      // Video metadata works for both inline and fileUri video/youtube parts.
       if (part && (isVideo || isYoutube) && file.videoMetadata) {
-        part.videoMetadata = { ...part.videoMetadata }; // Ensure object exists
+        part.videoMetadata = { ...part.videoMetadata };
 
         if (file.videoMetadata.startOffset) {
           part.videoMetadata.startOffset = file.videoMetadata.startOffset;
@@ -197,31 +189,29 @@ export const buildContentParts = async (
         }
       }
 
-      // Inject Per-Part Media Resolution (Gemini 3 feature)
-      // Only apply to supported media types (images, videos, pdfs) not text/code
-      // Prioritize file-level resolution, then global resolution
+      // File-level media resolution overrides the global setting.
       const effectiveResolution = file.mediaResolution || mediaResolution;
 
       if (
         part &&
-        isGemini3 &&
+        supportsPartMediaResolution &&
         effectiveResolution &&
         effectiveResolution !== MediaResolution.MEDIA_RESOLUTION_UNSPECIFIED
       ) {
         const isResolutionEligibleMedia = isImage || isVideo || isYoutube || isPdf;
-        const shouldInject = isResolutionEligibleMedia && Boolean(part.fileData || part.inlineData);
-        if (shouldInject) {
+        const shouldAttachMediaResolution = isResolutionEligibleMedia && Boolean(part.fileData || part.inlineData);
+        if (shouldAttachMediaResolution) {
           part.mediaResolution = {
             level: toPartMediaResolutionLevel(normalizePartMediaResolution(effectiveResolution, isImage)),
           };
         }
       }
 
-      return { file: newFile, part };
+      return { file: enrichedFile, part };
     }),
   );
 
-  const enrichedFiles = processedResults.map((r) => r.file);
+  const enrichedFiles = processedResults.map((result) => result.file);
   const dataParts = processedResults.flatMap((result): ContentPart[] => {
     if (!result.part) return [];
 
@@ -242,7 +232,7 @@ export const buildContentParts = async (
   const userTypedText = text.trim();
   const contentPartsResult: ContentPart[] = [];
 
-  // Optimize: Place media parts first as recommended by Gemini documentation for better multimodal performance
+  // Place media parts first as recommended by Gemini documentation for better multimodal performance.
   contentPartsResult.push(...dataParts);
 
   if (userTypedText) {
@@ -253,22 +243,22 @@ export const buildContentParts = async (
 };
 
 export const createChatHistoryForApi = async (
-  msgs: ChatMessage[],
+  messages: ChatMessage[],
   stripThinking: boolean = false,
   modelId?: string,
   preferCodeExecutionFileInputs: boolean = false,
 ): Promise<ChatHistoryItem[]> => {
   const historyItems: ChatHistoryItem[] = [];
 
-  for (const msg of msgs) {
-    if (msg.excludeFromContext) continue;
-    if (msg.role !== 'user' && msg.role !== 'model') continue;
+  for (const message of messages) {
+    if (message.excludeFromContext) continue;
+    if (message.role !== 'user' && message.role !== 'model') continue;
 
-    const apiParts = msg.apiParts;
+    const apiParts = message.apiParts;
     const hasApiParts = !!apiParts && apiParts.length > 0;
     const parts: ContentPart[] = hasApiParts
       ? await (async () => {
-          const generatedFiles = [...(msg.files || [])];
+          const generatedFiles = [...(message.files || [])];
           const hasCodeExecutionArtifacts = apiParts.some((part) =>
             Boolean(part.executableCode || part.codeExecutionResult),
           );
@@ -285,11 +275,11 @@ export const createChatHistoryForApi = async (
 
           return Promise.all(
             apiParts
-              .filter((p) => !(stripThinking && p.thought))
-              .map(async (p) => {
-                const partCopy = JSON.parse(JSON.stringify(p));
+              .filter((apiPart) => !(stripThinking && apiPart.thought))
+              .map(async (apiPart) => {
+                const partCopy = JSON.parse(JSON.stringify(apiPart));
 
-                if (stripThinking && msg.role === 'model' && typeof partCopy.text === 'string') {
+                if (stripThinking && message.role === 'model' && typeof partCopy.text === 'string') {
                   const strippedText = stripReasoningMarkup(partCopy.text);
                   if (strippedText) {
                     partCopy.text = strippedText;
@@ -336,16 +326,16 @@ export const createChatHistoryForApi = async (
                 }
                 return partCopy;
               }),
-          ).then((parts) => parts.filter((part) => Object.keys(part).length > 0));
+          ).then((candidateParts) => candidateParts.filter((part) => Object.keys(part).length > 0));
         })()
       : await (async () => {
-          let contentToUse = msg.content;
+          let contentToUse = message.content;
           if (stripThinking) {
             contentToUse = stripReasoningMarkup(contentToUse);
           }
           const { contentParts } = await buildContentParts(
             contentToUse,
-            msg.files,
+            message.files,
             modelId,
             undefined,
             preferCodeExecutionFileInputs,
@@ -356,17 +346,17 @@ export const createChatHistoryForApi = async (
     // Fallback for older sessions that only stored a flat list of signatures.
     if (
       !hasApiParts &&
-      msg.role === 'model' &&
-      msg.thoughtSignatures &&
-      msg.thoughtSignatures.length > 0 &&
+      message.role === 'model' &&
+      message.thoughtSignatures &&
+      message.thoughtSignatures.length > 0 &&
       parts.length > 0
     ) {
-      parts[parts.length - 1].thoughtSignature = msg.thoughtSignatures[msg.thoughtSignatures.length - 1];
+      parts[parts.length - 1].thoughtSignature = message.thoughtSignatures[message.thoughtSignatures.length - 1];
     }
 
-    const role = msg.role as 'user' | 'model';
+    const role = message.role as 'user' | 'model';
 
-    // Merge consecutive messages of the same role to prevent API 400 errors
+    // Merge consecutive messages of the same role to prevent API 400 errors.
     const lastHistoryItem = historyItems[historyItems.length - 1];
     if (lastHistoryItem && lastHistoryItem.role === role) {
       lastHistoryItem.parts = lastHistoryItem.parts.concat(parts);

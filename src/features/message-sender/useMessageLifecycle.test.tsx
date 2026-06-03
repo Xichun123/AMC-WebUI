@@ -23,23 +23,12 @@ vi.mock('@/utils/chat/session', () => ({
 }));
 
 import { useMessageLifecycle } from './useMessageLifecycle';
-import { renderHook } from '@/test/render/renderer';
+import { createDeferred, renderHook } from '@/test/render/renderer';
 
 describe('useMessageLifecycle', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
-
-  const createDeferred = <T,>() => {
-    let resolve!: (value: T) => void;
-    let reject!: (reason?: unknown) => void;
-    const promise = new Promise<T>((promiseResolve, promiseReject) => {
-      resolve = promiseResolve;
-      reject = promiseReject;
-    });
-
-    return { promise, resolve, reject };
-  };
 
   it('creates loading model placeholders with the shared message shape', () => {
     const setSessionLoading = vi.fn();

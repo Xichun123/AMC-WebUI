@@ -16,6 +16,8 @@ interface MarkdownPreviewModalProps {
   initialEditMode?: boolean;
 }
 
+const COPY_FEEDBACK_MS = 1500;
+
 const getDownloadUrl = (file: UploadedFile, content: string) => {
   if (file.dataUrl) return file.dataUrl;
   return createManagedObjectUrl(new Blob([content], { type: file.type || 'text/markdown' }));
@@ -49,7 +51,7 @@ export const MarkdownPreviewModal: React.FC<MarkdownPreviewModalProps> = ({
     try {
       await navigator.clipboard.writeText(contentForActions);
       setIsCopied(true);
-      window.setTimeout(() => setIsCopied(false), 1500);
+      window.setTimeout(() => setIsCopied(false), COPY_FEEDBACK_MS);
     } catch (error) {
       logService.error('Failed to copy markdown content:', error);
     }

@@ -4,6 +4,7 @@ import { MessageContent } from './MessageContent';
 import { MessageActions } from './MessageActions';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { LiveArtifactFollowupPayload } from '@/utils/liveArtifactFollowup';
+import type { UserMessageCollapseController } from './content/userMessageCollapse';
 
 interface MessageProps {
   message: ChatMessage;
@@ -24,6 +25,7 @@ interface MessageProps {
   onOpenSidePanel: (content: SideViewContent) => void;
   onConfigureFile?: (file: UploadedFile, messageId: string) => void;
   isGemini3?: boolean;
+  userMessageCollapse?: UserMessageCollapseController;
 }
 
 export const Message: React.FC<MessageProps> = React.memo((props) => {
@@ -100,6 +102,7 @@ export const Message: React.FC<MessageProps> = React.memo((props) => {
             onOpenSidePanel={props.onOpenSidePanel}
             onConfigureFile={props.onConfigureFile}
             isGemini3={props.isGemini3}
+            userMessageCollapse={props.userMessageCollapse}
           />
         </div>
         {message.role === 'user' && messageActions}

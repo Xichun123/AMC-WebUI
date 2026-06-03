@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import { type ChatSettings } from '@/types';
 import {
+  formatApiKeyErrorMessage,
   getGeminiKeyForRequest,
   getKeyForRequest,
   isServerManagedApiEnabledForProxyRequests,
@@ -219,5 +220,16 @@ describe('isServerManagedApiEnabledForProxyRequests', () => {
         apiProxyUrl: '   ',
       }),
     ).toBe(false);
+  });
+});
+
+describe('formatApiKeyErrorMessage', () => {
+  it('translates known API key errors and keeps unknown messages intact', () => {
+    const translate = vi.fn((translationKey: string) => `translated:${translationKey}`);
+
+    expect(formatApiKeyErrorMessage('API Key not configured.', translate)).toBe(
+      'translated:apiRuntime_keyNotConfigured',
+    );
+    expect(formatApiKeyErrorMessage('custom failure', translate)).toBe('custom failure');
   });
 });

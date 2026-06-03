@@ -8,6 +8,28 @@ import type { LiveArtifactInteractionSpec } from '@/utils/liveArtifactInteractio
 describe('LiveArtifactInteractionFrame', () => {
   const renderer = setupTestRenderer();
 
+  it('applies the configured base font size', () => {
+    const spec = {
+      version: 1,
+      title: 'Sized form',
+      instruction: 'Continue.',
+      schema: {
+        type: 'object',
+        properties: {
+          topic: { type: 'string', title: 'Topic' },
+        },
+      },
+    } satisfies LiveArtifactInteractionSpec;
+
+    act(() => {
+      renderer.root.render(<LiveArtifactInteractionFrame spec={spec} baseFontSize={18} />);
+    });
+
+    expect(
+      renderer.container.querySelector<HTMLFormElement>('[data-live-artifact-interaction="true"]')?.style.fontSize,
+    ).toBe('18px');
+  });
+
   it('resets form state when the interaction spec changes in place', () => {
     const handleFollowUp = vi.fn();
     const firstSpec = {

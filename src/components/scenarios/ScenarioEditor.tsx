@@ -92,7 +92,7 @@ export const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
       <div className="flex flex-col md:flex-row flex-grow min-h-0 overflow-hidden">
         <ScenarioSystemPrompt
           value={scenario.systemInstruction || ''}
-          onChange={(val) => setScenario((prev) => ({ ...prev, systemInstruction: val }))}
+          onChange={(systemInstruction) => setScenario((prev) => ({ ...prev, systemInstruction }))}
           onExpand={() => setIsSystemPromptExpanded(true)}
           readOnly={readOnly}
         />
@@ -102,7 +102,7 @@ export const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
           onClose={() => setIsSystemPromptExpanded(false)}
           title={t('scenarios_system_prompt_label')}
           value={scenario.systemInstruction || ''}
-          onChange={(val) => setScenario((prev) => ({ ...prev, systemInstruction: val }))}
+          onChange={(systemInstruction) => setScenario((prev) => ({ ...prev, systemInstruction }))}
           placeholder={t('scenarios_system_prompt_placeholder')}
           readOnly={readOnly}
         />

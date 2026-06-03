@@ -39,6 +39,8 @@ interface BuildPyodideWorkerScriptOptions {
   baseUriIsPyodideBaseUrl?: boolean;
 }
 
+const FILE_MOUNT_TIMEOUT_MS = 10000;
+
 const ensureTrailingSlash = (value: string) => value.replace(/\/?$/, '/');
 
 export const buildPyodideWorkerScript = (baseUri: string, options: BuildPyodideWorkerScriptOptions = {}) => {
@@ -62,12 +64,14 @@ const getBrowserPyodideBaseUri = () => {
   return { baseUri: DEFAULT_PYODIDE_BASE_URL, baseUriIsPyodideBaseUrl: true };
 };
 
+type PendingPyodideRequest = {
+  resolve: (result: void | ExecutionResult) => void;
+  reject: (error: unknown) => void;
+};
+
 export class PyodideService {
   private worker: Worker | null = null;
-  private pendingPromises = new Map<
-    string,
-    { resolve: (val: void | ExecutionResult) => void; reject: (err: unknown) => void }
-  >();
+  private pendingPromises = new Map<string, PendingPyodideRequest>();
   private activeRequestId: string | null = null;
   private readonly baseUri: string | undefined;
   private readonly createWorker: (url: string) => Worker;
@@ -221,7 +225,7 @@ export class PyodideService {
       }),
     );
 
-    const validFiles = filesToMount.filter((f): f is { name: string; data: ArrayBuffer } => f !== null);
+    const validFiles = filesToMount.filter((file): file is { name: string; data: ArrayBuffer } => file !== null);
 
     if (validFiles.length === 0) return;
 
@@ -233,10 +237,9 @@ export class PyodideService {
         return;
       }
 
-      this.pendingPromises.set(id, { resolve: resolve as (val: void | ExecutionResult) => void, reject });
+      this.pendingPromises.set(id, { resolve: resolve as PendingPyodideRequest['resolve'], reject });
 
-      // Use transferables for efficiency to avoid copying large buffers
-      const buffers = validFiles.map((f) => f.data);
+      const fileTransferBuffers = validFiles.map((file) => file.data);
 
       this.worker?.postMessage(
         {
@@ -244,20 +247,18 @@ export class PyodideService {
           id,
           files: validFiles,
         },
-        buffers,
+        fileTransferBuffers,
       );
 
-      // Shorter timeout for mounting
       this.setTimeoutFn(() => {
         if (this.pendingPromises.has(id)) {
           this.pendingPromises.delete(id);
           this.completeRequest(id);
           this.resetWorker(new Error('File mount timed out'), { skipRejectIds: [id] });
-          // Don't reject, just warn, as execution might still work if files weren't critical
           logService.warn('File mount timed out');
           resolve();
         }
-      }, 10000);
+      }, FILE_MOUNT_TIMEOUT_MS);
     });
   }
 
@@ -387,7 +388,7 @@ export class PyodideService {
         abortSignal?.addEventListener('abort', handleAbort, { once: true });
 
         this.pendingPromises.set(id, {
-          resolve: resolveWithCleanup as (val: void | ExecutionResult) => void,
+          resolve: resolveWithCleanup as PendingPyodideRequest['resolve'],
           reject: rejectWithCleanup,
         });
         try {

@@ -51,18 +51,18 @@ export const AboutSection: React.FC = () => {
         }
 
         if (repoRes.status === 'fulfilled' && repoRes.value.ok) {
-          const data = await repoRes.value.json();
-          if (typeof data.stargazers_count === 'number') {
-            setStars(data.stargazers_count);
+          const repoData = await repoRes.value.json();
+          if (typeof repoData.stargazers_count === 'number') {
+            setStars(repoData.stargazers_count);
           } else {
             setStars(null);
           }
         }
 
         if (releaseRes.status === 'fulfilled' && releaseRes.value.ok) {
-          const data = await releaseRes.value.json();
-          if (typeof data.tag_name === 'string' && data.tag_name.length > 0) {
-            setLatestVersion(data.tag_name);
+          const releaseData = await releaseRes.value.json();
+          if (typeof releaseData.tag_name === 'string' && releaseData.tag_name.length > 0) {
+            setLatestVersion(releaseData.tag_name);
             setHasReleaseData(true);
           } else {
             setLatestVersion(null);
@@ -71,9 +71,9 @@ export const AboutSection: React.FC = () => {
         } else {
           setHasReleaseData(false);
         }
-      } catch (err) {
+      } catch (releaseError) {
         if (!isCancelled) {
-          logService.error('Failed to fetch about info', err);
+          logService.error('Failed to fetch about info', releaseError);
           setHasReleaseData(false);
         }
       } finally {

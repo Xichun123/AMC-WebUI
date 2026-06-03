@@ -14,12 +14,18 @@ import {
   type TranslationTargetLanguage,
 } from '@/types';
 import { createEmptyLiveArtifactsSystemPrompts } from '@/utils/liveArtifactsPromptSettings';
+import {
+  isValidMcpHttpUrl,
+  sanitizeMcpAuth,
+  sanitizeStringArray,
+  sanitizeStringRecord,
+} from '../../shared/mcpServerConfig';
 
 const THEME_IDS = ['system', 'onyx', 'pearl'] as const;
 const LANGUAGE_IDS = ['en', 'zh', 'system'] as const;
 const THINKING_LEVELS = ['MINIMAL', 'LOW', 'MEDIUM', 'HIGH'] as const;
 const API_MODES = ['gemini-native', 'openai-compatible'] as const;
-const LIVE_ARTIFACTS_PROMPT_MODES = ['inline', 'full', 'fullHtml'] as const;
+const LIVE_ARTIFACTS_PROMPT_MODES = ['inline'] as const;
 const TRANSLATION_TARGET_LANGUAGES = [
   'English',
   'Simplified Chinese',
@@ -102,8 +108,6 @@ const safetySettingSchema = z.object({
 const liveArtifactsSystemPromptsSchema: z.ZodType<LiveArtifactsSystemPrompts> = z
   .object({
     inline: z.string().optional().default(''),
-    full: z.string().optional().default(''),
-    fullHtml: z.string().optional().default(''),
   })
   .default(createEmptyLiveArtifactsSystemPrompts())
   .catch(createEmptyLiveArtifactsSystemPrompts());
@@ -155,53 +159,6 @@ const sanitizeTabModelCycleIds = (value: unknown, fallback: string[] | undefined
   }, []);
 
   return ids.length > 0 ? ids : fallback;
-};
-
-const sanitizeStringRecord = (value: unknown): Record<string, string> | undefined => {
-  if (!isRecord(value)) {
-    return undefined;
-  }
-
-  const entries = Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === 'string');
-  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
-};
-
-const sanitizeMcpAuth = (value: unknown): McpServerConfig['auth'] | undefined => {
-  if (!isRecord(value)) {
-    return undefined;
-  }
-
-  if (value.type === 'none' || value.type === 'customHeaders') {
-    return { type: value.type };
-  }
-
-  if (value.type === 'bearer') {
-    const token = typeof value.token === 'string' ? value.token.trim() : '';
-    return {
-      type: 'bearer',
-      ...(token ? { token } : {}),
-    };
-  }
-
-  return undefined;
-};
-
-const sanitizeStringArray = (value: unknown): string[] | undefined => {
-  if (!Array.isArray(value)) {
-    return undefined;
-  }
-
-  const strings = value.filter((item): item is string => typeof item === 'string');
-  return strings.length > 0 ? strings : undefined;
-};
-
-const isValidMcpHttpUrl = (value: string): boolean => {
-  try {
-    const parsedUrl = new URL(value);
-    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
-  } catch {
-    return false;
-  }
 };
 
 const sanitizeMcpServers = (value: unknown, fallback: McpServerConfig[]): McpServerConfig[] => {
@@ -340,6 +297,10 @@ const appSettingsSchema: z.ZodType<AppSettings> = z.object({
   ),
   liveArtifactsSystemPrompt: optionalStringWithDefault(DEFAULT_APP_SETTINGS.liveArtifactsSystemPrompt),
   liveArtifactsSystemPrompts: liveArtifactsSystemPromptsSchema,
+  liveArtifactsCustomFontSize: optionalWithDefault(
+    z.number().finite().min(10).max(32),
+    DEFAULT_APP_SETTINGS.liveArtifactsCustomFontSize,
+  ),
   isPasteRichTextAsMarkdownEnabled: optionalBooleanWithDefault(DEFAULT_APP_SETTINGS.isPasteRichTextAsMarkdownEnabled),
   isPasteAsTextFileEnabled: optionalBooleanWithDefault(DEFAULT_APP_SETTINGS.isPasteAsTextFileEnabled),
   showInputPasteButton: optionalBooleanWithDefault(DEFAULT_APP_SETTINGS.showInputPasteButton),

@@ -6,6 +6,7 @@ import {
   readPersistentStorageItem,
   registerPersistedStoreSync,
 } from './persistentStorage';
+import { resolveUpdaterOrValue, type UpdaterOrValue } from './stateUpdaters';
 
 const UI_PREFERENCES_STORAGE_KEY = 'all_model_chat_ui_preferences_v1';
 const LEGACY_HISTORY_SIDEBAR_STORAGE_KEY = 'all_model_chat_history_sidebar_v1';
@@ -61,12 +62,12 @@ interface UIState {
 }
 
 interface UIActions {
-  setIsSettingsModalOpen: (v: boolean | ((p: boolean) => boolean)) => void;
-  setIsPreloadedMessagesModalOpen: (v: boolean | ((p: boolean) => boolean)) => void;
-  setIsHistorySidebarOpen: (v: boolean | ((p: boolean) => boolean)) => void;
-  setIsHistorySidebarOpenTransient: (v: boolean | ((p: boolean) => boolean)) => void;
+  setIsSettingsModalOpen: (value: UpdaterOrValue<boolean>) => void;
+  setIsPreloadedMessagesModalOpen: (value: UpdaterOrValue<boolean>) => void;
+  setIsHistorySidebarOpen: (value: UpdaterOrValue<boolean>) => void;
+  setIsHistorySidebarOpenTransient: (value: UpdaterOrValue<boolean>) => void;
   syncHistorySidebarForViewport: () => void;
-  setIsLogViewerOpen: (v: boolean | ((p: boolean) => boolean)) => void;
+  setIsLogViewerOpen: (value: UpdaterOrValue<boolean>) => void;
   toggleHistorySidebar: () => void;
   setChatInputHeight: (height: number) => void;
 }
@@ -104,17 +105,17 @@ export const useUIStore = create<UIState & UIActions>()(
       isLogViewerOpen: false,
       chatInputHeight: 160,
 
-      setIsSettingsModalOpen: (v) =>
-        set((s) => ({
-          isSettingsModalOpen: typeof v === 'function' ? v(s.isSettingsModalOpen) : v,
+      setIsSettingsModalOpen: (value) =>
+        set((state) => ({
+          isSettingsModalOpen: resolveUpdaterOrValue(value, state.isSettingsModalOpen),
         })),
-      setIsPreloadedMessagesModalOpen: (v) =>
-        set((s) => ({
-          isPreloadedMessagesModalOpen: typeof v === 'function' ? v(s.isPreloadedMessagesModalOpen) : v,
+      setIsPreloadedMessagesModalOpen: (value) =>
+        set((state) => ({
+          isPreloadedMessagesModalOpen: resolveUpdaterOrValue(value, state.isPreloadedMessagesModalOpen),
         })),
-      setIsHistorySidebarOpen: (v) =>
-        set((s) => {
-          const nextIsOpen = typeof v === 'function' ? v(s.isHistorySidebarOpen) : v;
+      setIsHistorySidebarOpen: (value) =>
+        set((state) => {
+          const nextIsOpen = resolveUpdaterOrValue(value, state.isHistorySidebarOpen);
           const isDesktop = isDesktopViewport();
 
           return isDesktop
@@ -127,19 +128,19 @@ export const useUIStore = create<UIState & UIActions>()(
                 mobileHistorySidebarOpen: nextIsOpen,
               };
         }),
-      setIsHistorySidebarOpenTransient: (v) =>
-        set((s) => ({
-          isHistorySidebarOpen: typeof v === 'function' ? v(s.isHistorySidebarOpen) : v,
+      setIsHistorySidebarOpenTransient: (value) =>
+        set((state) => ({
+          isHistorySidebarOpen: resolveUpdaterOrValue(value, state.isHistorySidebarOpen),
         })),
       syncHistorySidebarForViewport: () =>
-        set((s) => ({
-          isHistorySidebarOpen: isDesktopViewport() ? s.desktopHistorySidebarOpen : s.mobileHistorySidebarOpen,
+        set((state) => ({
+          isHistorySidebarOpen: isDesktopViewport() ? state.desktopHistorySidebarOpen : state.mobileHistorySidebarOpen,
         })),
-      setIsLogViewerOpen: (v) =>
-        set((s) => ({
-          isLogViewerOpen: typeof v === 'function' ? v(s.isLogViewerOpen) : v,
+      setIsLogViewerOpen: (value) =>
+        set((state) => ({
+          isLogViewerOpen: resolveUpdaterOrValue(value, state.isLogViewerOpen),
         })),
-      toggleHistorySidebar: () => get().setIsHistorySidebarOpen((s) => !s),
+      toggleHistorySidebar: () => get().setIsHistorySidebarOpen((isOpen) => !isOpen),
       setChatInputHeight: (height) => set({ chatInputHeight: height }),
     }),
     {

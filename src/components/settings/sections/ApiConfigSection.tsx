@@ -3,11 +3,9 @@ import { RadioTower } from 'lucide-react';
 import type { AppSettings } from '@/types';
 import { useI18n } from '@/contexts/I18nContext';
 import { DEFAULT_LIVE_ARTIFACTS_MODEL_ID } from '@/constants/modelConfiguration';
-import { SETTINGS_INPUT_CLASS } from '@/constants/formClasses';
 import { CONNECTION_TEST_MODELS } from '@/constants/settingsModelOptions';
 import { getClient } from '@/services/api/apiClient';
 import { sendOpenAICompatibleMessageNonStream } from '@/services/api/openaiCompatibleApi';
-import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '@/utils/apiProxyUrl';
 import {
   isServerManagedApiEnabledForProxyRequests,
   parseApiKeys,
@@ -18,6 +16,7 @@ import { ApiConfigToggle } from './api-config/ApiConfigToggle';
 import { ApiKeyInput } from './api-config/ApiKeyInput';
 import { ApiProxySettings } from './api-config/ApiProxySettings';
 import { ApiConnectionTester } from './api-config/ApiConnectionTester';
+import { OpenAICompatibleApiSettingsPanel } from './api-config/OpenAICompatibleApiSettingsPanel';
 import { FileStrategyControl } from './appearance/FileStrategyControl';
 import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
 
@@ -82,7 +81,7 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = ({
         { label: t('settingsApiStatusAuthentication'), value: t('settingsApiStatusBrowserApiKey') },
         {
           label: t('settingsApiStatusOpenAIEndpoint'),
-          value: settings.openaiCompatibleBaseUrl?.trim() || DEFAULT_OPENAI_COMPATIBLE_BASE_URL,
+          value: settings.openaiCompatibleBaseUrl?.trim() || '',
           code: true,
         },
       ]
@@ -146,6 +145,11 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = ({
   const handleApiProviderChange = (nextApiMode: AppSettings['apiMode']) => {
     onUpdate('apiMode', nextApiMode);
     onUpdate('isOpenAICompatibleApiEnabled', nextApiMode === 'openai-compatible');
+    setTestStatus('idle');
+    setTestMessage(null);
+  };
+
+  const resetConnectionTest = () => {
     setTestStatus('idle');
     setTestMessage(null);
   };
@@ -305,46 +309,15 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = ({
           </div>
           {renderApiStatus()}
           {isOpenAICompatibleMode && (
-            <div className="space-y-4">
-              <ApiKeyInput
-                apiKey={openaiCompatibleApiKey}
-                setApiKey={(val) => {
-                  onUpdate('openaiCompatibleApiKey', val);
-                  setTestStatus('idle');
-                }}
-                label={t('settingsOpenAICompatibleApiKey')}
-                placeholder={t('apiConfig_openai_key_placeholder')}
-                helpText={t('settingsOpenAICompatibleApiKeyHelp')}
-              />
-              <div className="space-y-2">
-                <label
-                  htmlFor="openai-compatible-base-url-input"
-                  className="text-xs font-semibold uppercase tracking-wider text-[var(--theme-text-tertiary)]"
-                >
-                  {t('settingsOpenAICompatibleBaseUrl')}
-                </label>
-                <input
-                  id="openai-compatible-base-url-input"
-                  type="text"
-                  value={settings.openaiCompatibleBaseUrl || ''}
-                  onChange={(event) => {
-                    onUpdate('openaiCompatibleBaseUrl', event.target.value);
-                  }}
-                  className={`w-full p-3 rounded-lg border transition-all duration-200 focus:ring-2 focus:ring-offset-0 text-sm custom-scrollbar font-mono ${SETTINGS_INPUT_CLASS}`}
-                  placeholder={DEFAULT_OPENAI_COMPATIBLE_BASE_URL}
-                  aria-label={t('settingsOpenAICompatibleBaseUrl')}
-                />
-                <p className="text-xs leading-relaxed text-[var(--theme-text-tertiary)]">
-                  {t('settingsOpenAICompatibleHelp')}
-                </p>
-              </div>
-              <ApiConnectionTester
-                onTest={handleTestConnection}
-                testStatus={testStatus}
-                testMessage={testMessage}
-                isTestDisabled={testStatus === 'testing' || (!openaiCompatibleApiKey && !hasOpenAIEnvKey)}
-              />
-            </div>
+            <OpenAICompatibleApiSettingsPanel
+              settings={settings}
+              onUpdate={onUpdate}
+              onResetConnectionTest={resetConnectionTest}
+              onTestConnection={handleTestConnection}
+              testStatus={testStatus}
+              testMessage={testMessage}
+              hasOpenAIEnvKey={hasOpenAIEnvKey}
+            />
           )}
         </div>
 
@@ -365,8 +338,8 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = ({
                 {shouldShowGeminiApiKeyInput && (
                   <ApiKeyInput
                     apiKey={apiKey}
-                    setApiKey={(val) => {
-                      setApiKey(val);
+                    setApiKey={(nextApiKey) => {
+                      setApiKey(nextApiKey);
                       setTestStatus('idle');
                     }}
                   />
@@ -374,13 +347,13 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = ({
 
                 <ApiProxySettings
                   useApiProxy={isGeminiServerManaged ? true : useApiProxy}
-                  setUseApiProxy={(val) => {
-                    setUseApiProxy(val);
+                  setUseApiProxy={(nextUseApiProxy) => {
+                    setUseApiProxy(nextUseApiProxy);
                     setTestStatus('idle');
                   }}
                   apiProxyUrl={isGeminiServerManaged ? effectiveGeminiProxyUrl : apiProxyUrl}
-                  setApiProxyUrl={(val) => {
-                    setApiProxyUrl(val);
+                  setApiProxyUrl={(nextApiProxyUrl) => {
+                    setApiProxyUrl(nextApiProxyUrl);
                     setTestStatus('idle');
                   }}
                   readOnly={isGeminiServerManaged}

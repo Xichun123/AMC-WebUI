@@ -17,8 +17,8 @@ export const writeSelectionTextToClipboard = async (text: string): Promise<boole
   try {
     await navigator.clipboard.writeText(text);
     return true;
-  } catch (err) {
-    logService.error('Failed to copy selected text:', err);
+  } catch (clipboardError) {
+    logService.error('Failed to copy selected text:', clipboardError);
     return false;
   }
 };

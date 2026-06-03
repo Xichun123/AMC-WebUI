@@ -158,8 +158,6 @@ describe('ModelsSection', () => {
       liveArtifactsPromptMode: 'inline',
       liveArtifactsSystemPrompts: {
         inline: 'Inline custom Live Artifacts prompt',
-        full: 'Full custom Live Artifacts prompt',
-        fullHtml: 'Complete HTML custom Live Artifacts prompt',
       },
     } as AppSettings;
 
@@ -191,7 +189,9 @@ describe('ModelsSection', () => {
     expect(renderer.container.textContent).not.toContain('Auto-open Live Artifacts');
     expect(renderer.container.textContent).not.toContain('Live Artifacts Model');
     expect(renderer.container.textContent).not.toContain('Live Artifacts Prompt Version');
-    expect(renderer.container.textContent).toContain('Inline HTML Only');
+    expect(renderer.container.textContent).not.toContain('Inline HTML Only');
+    expect(renderer.container.textContent).not.toContain('Full or Inline HTML');
+    expect(renderer.container.textContent).not.toContain('Complete HTML Only');
     expect(renderer.container.textContent).toContain('Live Artifacts Prompt');
 
     const promptToggle = renderer.container.querySelector<HTMLButtonElement>('#live-artifacts-prompt-toggle');
@@ -204,35 +204,8 @@ describe('ModelsSection', () => {
     );
     expect(toggleLabel).toBeUndefined();
 
-    await act(async () => {
-      renderer.container
-        .querySelector<HTMLButtonElement>('#live-artifacts-prompt-mode-select')
-        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
-
-    expect(renderer.container.textContent).toContain('Complete HTML Only');
-
-    await act(async () => {
-      Array.from(renderer.container.querySelectorAll('button'))
-        .find((button) => button.textContent?.trim() === 'Full or Inline HTML')
-        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
-
-    expect(onUpdateSettings).toHaveBeenCalledWith({ liveArtifactsPromptMode: 'full' });
-
-    await act(async () => {
-      renderer.container
-        .querySelector<HTMLButtonElement>('#live-artifacts-prompt-mode-select')
-        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
-
-    await act(async () => {
-      Array.from(renderer.container.querySelectorAll('button'))
-        .find((button) => button.textContent?.trim() === 'Complete HTML Only')
-        ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    });
-
-    expect(onUpdateSettings).toHaveBeenCalledWith({ liveArtifactsPromptMode: 'fullHtml' });
+    expect(renderer.container.querySelector('#live-artifacts-prompt-mode-select')).toBeNull();
+    expect(renderer.container.querySelector('#live-artifacts-prompt-mode-label')).toBeNull();
 
     await act(async () => {
       renderer.container
@@ -243,7 +216,7 @@ describe('ModelsSection', () => {
     const expandedPromptToggle = renderer.container.querySelector<HTMLButtonElement>('#live-artifacts-prompt-toggle');
     expect(expandedPromptToggle?.getAttribute('aria-expanded')).toBe('true');
     const promptTextarea = renderer.container.querySelector<HTMLTextAreaElement>('#live-artifacts-prompt-input');
-    expect(promptTextarea?.value).toBe('Complete HTML custom Live Artifacts prompt');
+    expect(promptTextarea?.value).toBe('Inline custom Live Artifacts prompt');
     const promptPanel = renderer.container.querySelector<HTMLElement>('#live-artifacts-prompt-panel');
     const promptReset = renderer.container.querySelector<HTMLButtonElement>('#live-artifacts-prompt-reset');
     expect(promptReset).not.toBeNull();
@@ -259,9 +232,7 @@ describe('ModelsSection', () => {
     expect(onUpdateSettings).toHaveBeenCalledWith({ liveArtifactsSystemPrompt: '' });
     expect(onUpdateSettings).toHaveBeenCalledWith({
       liveArtifactsSystemPrompts: {
-        inline: 'Inline custom Live Artifacts prompt',
-        full: 'Full custom Live Artifacts prompt',
-        fullHtml: 'Use product-dashboard HTML artifacts.',
+        inline: 'Use product-dashboard HTML artifacts.',
       },
     });
   });
@@ -274,8 +245,6 @@ describe('ModelsSection', () => {
         liveArtifactsSystemPrompt: '',
         liveArtifactsSystemPrompts: {
           inline: '',
-          full: '',
-          fullHtml: '',
         },
       } as AppSettings,
     });
@@ -445,6 +414,22 @@ describe('ModelsSection', () => {
         expect.any(AbortSignal),
       );
     });
+
+    await vi.waitFor(() => {
+      expect(document.body.textContent).toContain('deepseek-chat');
+      expect(document.body.textContent).toContain('Fetched 2 models.');
+    });
+
+    const importButton = Array.from(document.body.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('Import Selected'),
+    );
+
+    expect(importButton).toBeDefined();
+
+    await act(async () => {
+      importButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
     expect(onUpdateSettings).toHaveBeenCalledWith({
       openaiCompatibleModels: [
         { id: 'gpt-5.5', name: 'My GPT', isPinned: true },
@@ -452,7 +437,6 @@ describe('ModelsSection', () => {
       ],
     });
     expect(onUpdateSettings).toHaveBeenCalledWith({ openaiCompatibleModelId: 'gpt-5.5' });
-    expect(renderer.container.textContent).toContain('Fetched 2 models.');
   });
 
   it('shows only GPT-compatible model and chat controls in OpenAI-compatible mode', async () => {

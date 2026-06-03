@@ -19,10 +19,24 @@ interface FileDisplayProps {
   isGemini3?: boolean;
 }
 
+const COPIED_STATE_DURATION_MS = 2000;
+const MIN_DISPLAY_EXTENSION_LENGTH = 2;
+const MAX_DISPLAY_EXTENSION_LENGTH = 4;
+const MAX_MIME_SUBTYPE_DISPLAY_LENGTH = 8;
+
+const getFileExtensionLabel = (name: string): string | undefined => {
+  if (!name.includes('.')) return undefined;
+
+  const extension = name.split('.').pop()?.toUpperCase();
+  const hasDisplayLength =
+    extension && extension.length >= MIN_DISPLAY_EXTENSION_LENGTH && extension.length <= MAX_DISPLAY_EXTENSION_LENGTH;
+
+  return hasDisplayLength ? extension : undefined;
+};
+
 const getDisplayType = (mimeType: string, name: string) => {
-  // Check extension first as it's often more reliable/familiar
-  const ext = name.split('.').pop()?.toUpperCase();
-  if (ext && ext.length > 1 && ext.length < 5) return ext;
+  const extensionLabel = getFileExtensionLabel(name);
+  if (extensionLabel) return extensionLabel;
 
   if (mimeType.includes('pdf')) return 'PDF';
   if (mimeType.includes('word') || mimeType.includes('document')) return 'DOC';
@@ -36,7 +50,9 @@ const getDisplayType = (mimeType: string, name: string) => {
   if (mimeType.includes('python')) return 'PY';
 
   const subtype = mimeType.split('/').pop()?.toUpperCase() || 'FILE';
-  return subtype.length > 8 ? subtype.substring(0, 8) : subtype;
+  return subtype.length > MAX_MIME_SUBTYPE_DISPLAY_LENGTH
+    ? subtype.substring(0, MAX_MIME_SUBTYPE_DISPLAY_LENGTH)
+    : subtype;
 };
 
 export const FileDisplay: React.FC<FileDisplayProps> = ({
@@ -67,9 +83,9 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
       .writeText(file.fileApiName)
       .then(() => {
         setIdCopied(true);
-        setTimeout(() => setIdCopied(false), 2000);
+        setTimeout(() => setIdCopied(false), COPIED_STATE_DURATION_MS);
       })
-      .catch((err) => logService.error('Failed to copy file ID:', err));
+      .catch((error) => logService.error('Failed to copy file ID:', error));
   };
 
   const handleDownloadFile = (event: React.MouseEvent) => {
@@ -80,14 +96,13 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
     triggerDownload(file.dataUrl, filename, false);
   };
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (event: React.MouseEvent) => {
     if (isClickable) {
-      e.stopPropagation();
+      event.stopPropagation();
       onFileClick(file);
     }
   };
 
-  // Render Image Content specifically
   if (category === 'image' && file.dataUrl && !file.error) {
     return (
       <div
@@ -105,8 +120,8 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
             {canConfigure ? (
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={(event) => {
+                  event.stopPropagation();
                   if (onConfigure) {
                     onConfigure();
                   }

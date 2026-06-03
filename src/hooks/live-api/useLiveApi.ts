@@ -36,17 +36,13 @@ export const useLiveApi = ({
   const sessionRef = useRef<Promise<LiveSession> | null>(null);
   const goAwayHandlerRef = useRef<(goAway: { timeLeft?: string }) => void>(() => {});
 
-  // Session Resumption State
   const [sessionHandle, setSessionHandle, sessionHandleRef] = useStateWithRef<string | null>(null);
 
-  // 1. Audio Management Hook
   const { volume, isSpeaking, isMuted, toggleMute, initializeAudio, playAudioChunk, stopAudioPlayback, cleanupAudio } =
     useLiveAudio();
 
-  // 2. Video Management Hook
   const { videoStream, videoSource, videoRef, startCamera, startScreenShare, stopVideo, captureFrame } = useLiveVideo();
 
-  // 3. Configuration Hook
   const { liveConfig, tools } = useLiveConfig({
     chatSettings,
     sessionHandle,
@@ -64,7 +60,6 @@ export const useLiveApi = ({
     return keyResult.key;
   }, [appSettings, chatSettings]);
 
-  // 4. Message Processing Hook
   const { handleMessage, clearBufferedAudio } = useLiveMessageProcessing({
     playAudioChunk,
     stopAudioPlayback,
@@ -77,7 +72,6 @@ export const useLiveApi = ({
     sessionHandleRef,
   });
 
-  // 5. Connection Management Hook
   const { isConnected, isReconnecting, errorState, connect, handleGoAway, disconnect, sendText, sendContent } =
     useLiveConnection({
       appSettings,
@@ -102,7 +96,6 @@ export const useLiveApi = ({
 
   const error = useMemo(() => resolveLiveErrorText(errorState, t), [errorState, t]);
 
-  // 6. Frame Capture Hook
   useLiveFrameCapture({
     isConnected,
     videoStream,
@@ -113,7 +106,6 @@ export const useLiveApi = ({
     sessionRef,
   });
 
-  // Prevent background throttling when connected
   useBackgroundKeepAlive(isConnected);
 
   return useMemo(

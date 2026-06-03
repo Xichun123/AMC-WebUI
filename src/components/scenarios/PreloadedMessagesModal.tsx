@@ -16,6 +16,9 @@ interface PreloadedMessagesModalProps {
   onLoadScenario: (scenario: SavedScenario) => void;
 }
 
+const CLOSE_BUTTON_AUTO_FOCUS_DELAY_MS = 100;
+const SCENARIO_LOAD_CLOSE_DELAY_MS = 300;
+
 export const PreloadedMessagesModal: React.FC<PreloadedMessagesModalProps> = ({
   isOpen,
   onClose,
@@ -56,7 +59,7 @@ export const PreloadedMessagesModal: React.FC<PreloadedMessagesModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      const timer = setTimeout(() => closeButtonRef.current?.focus(), 100);
+      const timer = setTimeout(() => closeButtonRef.current?.focus(), CLOSE_BUTTON_AUTO_FOCUS_DELAY_MS);
       return () => clearTimeout(timer);
     }
     return undefined;
@@ -82,7 +85,7 @@ export const PreloadedMessagesModal: React.FC<PreloadedMessagesModalProps> = ({
     delayedCloseTimeoutRef.current = setTimeout(() => {
       delayedCloseTimeoutRef.current = null;
       onClose();
-    }, 300);
+    }, SCENARIO_LOAD_CLOSE_DELAY_MS);
   };
 
   const isSystemScenario = editingScenario && systemScenarioIds.includes(editingScenario.id);

@@ -14,6 +14,13 @@ interface ContextUrlsProps {
   metadata: unknown;
 }
 
+const getUrlContextItems = (metadata: unknown): UrlContextItem[] => {
+  if (!metadata) return [];
+
+  const resolvedMetadata = metadata as { urlMetadata?: UrlContextItem[]; url_metadata?: UrlContextItem[] };
+  return resolvedMetadata.urlMetadata || resolvedMetadata.url_metadata || [];
+};
+
 const getStatusIcon = (status?: string) => {
   const normalizedStatus = status?.toUpperCase();
   if (normalizedStatus === 'URL_RETRIEVAL_STATUS_SUCCESS' || normalizedStatus === 'SUCCESS')
@@ -27,12 +34,7 @@ const getStatusIcon = (status?: string) => {
 
 export const ContextUrls: React.FC<ContextUrlsProps> = ({ metadata }) => {
   const { t } = useI18n();
-  const items = useMemo<UrlContextItem[]>(() => {
-    if (!metadata) return [];
-    const resolvedMetadata = metadata as { urlMetadata?: UrlContextItem[]; url_metadata?: UrlContextItem[] };
-    // Handle both snake_case and camelCase
-    return resolvedMetadata.urlMetadata || resolvedMetadata.url_metadata || [];
-  }, [metadata]);
+  const items = useMemo<UrlContextItem[]>(() => getUrlContextItems(metadata), [metadata]);
 
   if (items.length === 0) return null;
 

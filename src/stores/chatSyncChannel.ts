@@ -11,9 +11,9 @@ export function getChatSyncChannel(): BroadcastChannel {
   return syncChannel;
 }
 
-export function broadcastSyncMessage(msg: SyncMessage) {
+export function broadcastSyncMessage(syncMessage: SyncMessage) {
   try {
-    getChatSyncChannel().postMessage(msg);
+    getChatSyncChannel().postMessage(syncMessage);
   } catch {
     // Ignore sync failures in unsupported or restricted environments.
   }

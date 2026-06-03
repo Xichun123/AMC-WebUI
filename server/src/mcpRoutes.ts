@@ -1,7 +1,13 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import net from 'node:net';
 import { sendJson } from './cors.js';
 import type { McpClientBridge, McpServerConfig, McpTool } from './mcpTypes.js';
+import { isPrivateNetworkHostname } from './privateNetwork.js';
+import {
+  isValidMcpHttpUrl,
+  sanitizeMcpAuth,
+  sanitizeStringArray,
+  sanitizeStringRecord,
+} from '../../shared/mcpServerConfig.js';
 
 const MCP_TOOLS_PATH = '/api/mcp/tools';
 const MCP_CALL_PATH = '/api/mcp/call';
@@ -63,80 +69,9 @@ const readJsonBody = async (request: IncomingMessage): Promise<unknown> => {
   }
 };
 
-const sanitizeStringArray = (value: unknown): string[] | undefined => {
-  if (!Array.isArray(value)) {
-    return undefined;
-  }
-
-  const strings = value.filter((item): item is string => typeof item === 'string');
-  return strings.length > 0 ? strings : undefined;
-};
-
-const sanitizeStringRecord = (value: unknown): Record<string, string> | undefined => {
-  if (!isRecord(value)) {
-    return undefined;
-  }
-
-  const entries = Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === 'string');
-  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
-};
-
-const sanitizeMcpAuth = (value: unknown): McpServerConfig['auth'] | undefined => {
-  if (!isRecord(value)) {
-    return undefined;
-  }
-
-  if (value.type === 'none' || value.type === 'customHeaders') {
-    return { type: value.type };
-  }
-
-  if (value.type === 'bearer') {
-    const token = typeof value.token === 'string' ? value.token.trim() : '';
-    return {
-      type: 'bearer',
-      ...(token ? { token } : {}),
-    };
-  }
-
-  return undefined;
-};
-
-const isValidMcpHttpUrl = (value: string): boolean => {
-  try {
-    const parsedUrl = new URL(value);
-    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
-  } catch {
-    return false;
-  }
-};
-
-const isPrivateMcpHttpHostname = (hostname: string): boolean => {
-  const normalizedHostname = hostname.replace(/^\[|\]$/g, '');
-  const ipVersion = net.isIP(normalizedHostname);
-
-  if (ipVersion === 4) {
-    const [first, second] = normalizedHostname.split('.').map((part) => Number(part));
-    return (
-      first === 10 ||
-      first === 127 ||
-      (first === 172 && second >= 16 && second <= 31) ||
-      (first === 192 && second === 168) ||
-      (first === 169 && second === 254) ||
-      first === 0
-    );
-  }
-
-  if (ipVersion === 6) {
-    const lower = normalizedHostname.toLowerCase();
-    return lower === '::1' || lower.startsWith('fc') || lower.startsWith('fd') || lower.startsWith('fe80:');
-  }
-
-  return ['localhost', 'localhost.localdomain'].includes(normalizedHostname.toLowerCase());
-};
-
 const isPrivateMcpHttpUrl = (value: string): boolean => {
   try {
-    return isPrivateMcpHttpHostname(new URL(value).hostname);
+    return isPrivateNetworkHostname(new URL(value).hostname);
   } catch {
     return false;
   }

@@ -92,30 +92,15 @@ const readStoredScrollSnapshot = (sessionId: string) => {
 };
 
 describe('useMessageListScroll', () => {
-  let storage: Map<string, string>;
-
   beforeEach(() => {
     vi.useFakeTimers();
-    storage = new Map<string, string>();
-    vi.stubGlobal('localStorage', {
-      getItem: (key: string) => storage.get(key) ?? null,
-      setItem: (key: string, value: string) => {
-        storage.set(key, value);
-      },
-      removeItem: (key: string) => {
-        storage.delete(key);
-      },
-      clear: () => {
-        storage.clear();
-      },
-    });
+    localStorage.clear();
   });
 
   afterEach(() => {
     vi.runOnlyPendingTimers();
     vi.useRealTimers();
     vi.restoreAllMocks();
-    vi.unstubAllGlobals();
   });
 
   it('syncs the scroller element, persists a visible message anchor, and respects bottom-state updates', () => {
@@ -238,6 +223,51 @@ describe('useMessageListScroll', () => {
     unmount();
   });
 
+  it('persists a bottom snapshot instead of a visible message anchor near the bottom', () => {
+    const { result, unmount } = renderHook(() =>
+      useMessageListScroll({
+        messages: createMessages(),
+        setScrollContainerRef: vi.fn(),
+        activeSessionId: 'session-near-bottom',
+      }),
+    );
+
+    const scroller = document.createElement('div');
+    Object.defineProperties(scroller, {
+      scrollTop: { value: 946, writable: true },
+      scrollHeight: { value: 1600, writable: true },
+      clientHeight: { value: 630, writable: true },
+    });
+    setElementTop(scroller, 100);
+
+    const visibleUserMessage = document.createElement('div');
+    visibleUserMessage.dataset.messageId = 'message-3';
+    setElementTop(visibleUserMessage, 124);
+    scroller.appendChild(visibleUserMessage);
+
+    const visibleModelMessage = document.createElement('div');
+    visibleModelMessage.dataset.messageId = 'message-4';
+    setElementTop(visibleModelMessage, 260);
+    scroller.appendChild(visibleModelMessage);
+
+    act(() => {
+      result.current.handleScrollerRef(scroller);
+      vi.advanceTimersByTime(50);
+    });
+
+    act(() => {
+      result.current.handleScroll();
+      vi.advanceTimersByTime(300);
+    });
+
+    expect(readStoredScrollSnapshot('session-near-bottom')).toEqual({
+      atBottom: true,
+      scrollTop: 946,
+    });
+
+    unmount();
+  });
+
   it('shows the previous-turn control while reading a long single-turn response', () => {
     const { result, unmount } = renderHook(() =>
       useMessageListScroll({
@@ -317,6 +347,35 @@ describe('useMessageListScroll', () => {
 
     expect(scrollTo).not.toHaveBeenCalled();
     expect(scrollToIndex).toHaveBeenCalledWith({ index: 2, align: 'start', offset: -18 });
+
+    unmount();
+  });
+
+  it('restores saved bottom snapshots through the footer spacer', () => {
+    localStorage.setItem('chat_scroll_pos_session-bottom-restore', JSON.stringify({ atBottom: true, scrollTop: 946 }));
+
+    const { result, unmount } = renderHook(() =>
+      useMessageListScroll({
+        messages: createMessages(),
+        setScrollContainerRef: vi.fn(),
+        activeSessionId: 'session-bottom-restore',
+      }),
+    );
+
+    const scrollTo = vi.fn();
+    const scrollToIndex = vi.fn();
+    const virtuosoRef = result.current.virtuosoRef as unknown as { current: VirtuosoHandle | null };
+    virtuosoRef.current = {
+      scrollTo,
+      scrollToIndex,
+    } as unknown as VirtuosoHandle;
+
+    act(() => {
+      vi.advanceTimersByTime(50);
+    });
+
+    expect(scrollTo).not.toHaveBeenCalled();
+    expect(scrollToIndex).toHaveBeenCalledWith({ index: 'LAST', align: 'end' });
 
     unmount();
   });

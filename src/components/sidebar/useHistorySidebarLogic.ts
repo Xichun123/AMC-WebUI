@@ -9,6 +9,8 @@ import { FOCUS_HISTORY_SEARCH_EVENT } from '@/constants/shortcuts';
 
 type HistoryTranslator = (key: string) => string;
 
+const TITLE_UPDATE_FEEDBACK_MS = 1500;
+
 interface UseHistorySidebarLogicProps {
   isOpen: boolean;
   onToggle: () => void;
@@ -114,9 +116,6 @@ export const useHistorySidebarLogic = ({
 
   const { document: targetDocument, window: targetWindow } = useWindowContext();
 
-  // --- Effects ---
-
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) setActiveMenu(null);
@@ -125,7 +124,6 @@ export const useHistorySidebarLogic = ({
     return () => targetDocument.removeEventListener('mousedown', handleClickOutside);
   }, [activeMenu, targetDocument]);
 
-  // Auto-focus input when editing starts
   useEffect(() => {
     if (editingItem) editInputRef.current?.focus();
   }, [editingItem]);
@@ -143,7 +141,6 @@ export const useHistorySidebarLogic = ({
     return () => targetDocument.removeEventListener(FOCUS_HISTORY_SEARCH_EVENT, handleFocusHistorySearch);
   }, [isOpen, onToggle, targetDocument, targetWindow]);
 
-  // Animation for newly titled sessions
   useEffect(() => {
     const prevIds = prevGeneratingTitleSessionIdsRef.current;
     const completedIds = new Set<string>();
@@ -152,12 +149,12 @@ export const useHistorySidebarLogic = ({
     });
     completedIds.forEach((completedId) => {
       setNewlyTitledSessionId(completedId);
-      setTimeout(() => setNewlyTitledSessionId((p) => (p === completedId ? null : p)), 1500);
+      setTimeout(() => setNewlyTitledSessionId((p) => (p === completedId ? null : p)), TITLE_UPDATE_FEEDBACK_MS);
     });
     prevGeneratingTitleSessionIdsRef.current = generatingTitleSessionIds;
   }, [generatingTitleSessionIds]);
 
-  // Search Effect - Async Content Search
+  // Debounced DB-backed content search.
   useEffect(() => {
     const trimmedQuery = searchQuery.trim();
     if (!trimmedQuery) return;
@@ -166,62 +163,58 @@ export const useHistorySidebarLogic = ({
       try {
         const ids = await dbService.searchSessions(trimmedQuery);
         setSearchResults({ query: trimmedQuery, ids: new Set(ids) });
-      } catch (e) {
-        logService.error('Search error', e);
+      } catch (searchError) {
+        logService.error('Search error', searchError);
       }
     }, 300);
 
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // --- Data Processing (Memoized) ---
-
   const filteredSessions = useMemo(() => {
     const trimmedQuery = searchQuery.trim();
     if (!trimmedQuery) return sessions;
 
-    // Use DB results if available and matching current query
-    if (searchResults && searchResults.query === trimmedQuery) {
-      return sessions.filter((session) => searchResults.ids.has(session.id));
+    const freshSearchResults = searchResults?.query === trimmedQuery ? searchResults : null;
+    if (freshSearchResults) {
+      return sessions.filter((session) => freshSearchResults.ids.has(session.id));
     }
 
-    // Fallback filter (metadata only) while searching or before DB results ready
-    // This ensures the UI remains responsive, though it may temporarily miss content-only matches until async search completes
     const query = trimmedQuery.toLowerCase();
     return sessions.filter((session) => {
       if (session.title.toLowerCase().includes(query)) return true;
-      // Check messages if available (usually only for active session in memory)
       return session.messages.some((message) => message.content.toLowerCase().includes(query));
     });
   }, [sessions, searchQuery, searchResults]);
 
   const sessionsByGroupId = useMemo(() => {
     const map = new Map<string | null, SavedChatSession[]>();
-    map.set(null, []); // For ungrouped sessions
+    map.set(null, []);
     groups.forEach((group) => map.set(group.id, []));
     filteredSessions.forEach((session) => {
       const key = session.groupId && map.has(session.groupId) ? session.groupId : null;
       map.get(key)?.push(session);
     });
     map.forEach((sessionList) =>
-      sessionList.sort((a, b) => {
-        if (a.isPinned && !b.isPinned) return -1;
-        if (!a.isPinned && b.isPinned) return 1;
-        return b.timestamp - a.timestamp;
+      sessionList.sort((leftSession, rightSession) => {
+        if (leftSession.isPinned && !rightSession.isPinned) return -1;
+        if (!leftSession.isPinned && rightSession.isPinned) return 1;
+        return rightSession.timestamp - leftSession.timestamp;
       }),
     );
     return map;
   }, [filteredSessions, groups]);
 
-  const sortedGroups = useMemo(() => [...groups].sort((a, b) => b.timestamp - a.timestamp), [groups]);
+  const sortedGroups = useMemo(
+    () => [...groups].sort((leftGroup, rightGroup) => rightGroup.timestamp - leftGroup.timestamp),
+    [groups],
+  );
 
   const categorizedUngroupedSessions = useMemo(() => {
     const ungroupedSessions = sessionsByGroupId.get(null) || [];
-    const unpinned = ungroupedSessions.filter((s) => !s.isPinned);
+    const unpinned = ungroupedSessions.filter((session) => !session.isPinned);
     return categorizeSessionsByDate(unpinned, language, t);
   }, [sessionsByGroupId, t, language]);
-
-  // --- Handlers ---
 
   const handleStartEdit = (type: 'session' | 'group', item: SavedChatSession | ChatGroup) => {
     const title = 'title' in item ? item.title : '';
@@ -246,33 +239,32 @@ export const useHistorySidebarLogic = ({
     setEditingItem(null);
   };
 
-  const handleRenameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleRenameConfirm();
-    else if (e.key === 'Escape') handleRenameCancel();
+  const handleRenameKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter' && !event.nativeEvent.isComposing) handleRenameConfirm();
+    else if (event.key === 'Escape') handleRenameCancel();
   };
 
-  const toggleMenu = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
+  const toggleMenu = (event: React.MouseEvent, id: string) => {
+    event.stopPropagation();
     setActiveMenu(activeMenu === id ? null : id);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e: React.DragEvent, groupId: string | null) => {
-    e.preventDefault();
-    e.stopPropagation(); // Stop bubbling to prevent double drops
-    const sessionId = e.dataTransfer.getData('sessionId');
+  const handleDrop = (event: React.DragEvent, groupId: string | null) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const sessionId = event.dataTransfer.getData('sessionId');
     const targetGroupId = groupId === 'all-conversations' ? null : groupId;
     if (sessionId) onMoveSessionToGroup(sessionId, targetGroupId);
     setDragOverId(null);
   };
 
-  const handleMainDragLeave = (e: React.DragEvent) => {
-    // Only reset if leaving the main container, not entering a child
-    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+  const handleMainDragLeave = (event: React.DragEvent) => {
+    if (event.currentTarget.contains(event.relatedTarget as Node)) return;
     setDragOverId(null);
   };
 
@@ -281,15 +273,14 @@ export const useHistorySidebarLogic = ({
     setIsSearching(true);
   };
 
-  const handleEmptySpaceClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
+  const handleEmptySpaceClick = (event: React.MouseEvent) => {
+    if (event.target === event.currentTarget) {
       onToggle();
     }
   };
 
   const handleSessionSelect = (sessionId: string) => {
     onSelectSession(sessionId);
-    // Auto-close sidebar on mobile
     if (targetWindow.innerWidth < DESKTOP_BREAKPOINT_PX) {
       onAutoClose();
     }

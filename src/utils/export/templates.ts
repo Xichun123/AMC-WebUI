@@ -153,18 +153,18 @@ export const generateExportTxtTemplate = ({
   const header = [`Chat: ${title}`, `Date: ${date}`, `Model: ${model}`, '='.repeat(40), ''].join('\n');
 
   const body = messages
-    .map((msg) => {
-      const roleTitle = msg.role.toUpperCase();
-      const timeStr = new Date(msg.timestamp).toLocaleString();
-      let text = `### ${roleTitle} [${timeStr}]\n`;
+    .map((message) => {
+      const roleTitle = message.role.toUpperCase();
+      const timestampText = new Date(message.timestamp).toLocaleString();
+      let text = `### ${roleTitle} [${timestampText}]\n`;
 
-      if (msg.files && msg.files.length > 0) {
-        msg.files.forEach((file) => {
+      if (message.files && message.files.length > 0) {
+        message.files.forEach((file) => {
           text += `[Attachment: ${file.name}]\n`;
         });
       }
 
-      text += msg.content;
+      text += message.content;
       return text;
     })
     .join(`\n\n${separator}\n\n`);

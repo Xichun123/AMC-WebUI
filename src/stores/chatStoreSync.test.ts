@@ -1,17 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SavedChatSession } from '@/types';
 import type { SyncMessage } from '@/types/sync';
-import { createChatSettings } from '@/test/data/factories';
+import { createSavedChatSessionMetadata } from '@/test/data/factories';
 import { setupChatStoreSync } from './chatStoreSync';
-
-const makeSession = (overrides: Partial<SavedChatSession> = {}): SavedChatSession => ({
-  id: 'session',
-  title: 'Session',
-  timestamp: 0,
-  messages: [],
-  settings: createChatSettings(),
-  ...overrides,
-});
 
 function createChannel(originalOnMessage?: (event: MessageEvent<SyncMessage>) => void) {
   let messageHandler: ((event: MessageEvent<SyncMessage>) => void) | undefined;
@@ -139,8 +130,8 @@ describe('chatStoreSync', () => {
   it('hydrates active session content updates from the database', async () => {
     const channel = createChannel();
     const message = { id: 'message', role: 'model' as const, content: 'fresh', timestamp: new Date() };
-    const persistedSession = makeSession({ id: 'active', messages: [message] });
-    const rehydratedSession = makeSession({ id: 'active', messages: [message] });
+    const persistedSession = createSavedChatSessionMetadata({ id: 'active', messages: [message] });
+    const rehydratedSession = createSavedChatSessionMetadata({ id: 'active', messages: [message] });
     const setActiveMessages = vi.fn();
     const setSavedSessions = vi.fn();
 
@@ -172,7 +163,7 @@ describe('chatStoreSync', () => {
     });
 
     const updateSavedSessions = setSavedSessions.mock.calls[0][0] as (prev: SavedChatSession[]) => SavedChatSession[];
-    expect(updateSavedSessions([makeSession({ id: 'active', messages: [message] })])).toEqual([
+    expect(updateSavedSessions([createSavedChatSessionMetadata({ id: 'active', messages: [message] })])).toEqual([
       { ...rehydratedSession, messages: [] },
     ]);
   });

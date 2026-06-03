@@ -11,6 +11,7 @@ interface ImageViewerProps {
 const MIN_SCALE = 0.2;
 const MAX_SCALE = 10;
 const ZOOM_SPEED_FACTOR = 1.1;
+const BUTTON_ZOOM_FACTOR = 1.5;
 
 const ImageViewerContent: React.FC<ImageViewerProps> = ({ file }) => {
   const { t } = useI18n();
@@ -31,7 +32,10 @@ const ImageViewerContent: React.FC<ImageViewerProps> = ({ file }) => {
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
 
-      const newScale = direction === 'in' ? Math.min(MAX_SCALE, scale * 1.5) : Math.max(MIN_SCALE, scale / 1.5);
+      const newScale =
+        direction === 'in'
+          ? Math.min(MAX_SCALE, scale * BUTTON_ZOOM_FACTOR)
+          : Math.max(MIN_SCALE, scale / BUTTON_ZOOM_FACTOR);
 
       if (newScale === scale) return;
 
@@ -104,10 +108,8 @@ const ImageViewerContent: React.FC<ImageViewerProps> = ({ file }) => {
     setIsDragging(false);
   };
 
-  // Touch Handlers
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     if (event.touches.length === 1) {
-      // Single touch - Pan
       const touch = event.touches[0];
       setDragStart({
         x: touch.clientX - position.x,
@@ -115,16 +117,17 @@ const ImageViewerContent: React.FC<ImageViewerProps> = ({ file }) => {
       });
       setIsDragging(true);
     } else if (event.touches.length === 2) {
-      // Dual touch - Pinch
-      setIsDragging(false); // Stop panning
-      const t1 = event.touches[0];
-      const t2 = event.touches[1];
-      lastDistRef.current = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+      setIsDragging(false);
+      const firstTouch = event.touches[0];
+      const secondTouch = event.touches[1];
+      lastDistRef.current = Math.hypot(
+        firstTouch.clientX - secondTouch.clientX,
+        firstTouch.clientY - secondTouch.clientY,
+      );
     }
   };
 
   const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-    // Prevent default handled by CSS touch-action: none mostly, but good practice if not scrolling
     if (event.touches.length === 1 && isDragging) {
       const touch = event.touches[0];
       setPosition({
@@ -132,33 +135,30 @@ const ImageViewerContent: React.FC<ImageViewerProps> = ({ file }) => {
         y: touch.clientY - dragStart.y,
       });
     } else if (event.touches.length === 2 && lastDistRef.current && viewportRef.current && imageRef.current) {
-      const t1 = event.touches[0];
-      const t2 = event.touches[1];
-      const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+      const firstTouch = event.touches[0];
+      const secondTouch = event.touches[1];
+      const touchDistance = Math.hypot(
+        firstTouch.clientX - secondTouch.clientX,
+        firstTouch.clientY - secondTouch.clientY,
+      );
 
-      // Calculate new scale based on distance ratio
-      const ratio = dist / lastDistRef.current;
-      const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * ratio));
+      const pinchScaleRatio = touchDistance / lastDistRef.current;
+      const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * pinchScaleRatio));
 
       if (newScale !== scale) {
-        // Calculate center of pinch relative to viewport
         const rect = viewportRef.current.getBoundingClientRect();
-        const midX = (t1.clientX + t2.clientX) / 2 - rect.left;
-        const midY = (t1.clientY + t2.clientY) / 2 - rect.top;
+        const pinchCenterX = (firstTouch.clientX + secondTouch.clientX) / 2 - rect.left;
+        const pinchCenterY = (firstTouch.clientY + secondTouch.clientY) / 2 - rect.top;
 
         const imageOffsetX = imageRef.current.offsetLeft;
         const imageOffsetY = imageRef.current.offsetTop;
-
-        // Effective ratio for position adjustment
-        const effectiveRatio = newScale / scale;
-
-        // Adjust position to zoom towards the pinch center
-        const newPositionX = (midX - imageOffsetX) * (1 - effectiveRatio) + position.x * effectiveRatio;
-        const newPositionY = (midY - imageOffsetY) * (1 - effectiveRatio) + position.y * effectiveRatio;
+        const positionScaleRatio = newScale / scale;
+        const newPositionX = (pinchCenterX - imageOffsetX) * (1 - positionScaleRatio) + position.x * positionScaleRatio;
+        const newPositionY = (pinchCenterY - imageOffsetY) * (1 - positionScaleRatio) + position.y * positionScaleRatio;
 
         setPosition({ x: newPositionX, y: newPositionY });
         setScale(newScale);
-        lastDistRef.current = dist;
+        lastDistRef.current = touchDistance;
       }
     }
   };

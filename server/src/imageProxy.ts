@@ -1,35 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import net from 'node:net';
 import { getCorsHeaders, sendJson } from './cors.js';
+import { isPrivateNetworkHostname } from './privateNetwork.js';
 
 export const IMAGE_PROXY_PATH = '/api/image-proxy';
 
 const MAX_IMAGE_PROXY_BYTES = 25 * 1024 * 1024;
-
-function isPrivateIpAddress(hostname: string): boolean {
-  const normalizedHostname = hostname.replace(/^\[|\]$/g, '');
-  const ipVersion = net.isIP(normalizedHostname);
-
-  if (ipVersion === 4) {
-    const parts = normalizedHostname.split('.').map((part) => Number(part));
-    const [first, second] = parts;
-    return (
-      first === 10 ||
-      first === 127 ||
-      (first === 172 && second >= 16 && second <= 31) ||
-      (first === 192 && second === 168) ||
-      (first === 169 && second === 254) ||
-      first === 0
-    );
-  }
-
-  if (ipVersion === 6) {
-    const lower = normalizedHostname.toLowerCase();
-    return lower === '::1' || lower.startsWith('fc') || lower.startsWith('fd') || lower.startsWith('fe80:');
-  }
-
-  return ['localhost', 'localhost.localdomain'].includes(normalizedHostname.toLowerCase());
-}
 
 function parseAllowedImageProxyUrl(value: string | null): URL | null {
   if (!value) {
@@ -41,7 +16,7 @@ function parseAllowedImageProxyUrl(value: string | null): URL | null {
     if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
       return null;
     }
-    if (parsedUrl.username || parsedUrl.password || isPrivateIpAddress(parsedUrl.hostname)) {
+    if (parsedUrl.username || parsedUrl.password || isPrivateNetworkHostname(parsedUrl.hostname)) {
       return null;
     }
     return parsedUrl;

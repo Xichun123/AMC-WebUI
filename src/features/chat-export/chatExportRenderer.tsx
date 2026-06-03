@@ -7,6 +7,8 @@ import { I18nProvider } from '@/contexts/I18nContext';
 import { MessageContent } from '@/components/message/MessageContent';
 import { getVisibleChatMessages } from '@/utils/chat/visibility';
 
+const CHAT_EXPORT_RENDER_SETTLE_DELAY_MS = 100;
+
 const noop = () => {};
 
 const normalizeThemeId = (themeId: string): AppSettings['themeId'] =>
@@ -96,7 +98,7 @@ export const createChatExportElement = async (
     );
   });
 
-  await new Promise((resolve) => window.setTimeout(resolve, 100));
+  await new Promise((resolve) => window.setTimeout(resolve, CHAT_EXPORT_RENDER_SETTLE_DELAY_MS));
 
   const element = host.querySelector('.export-chat-transcript') as HTMLElement | null;
   if (!element) {

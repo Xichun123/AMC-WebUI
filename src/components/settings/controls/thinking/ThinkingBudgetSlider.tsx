@@ -7,7 +7,7 @@ interface ThinkingBudgetSliderProps {
   minBudget: number;
   maxBudget: number;
   value: string;
-  onChange: (val: string) => void;
+  onChange: (value: string) => void;
 }
 
 export const ThinkingBudgetSlider: React.FC<ThinkingBudgetSliderProps> = ({

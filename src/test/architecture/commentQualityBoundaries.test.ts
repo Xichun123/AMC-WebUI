@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { listProjectSourceFiles, readProjectFile } from './projectFiles';
+import { listProjectSourceFilesExcept, readProjectFile } from './projectFiles';
+
+const thisTestFile = 'src/test/architecture/commentQualityBoundaries.test.ts';
 
 const changeHistoryCommentFragments = [
   'New\\s+(?:method|UI|ASR|SRT)\\b',
@@ -127,9 +129,8 @@ describe('comment quality boundaries', () => {
 
   it('keeps production comments focused on current behavior instead of change history', () => {
     const changeHistoryCommentPattern = buildSourceLinePattern(changeHistoryCommentFragments, { flags: 'i' });
-    const offenders = listProjectSourceFiles('src')
+    const offenders = listProjectSourceFilesExcept('src', thisTestFile)
       .filter((relativePath) => !relativePath.includes('.test.'))
-      .filter((relativePath) => relativePath !== 'src/test/architecture/commentQualityBoundaries.test.ts')
       .filter((relativePath) =>
         readProjectFile(relativePath)
           .split('\n')
@@ -155,9 +156,8 @@ describe('comment quality boundaries', () => {
       blockCommentFragments: lowInformationBlockCommentFragments,
       trailingWordBoundary: true,
     });
-    const offenders = listProjectSourceFiles('src')
+    const offenders = listProjectSourceFilesExcept('src', thisTestFile)
       .filter((relativePath) => !relativePath.includes('.test.'))
-      .filter((relativePath) => relativePath !== 'src/test/architecture/commentQualityBoundaries.test.ts')
       .filter((relativePath) =>
         readProjectFile(relativePath)
           .split('\n')
@@ -165,5 +165,18 @@ describe('comment quality boundaries', () => {
       );
 
     expect(offenders).toEqual([]);
+  });
+
+  it('keeps production source comments descriptive instead of numbered checklists', () => {
+    const productionSourceFiles = listProjectSourceFilesExcept('src', thisTestFile).filter(
+      (relativePath) => !relativePath.endsWith('.test.ts') && !relativePath.endsWith('.test.tsx'),
+    );
+
+    const numberedCommentOffenders = productionSourceFiles.flatMap((relativePath) => {
+      const source = readProjectFile(relativePath);
+      return /^\s*\/\/\s*\d+\.\s+/m.test(source) ? [relativePath] : [];
+    });
+
+    expect(numberedCommentOffenders).toEqual([]);
   });
 });

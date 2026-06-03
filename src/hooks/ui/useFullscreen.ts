@@ -12,9 +12,9 @@ export const useFullscreen = () => {
       } else if (element.webkitRequestFullscreen) {
         await element.webkitRequestFullscreen();
       }
-    } catch (err) {
-      logService.error('Error attempting to enable full-screen mode:', err);
-      throw err; // Propagate error so callers can handle fallback
+    } catch (fullscreenError) {
+      logService.error('Error attempting to enable full-screen mode:', fullscreenError);
+      throw fullscreenError; // Propagate error so callers can handle fallback
     }
   }, []);
 
@@ -23,14 +23,14 @@ export const useFullscreen = () => {
       if (targetDocument.exitFullscreen) {
         try {
           await targetDocument.exitFullscreen();
-        } catch (err) {
-          logService.error('Error attempting to disable full-screen mode:', err);
+        } catch (fullscreenError) {
+          logService.error('Error attempting to disable full-screen mode:', fullscreenError);
         }
       } else if (targetDocument.webkitExitFullscreen) {
         try {
           await targetDocument.webkitExitFullscreen();
-        } catch (err) {
-          logService.error('Error attempting to disable webkit full-screen mode:', err);
+        } catch (fullscreenError) {
+          logService.error('Error attempting to disable webkit full-screen mode:', fullscreenError);
         }
       }
     }

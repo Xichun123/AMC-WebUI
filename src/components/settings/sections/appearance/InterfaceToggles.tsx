@@ -42,19 +42,19 @@ export const InterfaceToggles: React.FC<InterfaceTogglesProps> = ({ settings, on
           <ToggleItem
             label={t('settings_showInputTranslationButton_label')}
             checked={settings.showInputTranslationButton ?? false}
-            onChange={(v) => onUpdate('showInputTranslationButton', v)}
+            onChange={(enabled) => onUpdate('showInputTranslationButton', enabled)}
             tooltip={t('settings_showInputTranslationButton_tooltip')}
           />
           <ToggleItem
             label={t('settings_showInputPasteButton_label')}
             checked={settings.showInputPasteButton ?? true}
-            onChange={(v) => onUpdate('showInputPasteButton', v)}
+            onChange={(enabled) => onUpdate('showInputPasteButton', enabled)}
             tooltip={t('settings_showInputPasteButton_tooltip')}
           />
           <ToggleItem
             label={t('settings_showInputClearButton_label')}
             checked={settings.showInputClearButton ?? true}
-            onChange={(v) => onUpdate('showInputClearButton', v)}
+            onChange={(enabled) => onUpdate('showInputClearButton', enabled)}
             tooltip={t('settings_showInputClearButton_tooltip')}
           />
         </div>
@@ -68,44 +68,44 @@ export const InterfaceToggles: React.FC<InterfaceTogglesProps> = ({ settings, on
           <ToggleItem
             label={t('headerStream')}
             checked={settings.isStreamingEnabled}
-            onChange={(v) => onUpdate('isStreamingEnabled', v)}
+            onChange={(enabled) => onUpdate('isStreamingEnabled', enabled)}
           />
           <ToggleItem
             label={t('settings_pasteRichTextAsMarkdown_label')}
             checked={settings.isPasteRichTextAsMarkdownEnabled ?? true}
-            onChange={(v) => onUpdate('isPasteRichTextAsMarkdownEnabled', v)}
+            onChange={(enabled) => onUpdate('isPasteRichTextAsMarkdownEnabled', enabled)}
             tooltip={t('settings_pasteRichTextAsMarkdown_tooltip')}
           />
           <ToggleItem
             label={t('settings_pasteAsTextFile_label')}
             checked={settings.isPasteAsTextFileEnabled ?? true}
-            onChange={(v) => onUpdate('isPasteAsTextFileEnabled', v)}
+            onChange={(enabled) => onUpdate('isPasteAsTextFileEnabled', enabled)}
             tooltip={t('settings_pasteAsTextFile_tooltip')}
           />
           <ToggleItem
             label={t('settings_copySelectionFormatting_label')}
             checked={settings.isCopySelectionFormattingEnabled ?? true}
-            onChange={(v) => onUpdate('isCopySelectionFormattingEnabled', v)}
+            onChange={(enabled) => onUpdate('isCopySelectionFormattingEnabled', enabled)}
             tooltip={t('settings_copySelectionFormatting_tooltip')}
           />
 
           <ToggleItem
             label={t('isAutoTitleEnabled')}
             checked={settings.isAutoTitleEnabled}
-            onChange={(v) => onUpdate('isAutoTitleEnabled', v)}
+            onChange={(enabled) => onUpdate('isAutoTitleEnabled', enabled)}
           />
 
           <ToggleItem
             label={t('settings_enableSuggestions_label')}
             checked={settings.isSuggestionsEnabled}
-            onChange={(v) => onUpdate('isSuggestionsEnabled', v)}
+            onChange={(enabled) => onUpdate('isSuggestionsEnabled', enabled)}
             tooltip={t('settings_enableSuggestions_tooltip')}
           />
 
           <ToggleItem
             label={t('settings_autoScrollOnSend_label')}
             checked={settings.isAutoScrollOnSendEnabled ?? true}
-            onChange={(v) => onUpdate('isAutoScrollOnSendEnabled', v)}
+            onChange={(enabled) => onUpdate('isAutoScrollOnSendEnabled', enabled)}
           />
           <ToggleItem
             label={t('settings_enableCompletionNotification_label')}
@@ -116,36 +116,36 @@ export const InterfaceToggles: React.FC<InterfaceTogglesProps> = ({ settings, on
           <ToggleItem
             label={t('settings_enableCompletionSound_label')}
             checked={settings.isCompletionSoundEnabled ?? false}
-            onChange={(v) => onUpdate('isCompletionSoundEnabled', v)}
+            onChange={(enabled) => onUpdate('isCompletionSoundEnabled', enabled)}
             tooltip={t('settings_enableCompletionSound_tooltip')}
           />
           <ToggleItem
             label={t('settings_expandCodeBlocksByDefault_label')}
             checked={settings.expandCodeBlocksByDefault}
-            onChange={(v) => onUpdate('expandCodeBlocksByDefault', v)}
+            onChange={(enabled) => onUpdate('expandCodeBlocksByDefault', enabled)}
           />
           <ToggleItem
             label={t('settings_autoFullscreenHtml_label')}
             checked={settings.autoFullscreenHtml ?? true}
-            onChange={(v) => onUpdate('autoFullscreenHtml', v)}
+            onChange={(enabled) => onUpdate('autoFullscreenHtml', enabled)}
             tooltip={t('settings_autoFullscreenHtml_tooltip')}
           />
           <ToggleItem
             label={t('settings_enableMermaidRendering_label')}
             checked={settings.isMermaidRenderingEnabled}
-            onChange={(v) => onUpdate('isMermaidRenderingEnabled', v)}
+            onChange={(enabled) => onUpdate('isMermaidRenderingEnabled', enabled)}
             tooltip={t('settings_enableMermaidRendering_tooltip')}
           />
           <ToggleItem
             label={t('settings_enableGraphvizRendering_label')}
             checked={settings.isGraphvizRenderingEnabled ?? true}
-            onChange={(v) => onUpdate('isGraphvizRenderingEnabled', v)}
+            onChange={(enabled) => onUpdate('isGraphvizRenderingEnabled', enabled)}
             tooltip={t('settings_enableGraphvizRendering_tooltip')}
           />
           <ToggleItem
             label={t('settings_audioCompression_label')}
             checked={settings.isAudioCompressionEnabled}
-            onChange={(v) => onUpdate('isAudioCompressionEnabled', v)}
+            onChange={(enabled) => onUpdate('isAudioCompressionEnabled', enabled)}
             tooltip={t('settings_audioCompression_tooltip')}
           />
         </div>

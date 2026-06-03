@@ -179,18 +179,22 @@ export const useScenarioManager = ({
   );
 
   const handleImportScenarios = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = (event) => {
         try {
           const text = event.target?.result as string;
-          const data = JSON.parse(text);
+          const importPayload = JSON.parse(text);
 
-          if (data && data.type === 'AllModelChat-Scenarios' && Array.isArray(data.scenarios)) {
-            const importedScenarios = data.scenarios as SavedScenario[];
+          if (
+            importPayload &&
+            importPayload.type === 'AllModelChat-Scenarios' &&
+            Array.isArray(importPayload.scenarios)
+          ) {
+            const importedScenarios = importPayload.scenarios as SavedScenario[];
             setScenarios((prev) =>
               buildSavedScenarios(
                 mergeImportedScenarios({

@@ -1,13 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import fs from 'fs';
-import path from 'path';
-import { projectRoot } from './projectFiles';
-
-const markdownCssPath = path.join(projectRoot, 'src/styles/markdown.css');
+import { readMarkdownCss } from './projectFiles';
 
 describe('message long text styling', () => {
   it('allows long unbroken message text to wrap inside the bubble', () => {
-    const css = fs.readFileSync(markdownCssPath, 'utf8');
+    const css = readMarkdownCss();
 
     expect(css).toContain('.message-content-container .markdown-body');
     expect(css).toContain('max-width: 100%;');

@@ -1,35 +1,20 @@
 import { act } from 'react';
+import { installTestAnimationFrameController, type TestAnimationFrameController } from '@/test/browser/animationFrames';
 import { setupTestRenderer } from '@/test/render/renderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AudioVisualizer } from './AudioVisualizer';
 
 describe('AudioVisualizer', () => {
   const renderer = setupTestRenderer();
-  let scheduledFrames: Map<number, FrameRequestCallback>;
-  let nextFrameId: number;
+  let animationFrames: TestAnimationFrameController;
   let getComputedStyleSpy: ReturnType<typeof vi.spyOn>;
   let getContextSpy: ReturnType<typeof vi.spyOn>;
   let closeAudioContext: ReturnType<typeof vi.fn>;
 
-  const flushNextFrame = () => {
-    const nextFrame = scheduledFrames.entries().next().value as [number, FrameRequestCallback] | undefined;
-    if (!nextFrame) return false;
-
-    const [frameId, callback] = nextFrame;
-    scheduledFrames.delete(frameId);
-
-    act(() => {
-      callback(16);
-    });
-
-    return true;
-  };
-
   beforeEach(() => {
     vi.useFakeTimers();
 
-    scheduledFrames = new Map<number, FrameRequestCallback>();
-    nextFrameId = 0;
+    animationFrames = installTestAnimationFrameController();
     closeAudioContext = vi.fn().mockResolvedValue(undefined);
 
     getComputedStyleSpy = vi.spyOn(window, 'getComputedStyle').mockReturnValue({
@@ -43,22 +28,6 @@ describe('AudioVisualizer', () => {
       roundRect: vi.fn(),
       set fillStyle(_value: string) {},
     } as unknown as CanvasRenderingContext2D);
-
-    vi.stubGlobal(
-      'requestAnimationFrame',
-      vi.fn((callback: FrameRequestCallback) => {
-        const frameId = ++nextFrameId;
-        scheduledFrames.set(frameId, callback);
-        return frameId;
-      }),
-    );
-
-    vi.stubGlobal(
-      'cancelAnimationFrame',
-      vi.fn((frameId: number) => {
-        scheduledFrames.delete(frameId);
-      }),
-    );
 
     function FakeAudioContext() {
       return {
@@ -99,9 +68,9 @@ describe('AudioVisualizer', () => {
 
     expect(getComputedStyleSpy).toHaveBeenCalledTimes(1);
 
-    flushNextFrame();
-    flushNextFrame();
-    flushNextFrame();
+    animationFrames.flushNextFrame(16);
+    animationFrames.flushNextFrame(16);
+    animationFrames.flushNextFrame(16);
 
     expect(getComputedStyleSpy).toHaveBeenCalledTimes(1);
   });

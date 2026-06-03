@@ -148,24 +148,24 @@ export const useChatStreamHandler = ({
           );
         }
 
-        // Perform the Final Update to State (and DB)
         updateAndPersistSessions(
-          (prev) =>
-            updateSessionById(prev, currentSessionId, (sessionToUpdate) => {
-              const updatedMessages = sessionToUpdate.messages.map((msg) => {
-                if (msg.id === generationId) {
+          (previousSessions) =>
+            updateSessionById(previousSessions, currentSessionId, (sessionToUpdate) => {
+              const updatedMessages = sessionToUpdate.messages.map((message) => {
+                if (message.id === generationId) {
                   return {
-                    ...msg,
-                    content: (msg.content || '') + streamState.content,
-                    thoughts: (msg.thoughts || '') + streamState.thoughts,
-                    files: streamState.files.length ? mergeUniqueFiles(msg.files, streamState.files) : msg.files,
-                    apiParts: msg.apiParts ? [...msg.apiParts, ...streamState.apiParts] : streamState.apiParts,
+                    ...message,
+                    content: (message.content || '') + streamState.content,
+                    thoughts: (message.thoughts || '') + streamState.thoughts,
+                    files: streamState.files.length
+                      ? mergeUniqueFiles(message.files, streamState.files)
+                      : message.files,
+                    apiParts: message.apiParts ? [...message.apiParts, ...streamState.apiParts] : streamState.apiParts,
                   };
                 }
-                return msg;
+                return message;
               });
 
-              // Finalize (mark loading false, set stats)
               const finalizationResult = finalizeMessages({
                 messages: updatedMessages,
                 generationStartTime,

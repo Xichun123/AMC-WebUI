@@ -22,6 +22,7 @@ interface GroundedResponseProps {
   themeId: string;
   onOpenSidePanel: (content: SideViewContent) => void;
   files?: UploadedFile[];
+  liveArtifactFontSize?: number;
 }
 
 interface SearchQueryMetadata {
@@ -169,6 +170,7 @@ export const GroundedResponse: React.FC<GroundedResponseProps> = ({
   themeId,
   onOpenSidePanel,
   files,
+  liveArtifactFontSize,
 }) => {
   const content = useMemo(() => insertCitations(text, metadata), [text, metadata]);
   const sources = useMemo(() => extractSources(metadata), [metadata]);
@@ -200,6 +202,7 @@ export const GroundedResponse: React.FC<GroundedResponseProps> = ({
           themeId={themeId}
           onOpenSidePanel={onOpenSidePanel}
           files={files}
+          liveArtifactFontSize={liveArtifactFontSize}
         />
       </div>
 

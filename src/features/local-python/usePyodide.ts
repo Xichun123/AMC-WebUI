@@ -63,13 +63,13 @@ export const usePyodide = (codeKey?: string) => {
           pyodideResultCache.set(codeKey, finalState);
         }
         return finalState;
-      } catch (err) {
+      } catch (executionError) {
         const errorState: PyodideState = {
           isRunning: false,
           output: null,
           image: null,
           files: [],
-          error: err instanceof Error ? err.message : String(err),
+          error: executionError instanceof Error ? executionError.message : String(executionError),
           hasRun: true,
         };
         setState(errorState);

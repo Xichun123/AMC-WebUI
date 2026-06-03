@@ -16,8 +16,15 @@ type Translator = ReturnType<typeof getTranslator>;
 const INLINE_MAX_REQUEST_PAYLOAD_BYTES = 100 * 1024 * 1024;
 const INLINE_MAX_PDF_PAYLOAD_BYTES = 50 * 1024 * 1024;
 const INLINE_PART_JSON_OVERHEAD_BYTES = 512;
+const GENERIC_TEXT_MIME_TYPE = 'text/plain';
+const GENERIC_BINARY_MIME_TYPE = 'application/octet-stream';
 
 export const DIRECTORY_PLACEHOLDER_MIME_TYPE = 'application/x-directory';
+
+const getFilenameExtension = (filename: string): string => {
+  const lastDotIndex = filename.lastIndexOf('.');
+  return lastDotIndex === -1 ? '' : filename.slice(lastDotIndex).toLowerCase();
+};
 
 const getFileSignature = (file: Pick<File, 'name' | 'size'>) => `${file.name.toLowerCase()}::${file.size}`;
 
@@ -49,12 +56,13 @@ export const formatSpeed = (bytesPerSecond: number): string => {
 
 export const getEffectiveMimeType = (file: File): string => {
   const effectiveMimeType = file.type;
-  const fileExtension = `.${file.name.split('.').pop()?.toLowerCase()}`;
-  const mappedMimeType = EXTENSION_TO_MIME[fileExtension];
-  const shouldPreferMappedTextMime =
-    isTextFile(file) &&
-    !!mappedMimeType &&
-    (!effectiveMimeType || effectiveMimeType === 'text/plain' || effectiveMimeType === 'application/octet-stream');
+  const mappedMimeType = EXTENSION_TO_MIME[getFilenameExtension(file.name)];
+  const isGenericBrowserTextMimeType =
+    !effectiveMimeType ||
+    effectiveMimeType === GENERIC_TEXT_MIME_TYPE ||
+    effectiveMimeType === GENERIC_BINARY_MIME_TYPE;
+  const shouldPreferMappedTextMime = isTextFile(file) && !!mappedMimeType && isGenericBrowserTextMimeType;
+  const shouldUseExtensionMimeFallback = !effectiveMimeType && mappedMimeType;
 
   if (shouldPreferMappedTextMime) {
     return mappedMimeType;
@@ -64,17 +72,15 @@ export const getEffectiveMimeType = (file: File): string => {
     return effectiveMimeType;
   }
 
-  // 1. Fall back to generic text/plain for text/code extensions when no more specific MIME is available
   if (isTextFile(file)) {
-    return 'text/plain';
+    return GENERIC_TEXT_MIME_TYPE;
   }
 
-  // 2. Fallback for missing MIME types based on extension
-  if (!effectiveMimeType && mappedMimeType) {
+  if (shouldUseExtensionMimeFallback) {
     return mappedMimeType;
   }
 
-  return effectiveMimeType || 'application/octet-stream';
+  return effectiveMimeType || GENERIC_BINARY_MIME_TYPE;
 };
 
 const estimateBase64PayloadBytes = (rawBytes: number): number => {

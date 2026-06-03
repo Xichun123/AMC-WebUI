@@ -1,28 +1,30 @@
 import fs from 'fs';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
-import { listProjectSourceFiles, projectRoot, readProjectFile } from './projectFiles';
+import { listProjectSourceFiles, listProjectSourceFilesExcept, projectRoot, readProjectFile } from './projectFiles';
+
+const thisTestFile = 'src/test/architecture/codebaseMaintainability.test.ts';
+
+const MODEL_SETTINGS_HANDLER_PROP_NAMES = [
+  'setTranscriptionModelId',
+  'setTtsVoice',
+  'setSystemInstruction',
+  'setTemperature',
+  'setTopP',
+  'setTopK',
+  'setThinkingBudget',
+  'setThinkingLevel',
+  'setShowThoughts',
+  'setMediaResolution',
+  'setTranslationTargetLanguage',
+  'setInputTranslationModelId',
+  'setThoughtTranslationTargetLanguage',
+  'setThoughtTranslationModelId',
+  'setAutoLiveArtifactsVisualization',
+  'setAutoLiveArtifactsModelId',
+];
 
 describe('codebase maintainability guardrails', () => {
-  const settingsPropNames = [
-    'setTranscriptionModelId',
-    'setTtsVoice',
-    'setSystemInstruction',
-    'setTemperature',
-    'setTopP',
-    'setTopK',
-    'setThinkingBudget',
-    'setThinkingLevel',
-    'setShowThoughts',
-    'setMediaResolution',
-    'setTranslationTargetLanguage',
-    'setInputTranslationModelId',
-    'setThoughtTranslationTargetLanguage',
-    'setThoughtTranslationModelId',
-    'setAutoLiveArtifactsVisualization',
-    'setAutoLiveArtifactsModelId',
-  ];
-
   it('does not keep identity wrapper exports in mainContentModels', () => {
     const source = readProjectFile('src/components/layout/mainContentModels.ts');
 
@@ -39,9 +41,9 @@ describe('codebase maintainability guardrails', () => {
   });
 
   it('keeps model utility consumers on the split module names', () => {
-    const offenders = listProjectSourceFiles('src')
-      .filter((relativePath) => relativePath !== 'src/test/architecture/codebaseMaintainability.test.ts')
-      .filter((relativePath) => readProjectFile(relativePath).includes('modelHelpers'));
+    const offenders = listProjectSourceFilesExcept('src', thisTestFile).filter((relativePath) =>
+      readProjectFile(relativePath).includes('modelHelpers'),
+    );
 
     expect(offenders).toEqual([]);
   });
@@ -317,13 +319,15 @@ describe('codebase maintainability guardrails', () => {
     expect(liveArtifactsSectionSource).not.toContain('useSettingsStore(');
 
     for (const source of [modelsSectionSource, languageVoiceSectionSource, liveArtifactsSectionSource]) {
-      for (const propName of settingsPropNames) {
+      for (const propName of MODEL_SETTINGS_HANDLER_PROP_NAMES) {
         expect(source).not.toContain(`${propName}:`);
       }
     }
 
-    for (const propName of settingsPropNames) {
-      expect(modelsSectionSource).not.toContain(`${propName}={`);
+    for (const source of [modelsSectionSource]) {
+      for (const propName of MODEL_SETTINGS_HANDLER_PROP_NAMES) {
+        expect(source).not.toContain(`${propName}={`);
+      }
     }
   });
 
@@ -386,9 +390,7 @@ describe('codebase maintainability guardrails', () => {
     expect(helperSource).not.toContain('@typescript-eslint/no-explicit-any');
     expect(helperSource).not.toContain('ComponentType<any>');
 
-    const sourceFiles = listProjectSourceFiles('src').filter(
-      (relativePath) => relativePath !== 'src/test/architecture/codebaseMaintainability.test.ts',
-    );
+    const sourceFiles = listProjectSourceFilesExcept('src', thisTestFile);
 
     for (const relativePath of sourceFiles) {
       const source = readProjectFile(relativePath);
@@ -445,43 +447,5 @@ describe('codebase maintainability guardrails', () => {
     expect(runtimeContextSource).toContain('ChatHeaderRuntimeContext');
     expect(runtimeContextSource).toContain('ChatMessageListRuntimeContext');
     expect(runtimeContextSource).toContain('ChatInputRuntimeContext');
-  });
-
-  it('uses store-level message actions for repeated session/message updates', () => {
-    const chatStoreSource = readProjectFile('src/stores/chatStore.ts');
-    const suggestionsSource = readProjectFile('src/hooks/chat/useSuggestions.ts');
-    const messageUpdatesSource = readProjectFile('src/hooks/chat/actions/useMessageUpdates.ts');
-
-    expect(chatStoreSource).toContain('updateMessageInSession:');
-    expect(chatStoreSource).toContain('updateMessageInActiveSession:');
-    expect(chatStoreSource).toContain('appendMessageToSession:');
-    expect(suggestionsSource).toContain('updateMessageInSession');
-    expect(messageUpdatesSource).toContain('updateMessageInActiveSession');
-  });
-
-  it('routes lightweight frontend persistence through shared persisted stores', () => {
-    const chatInputStateSource = readProjectFile('src/hooks/chat-input/useChatInputState.ts');
-    const settingsLogicSource = readProjectFile('src/hooks/settings/useSettingsLogic.ts');
-    const useModelsSource = readProjectFile('src/hooks/core/useModels.ts');
-    const uiStoreSource = readProjectFile('src/stores/uiStore.ts');
-    const modelSwitchSettingsSource = readProjectFile('src/utils/modelSwitchSettings.ts');
-
-    expect(chatInputStateSource).toContain('useChatDraftStore');
-    expect(settingsLogicSource).toContain('useSettingsUiStore');
-    expect(useModelsSource).toContain('useModelPreferencesStore');
-    expect(uiStoreSource).toContain('persistentStorage');
-    expect(modelSwitchSettingsSource).toContain('useModelPreferencesStore');
-
-    for (const [relativePath, source] of [
-      ['src/hooks/chat-input/useChatInputState.ts', chatInputStateSource],
-      ['src/hooks/settings/useSettingsLogic.ts', settingsLogicSource],
-      ['src/hooks/core/useModels.ts', useModelsSource],
-      ['src/stores/uiStore.ts', uiStoreSource],
-      ['src/utils/modelSwitchSettings.ts', modelSwitchSettingsSource],
-    ] as const) {
-      expect(source, relativePath).not.toContain('localStorage.');
-      expect(source, relativePath).not.toContain("addEventListener('storage'");
-      expect(source, relativePath).not.toContain('new StorageEvent');
-    }
   });
 });

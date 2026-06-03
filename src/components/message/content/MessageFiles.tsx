@@ -22,17 +22,15 @@ export const MessageFiles: React.FC<MessageFilesProps> = ({
   isGemini3,
   hasContentOrAudio,
 }) => {
-  // Check if the message contains a tool execution result block
   const hasToolResult = /\btool-result\b/.test(content || '');
 
-  // Separate images from other documents to handle layouts differently
   const { imageFiles, documentFiles } = useMemo(() => {
     if (!files || files.length === 0) {
       return { imageFiles: [], documentFiles: [] };
     }
 
-    const imgs: UploadedFile[] = [];
-    const docs: UploadedFile[] = [];
+    const imageAttachments: UploadedFile[] = [];
+    const documentAttachments: UploadedFile[] = [];
     files.forEach((file) => {
       // Tool result blocks already render generated outputs inline.
       // Hide any generated attachments from the top strip to avoid duplicate previews.
@@ -40,11 +38,11 @@ export const MessageFiles: React.FC<MessageFilesProps> = ({
         return;
       }
 
-      const isImg = SUPPORTED_IMAGE_MIME_TYPES.includes(file.type) || file.type === 'image/svg+xml';
-      if (isImg) imgs.push(file);
-      else docs.push(file);
+      const isImageFile = SUPPORTED_IMAGE_MIME_TYPES.includes(file.type) || file.type === 'image/svg+xml';
+      if (isImageFile) imageAttachments.push(file);
+      else documentAttachments.push(file);
     });
-    return { imageFiles: imgs, documentFiles: docs };
+    return { imageFiles: imageAttachments, documentFiles: documentAttachments };
   }, [files, hasToolResult]);
 
   if (!files || files.length === 0) return null;
@@ -55,8 +53,6 @@ export const MessageFiles: React.FC<MessageFilesProps> = ({
   const isStripImageView = imageFiles.length > 1 && !isQuadImageView;
   const marginClass = hasContentOrAudio ? 'mb-2' : '';
 
-  // Only enable scrolling if there are enough files to form multiple columns (more than 4)
-  // This prevents scrollbars from appearing on single-column layouts where they aren't needed
   const showDocScroll = documentFiles.length > 4;
 
   if (imageFiles.length === 0 && documentFiles.length === 0) return null;

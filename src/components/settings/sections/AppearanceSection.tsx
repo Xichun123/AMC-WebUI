@@ -2,6 +2,7 @@ import React from 'react';
 import { type AppSettings } from '@/types';
 import { ThemeLanguageSelector } from './appearance/ThemeLanguageSelector';
 import { FontSizeControl } from './appearance/FontSizeControl';
+import { LiveArtifactsFontSizeControl } from './appearance/LiveArtifactsFontSizeControl';
 import { InterfaceToggles } from './appearance/InterfaceToggles';
 
 interface AppearanceSectionProps {
@@ -15,6 +16,8 @@ export const AppearanceSection: React.FC<AppearanceSectionProps> = ({ settings, 
       <ThemeLanguageSelector settings={settings} onUpdate={onUpdate} />
 
       <FontSizeControl settings={settings} onUpdate={onUpdate} />
+
+      <LiveArtifactsFontSizeControl settings={settings} onUpdate={onUpdate} />
 
       <InterfaceToggles settings={settings} onUpdate={onUpdate} />
     </div>

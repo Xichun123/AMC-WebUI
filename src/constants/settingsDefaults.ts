@@ -21,6 +21,7 @@ export const DEFAULT_SYSTEM_INSTRUCTION = '';
 
 const DEFAULT_IS_STREAMING_ENABLED = true;
 const DEFAULT_BASE_FONT_SIZE = 16;
+const DEFAULT_LIVE_ARTIFACTS_CUSTOM_FONT_SIZE = 16;
 const DEFAULT_IS_AUDIO_COMPRESSION_ENABLED = true;
 const DEFAULT_IS_OPENAI_COMPATIBLE_API_ENABLED = false;
 const DEFAULT_OPENAI_COMPATIBLE_MODEL_ID = 'gpt-5.5';
@@ -98,6 +99,7 @@ const BASE_DEFAULT_APP_SETTINGS: AppSettings = {
   liveArtifactsPromptMode: 'inline',
   liveArtifactsSystemPrompt: '',
   liveArtifactsSystemPrompts: createEmptyLiveArtifactsSystemPrompts(),
+  liveArtifactsCustomFontSize: DEFAULT_LIVE_ARTIFACTS_CUSTOM_FONT_SIZE,
   isPasteRichTextAsMarkdownEnabled: true,
   isPasteAsTextFileEnabled: true,
   showInputPasteButton: true,

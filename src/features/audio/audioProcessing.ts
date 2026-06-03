@@ -188,8 +188,8 @@ export const getMixedAudioStream = async (
         systemAudioSource.disconnect();
         displayStream.getTracks().forEach((t) => t.stop());
         audioContext.close().catch(() => {});
-      } catch (e) {
-        logService.error('Error cleaning up mixed stream:', e);
+      } catch (cleanupError) {
+        logService.error('Error cleaning up mixed stream:', cleanupError);
       }
     };
 

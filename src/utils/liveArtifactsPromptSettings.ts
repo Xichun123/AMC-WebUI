@@ -6,12 +6,10 @@ interface LiveArtifactsPromptSettings {
   liveArtifactsSystemPrompts?: Partial<Record<LiveArtifactsPromptMode, string>> | null;
 }
 
-const LIVE_ARTIFACTS_PROMPT_MODES: LiveArtifactsPromptMode[] = ['inline', 'full', 'fullHtml'];
+const LIVE_ARTIFACTS_PROMPT_MODES: LiveArtifactsPromptMode[] = ['inline'];
 
 export const createEmptyLiveArtifactsSystemPrompts = (): LiveArtifactsSystemPrompts => ({
   inline: '',
-  full: '',
-  fullHtml: '',
 });
 
 export const normalizeLiveArtifactsSystemPrompts = (
@@ -31,7 +29,7 @@ export const normalizeLiveArtifactsSystemPrompts = (
   const legacyPrompt = settings.liveArtifactsSystemPrompt?.trim();
 
   if (!hasVersionedPrompt && legacyPrompt) {
-    prompts[settings.liveArtifactsPromptMode ?? 'inline'] = settings.liveArtifactsSystemPrompt ?? '';
+    prompts.inline = settings.liveArtifactsSystemPrompt ?? '';
   }
 
   return prompts;

@@ -18,8 +18,8 @@ export const useBackgroundKeepAlive = (isActive: boolean) => {
           logService.debug('[KeepAlive] Worker started');
         }
         workerRef.current.postMessage('start');
-      } catch (e) {
-        logService.error('Failed to start KeepAlive worker', e);
+      } catch (workerError) {
+        logService.error('Failed to start KeepAlive worker', workerError);
       }
 
       try {
@@ -48,8 +48,8 @@ export const useBackgroundKeepAlive = (isActive: boolean) => {
         if (audioContextRef.current?.state === 'suspended') {
           audioContextRef.current.resume().catch(() => {});
         }
-      } catch (e) {
-        logService.error('Failed to start KeepAlive audio', e);
+      } catch (audioError) {
+        logService.error('Failed to start KeepAlive audio', audioError);
       }
     } else {
       if (workerRef.current) {

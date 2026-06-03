@@ -23,15 +23,12 @@ export const ThinkingHeader: React.FC<ThinkingHeaderProps> = ({
   isExpanded,
 }) => {
   const { t } = useI18n();
-  // Determine the effective start time for the timer
-  // If firstTokenTimeMs is available, we start counting from (Start + TTFT) to show "Pure Thinking Time" (excluding latency)
-  // If NOT available yet (during initial connection), we count from generationStartTime (Total Time)
+  const timeToFirstTokenMs = firstTokenTimeMs ?? 0;
   const effectiveTimerStart = generationStartTime
-    ? new Date(new Date(generationStartTime).getTime() + (firstTokenTimeMs || 0))
+    ? new Date(new Date(generationStartTime).getTime() + timeToFirstTokenMs)
     : null;
 
-  // Calculate final duration excluding TTFT if thinkingTimeMs is set (completed)
-  const finalDuration = thinkingTimeMs !== undefined ? Math.max(0, thinkingTimeMs - (firstTokenTimeMs || 0)) : 0;
+  const finalThinkingDurationMs = thinkingTimeMs !== undefined ? Math.max(0, thinkingTimeMs - timeToFirstTokenMs) : 0;
 
   return (
     <div className="flex items-center gap-2 min-w-0 overflow-hidden flex-grow">
@@ -51,7 +48,10 @@ export const ThinkingHeader: React.FC<ThinkingHeaderProps> = ({
               <div className="flex items-baseline gap-2 mt-0.5 min-w-0">
                 <span className="text-sm text-[var(--theme-text-tertiary)] truncate font-mono">
                   {thinkingTimeMs !== undefined ? (
-                    t('thinking_took_time').replace('{duration}', formatDuration(Math.round(finalDuration / 1000)))
+                    t('thinking_took_time').replace(
+                      '{duration}',
+                      formatDuration(Math.round(finalThinkingDurationMs / 1000)),
+                    )
                   ) : effectiveTimerStart ? (
                     <ThinkingTimer startTime={effectiveTimerStart} />
                   ) : (
@@ -69,7 +69,10 @@ export const ThinkingHeader: React.FC<ThinkingHeaderProps> = ({
             <div className="flex items-baseline gap-2 min-w-0">
               <span className="text-base text-[var(--theme-text-secondary)] font-medium truncate opacity-90">
                 {thinkingTimeMs !== undefined
-                  ? t('thinking_took_time').replace('{duration}', formatDuration(Math.round(finalDuration / 1000)))
+                  ? t('thinking_took_time').replace(
+                      '{duration}',
+                      formatDuration(Math.round(finalThinkingDurationMs / 1000)),
+                    )
                   : t('thinking_process')}
               </span>
               {firstTokenTimeMs !== undefined && (

@@ -11,7 +11,7 @@ import {
 } from './session';
 import { type ChatMessage, type SavedChatSession, type ChatSettings, type PersistedSessionFileRecord } from '@/types';
 import { DEFAULT_CHAT_SETTINGS } from '@/constants/settingsDefaults';
-import { createUploadedFile } from '@/test/data/factories';
+import { createSavedChatSessionMetadata, createUploadedFile } from '@/test/data/factories';
 
 const makeMessage = (role: 'user' | 'model' | 'error', content: string, extra?: Partial<ChatMessage>): ChatMessage => ({
   id: `msg-${Math.random().toString(36).slice(2, 8)}`,
@@ -26,14 +26,14 @@ const makeSettings = (overrides?: Partial<ChatSettings>): ChatSettings => ({
   ...overrides,
 });
 
-const makeSession = (overrides?: Partial<SavedChatSession>): SavedChatSession => ({
-  id: 'sess-1',
-  title: 'Test Session',
-  messages: [],
-  settings: makeSettings(),
-  timestamp: Date.now(),
-  ...overrides,
-});
+const makeSession = (overrides?: Partial<SavedChatSession>): SavedChatSession =>
+  createSavedChatSessionMetadata({
+    id: 'sess-1',
+    title: 'Test Session',
+    settings: makeSettings(),
+    timestamp: Date.now(),
+    ...overrides,
+  });
 
 // ── createMessage ──
 

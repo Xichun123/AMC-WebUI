@@ -6,11 +6,12 @@ type LiveArtifactsPromptTheme = 'dark' | 'light';
 type LiveArtifactsPromptModule = typeof import('./liveArtifacts');
 
 const LIVE_ARTIFACTS_PROMPT_MARKERS = [
+  '[Live Artifacts Inline Protocol - zh]',
+  '[Live Artifacts Inline Protocol - en]',
+  // Legacy Live Artifacts markers are recognized so old saved settings can still be toggled off.
   '[Live Artifacts Protocol]',
   '[Live Artifacts Protocol - zh]',
   '[Live Artifacts Protocol - en]',
-  '[Live Artifacts Inline Protocol - zh]',
-  '[Live Artifacts Inline Protocol - en]',
   '[Live Artifacts Full HTML Protocol - zh]',
   '[Live Artifacts Full HTML Protocol - en]',
   // Legacy Canvas markers are recognized so old saved settings can still be toggled off.
@@ -47,14 +48,6 @@ const LIVE_ARTIFACT_PROMPT_EXPORT_BY_MODE: Record<
   inline: {
     en: 'LIVE_ARTIFACTS_INLINE_SYSTEM_PROMPT_EN',
     zh: 'LIVE_ARTIFACTS_INLINE_SYSTEM_PROMPT_ZH',
-  },
-  full: {
-    en: 'LIVE_ARTIFACTS_SYSTEM_PROMPT_EN',
-    zh: 'LIVE_ARTIFACTS_SYSTEM_PROMPT_ZH',
-  },
-  fullHtml: {
-    en: 'LIVE_ARTIFACTS_FULL_HTML_SYSTEM_PROMPT_EN',
-    zh: 'LIVE_ARTIFACTS_FULL_HTML_SYSTEM_PROMPT_ZH',
   },
 };
 

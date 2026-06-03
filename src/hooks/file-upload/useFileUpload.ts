@@ -67,7 +67,6 @@ export const useFileUpload = ({
         setSelectedFiles(updater);
       };
 
-      // 1. Pre-process files (ZIP extraction, Audio compression, etc.)
       const processedFiles = await processFiles(files, {
         setSelectedFiles: setSelectedFilesForCurrentSession,
       });
@@ -76,7 +75,6 @@ export const useFileUpload = ({
         return;
       }
 
-      // 2. Hand off to uploader (Inline vs API strategy)
       await uploadFiles(processedFiles, {
         setSelectedFiles: setSelectedFilesForCurrentSession,
       });

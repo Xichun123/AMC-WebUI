@@ -57,16 +57,15 @@ vi.mock('@/utils/modelSorting', () => ({
 import { useChatStore } from './chatStore';
 import { dbService } from '@/services/db/dbService';
 import { type SavedChatSession, type ChatGroup } from '@/types';
-import { createChatSettings, createUploadedFile } from '@/test/data/factories';
+import { createChatSettings, createSavedChatSessionMetadata, createUploadedFile } from '@/test/data/factories';
 
-const makeSession = (overrides: Partial<SavedChatSession> = {}): SavedChatSession => ({
-  id: `sess-${Math.random().toString(36).slice(2, 8)}`,
-  title: 'Test Session',
-  messages: [],
-  settings: createChatSettings(),
-  timestamp: Date.now(),
-  ...overrides,
-});
+const makeSession = (overrides: Partial<SavedChatSession> = {}): SavedChatSession =>
+  createSavedChatSessionMetadata({
+    id: `sess-${Math.random().toString(36).slice(2, 8)}`,
+    title: 'Test Session',
+    timestamp: Date.now(),
+    ...overrides,
+  });
 
 const makeGroup = (overrides: Partial<ChatGroup> = {}): ChatGroup => ({
   id: `grp-${Math.random().toString(36).slice(2, 8)}`,

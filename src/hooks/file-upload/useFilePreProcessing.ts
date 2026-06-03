@@ -28,12 +28,11 @@ export const useFilePreProcessing = ({ appSettings, setSelectedFiles }: UseFileP
         const fileNameLower = file.name.toLowerCase();
         const mimeTypeLower = file.type.toLowerCase();
 
-        // Expanded audio detection
         const isAudio =
           !mimeTypeLower.startsWith('video/') &&
           (isAudioMimeType(file.type) ||
-            ['.mp3', '.wav', '.m4a', '.ogg', '.flac', '.aac', '.webm', '.wma', '.aiff'].some((ext) =>
-              fileNameLower.endsWith(ext),
+            ['.mp3', '.wav', '.m4a', '.ogg', '.flac', '.aac', '.webm', '.wma', '.aiff'].some((extension) =>
+              fileNameLower.endsWith(extension),
             ));
 
         if (fileNameLower.endsWith('.zip')) {
@@ -85,7 +84,6 @@ export const useFilePreProcessing = ({ appSettings, setSelectedFiles }: UseFileP
             processedFiles.push(textFile);
           } catch (error) {
             logService.error(`Failed to extract text from docx ${file.name}`, { error });
-            // Fallback: send original file (might fail if not supported by API directly, but safer than crashing)
             processedFiles.push(file);
           } finally {
             writeSelectedFiles((prev) => prev.filter((selectedFile) => selectedFile.id !== tempId));

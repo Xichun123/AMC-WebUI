@@ -28,19 +28,17 @@ export const useApiErrorHandler = (updateAndPersistSessions: SessionsUpdater) =>
       });
 
       if (isAborted) {
-        // If we have partial content to save during an abort, update the state.
         if (partialContent !== undefined || partialThoughts !== undefined) {
-          updateAndPersistSessions((prev) =>
-            updateMessageInSession(prev, sessionId, modelMessageId, (msg) => ({
-              ...msg,
-              content: partialContent !== undefined ? partialContent : msg.content,
-              thoughts: partialThoughts !== undefined ? partialThoughts : msg.thoughts,
+          updateAndPersistSessions((previousSessions) =>
+            updateMessageInSession(previousSessions, sessionId, modelMessageId, (message) => ({
+              ...message,
+              content: partialContent !== undefined ? partialContent : message.content,
+              thoughts: partialThoughts !== undefined ? partialThoughts : message.thoughts,
               isLoading: false,
               generationEndTime: new Date(),
             })),
           );
         }
-        // Optimistic update in useMessageActions.handleStopGenerating also handles the UI change.
         return;
       }
 
@@ -60,13 +58,13 @@ export const useApiErrorHandler = (updateAndPersistSessions: SessionsUpdater) =>
         });
       }
 
-      updateAndPersistSessions((prev) =>
-        updateMessageInSession(prev, sessionId, modelMessageId, (msg) => ({
-          ...msg,
+      updateAndPersistSessions((previousSessions) =>
+        updateMessageInSession(previousSessions, sessionId, modelMessageId, (message) => ({
+          ...message,
           role: 'error',
-          // Use partial content if available, otherwise append to existing content.
-          content: (partialContent !== undefined ? partialContent : msg.content || '').trim() + `\n\n[${errorMessage}]`,
-          thoughts: partialThoughts !== undefined ? partialThoughts : msg.thoughts,
+          content:
+            (partialContent !== undefined ? partialContent : message.content || '').trim() + `\n\n[${errorMessage}]`,
+          thoughts: partialThoughts !== undefined ? partialThoughts : message.thoughts,
           isLoading: false,
           generationEndTime: new Date(),
         })),

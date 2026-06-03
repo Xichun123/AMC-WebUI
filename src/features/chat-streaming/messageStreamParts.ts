@@ -77,9 +77,9 @@ export const getContentDeltaFromPart = (part: Part): string => {
 export const getGeneratedFileFromPart = (part: Part): UploadedFile | undefined => {
   const partWithInlineData = part as Part & { inlineData?: { mimeType?: string; data?: string } };
   const mimeType = partWithInlineData.inlineData?.mimeType;
-  const data = partWithInlineData.inlineData?.data;
+  const inlineDataBase64 = partWithInlineData.inlineData?.data;
 
-  if (!mimeType || !data) {
+  if (!mimeType || !inlineDataBase64) {
     return undefined;
   }
 
@@ -94,7 +94,7 @@ export const getGeneratedFileFromPart = (part: Part): UploadedFile | undefined =
   }
 
   return createUploadedFileFromBase64(
-    data,
+    inlineDataBase64,
     mimeType,
     isImageMimeType(mimeType) ? `generated-plot-${generateUniqueId().slice(-4)}` : 'generated-file',
   );

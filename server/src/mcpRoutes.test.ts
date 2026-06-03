@@ -1,40 +1,11 @@
 // @vitest-environment node
-import type { Server } from 'node:http';
-import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createServer } from './createServer';
+import { createHttpServerCleanup, startHttpServer } from '../test/httpServer';
 
-async function startHttpServer(server: Server): Promise<{ baseUrl: string; close: () => Promise<void> }> {
-  await new Promise<void>((resolve, reject) => {
-    server.once('error', reject);
-    server.listen(0, '127.0.0.1', () => resolve());
-  });
+const serverCleanup = createHttpServerCleanup();
 
-  const address = server.address() as AddressInfo;
-
-  return {
-    baseUrl: `http://127.0.0.1:${address.port}`,
-    close: async () => {
-      await new Promise<void>((resolve, reject) => {
-        server.close((error) => {
-          if (error) reject(error);
-          else resolve();
-        });
-      });
-    },
-  };
-}
-
-const cleanupCallbacks: Array<() => Promise<void>> = [];
-
-afterEach(async () => {
-  while (cleanupCallbacks.length) {
-    const close = cleanupCallbacks.pop();
-    if (close) {
-      await close();
-    }
-  }
-});
+afterEach(serverCleanup.cleanup);
 
 describe('MCP routes', () => {
   it('does not execute stdio MCP servers unless the API server enables stdio transport', async () => {
@@ -51,8 +22,7 @@ describe('MCP routes', () => {
         },
       },
     );
-    const started = await startHttpServer(app);
-    cleanupCallbacks.push(started.close);
+    const started = serverCleanup.track(await startHttpServer(app));
 
     const response = await fetch(`${started.baseUrl}/api/mcp/tools`, {
       method: 'POST',
@@ -112,8 +82,7 @@ describe('MCP routes', () => {
         },
       },
     );
-    const started = await startHttpServer(app);
-    cleanupCallbacks.push(started.close);
+    const started = serverCleanup.track(await startHttpServer(app));
 
     const enabledServer = {
       id: 'filesystem',
@@ -179,8 +148,7 @@ describe('MCP routes', () => {
         },
       },
     );
-    const started = await startHttpServer(app);
-    cleanupCallbacks.push(started.close);
+    const started = serverCleanup.track(await startHttpServer(app));
 
     const response = await fetch(`${started.baseUrl}/api/mcp/tools`, {
       method: 'POST',
@@ -227,8 +195,7 @@ describe('MCP routes', () => {
         },
       },
     );
-    const started = await startHttpServer(app);
-    cleanupCallbacks.push(started.close);
+    const started = serverCleanup.track(await startHttpServer(app));
 
     const response = await fetch(`${started.baseUrl}/api/mcp/tools`, {
       method: 'POST',
@@ -275,8 +242,7 @@ describe('MCP routes', () => {
         },
       },
     );
-    const started = await startHttpServer(app);
-    cleanupCallbacks.push(started.close);
+    const started = serverCleanup.track(await startHttpServer(app));
 
     const response = await fetch(`${started.baseUrl}/api/mcp/tools`, {
       method: 'POST',
@@ -325,8 +291,7 @@ describe('MCP routes', () => {
         },
       },
     );
-    const started = await startHttpServer(app);
-    cleanupCallbacks.push(started.close);
+    const started = serverCleanup.track(await startHttpServer(app));
 
     const localServer = {
       id: 'local-http',
@@ -379,8 +344,7 @@ describe('MCP routes', () => {
         },
       },
     );
-    const started = await startHttpServer(app);
-    cleanupCallbacks.push(started.close);
+    const started = serverCleanup.track(await startHttpServer(app));
 
     const response = await fetch(`${started.baseUrl}/api/mcp/tools`, {
       method: 'POST',
@@ -414,8 +378,7 @@ describe('MCP routes', () => {
         },
       },
     );
-    const started = await startHttpServer(app);
-    cleanupCallbacks.push(started.close);
+    const started = serverCleanup.track(await startHttpServer(app));
 
     const server = {
       id: 'filesystem',
@@ -484,8 +447,7 @@ describe('MCP routes', () => {
         },
       },
     );
-    const started = await startHttpServer(app);
-    cleanupCallbacks.push(started.close);
+    const started = serverCleanup.track(await startHttpServer(app));
 
     const server = {
       id: 'remote',
@@ -582,8 +544,7 @@ describe('MCP routes', () => {
         },
       },
     );
-    const started = await startHttpServer(app);
-    cleanupCallbacks.push(started.close);
+    const started = serverCleanup.track(await startHttpServer(app));
 
     const server = {
       id: 'remote',

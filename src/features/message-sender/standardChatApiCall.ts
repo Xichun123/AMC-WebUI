@@ -25,7 +25,12 @@ import type {
   UploadedFile,
 } from '@/types';
 import type { ContentPart } from '@/types/chat';
-import type { GetStreamHandlers, SessionsUpdater, StandardChatProps, StreamHandlerFunctions } from './types';
+import type {
+  GetStreamHandlers,
+  SessionsUpdater,
+  StandardChatProps,
+  StreamHandlerFunctions,
+} from './messageSenderTypes';
 import type { resolveStandardChatTurn } from './standardChatTurn';
 import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
 

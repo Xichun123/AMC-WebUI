@@ -17,6 +17,9 @@ import { getTranslator } from '@/i18n/translations';
 
 type Translator = ReturnType<typeof getTranslator>;
 
+const UPLOAD_SPEED_UPDATE_INTERVAL_MS = 500;
+const PERCENT_MULTIPLIER = 100;
+
 interface UploadFileItemParams {
   file: File;
   keyToUse: string | null;
@@ -46,8 +49,8 @@ export const uploadFileItem = async ({
       type: file.type,
       effectiveType: effectiveMimeType,
     });
-    setSelectedFiles((prev) => [
-      ...prev,
+    setSelectedFiles((previousFiles) => [
+      ...previousFiles,
       {
         id: fileId,
         name: file.name,
@@ -64,17 +67,15 @@ export const uploadFileItem = async ({
 
   const shouldUploadFile = forceFileApi || shouldUseFileApi(file, appSettings);
 
-  // Generate a blob URL immediately for local preview, regardless of upload method
   const dataUrl = fileToBlobUrl(file);
 
   if (shouldUploadFile) {
     if (!keyToUse) {
       const errorMsg = t('upload_missing_api_key');
       logService.error(errorMsg);
-      // Cleanup on early rejection
       releaseManagedObjectUrl(dataUrl);
-      setSelectedFiles((prev) => [
-        ...prev,
+      setSelectedFiles((previousFiles) => [
+        ...previousFiles,
         {
           id: fileId,
           name: file.name,
@@ -90,7 +91,6 @@ export const uploadFileItem = async ({
     }
     const controller = new AbortController();
 
-    // Initialize with 'uploading' state to show progress UI immediately
     const initialFileState: UploadedFile = createProcessingPlaceholderFile({
       id: fileId,
       name: file.name,
@@ -106,10 +106,9 @@ export const uploadFileItem = async ({
       mediaResolution: defaultResolution,
     });
 
-    // Initialize tracking for speed calculation
     uploadStatsRef.current.set(fileId, { lastLoaded: 0, lastTime: Date.now() });
 
-    setSelectedFiles((prev) => [...prev, initialFileState]);
+    setSelectedFiles((previousFiles) => [...previousFiles, initialFileState]);
 
     const handleProgress = (loaded: number, total: number) => {
       const now = Date.now();
@@ -118,26 +117,24 @@ export const uploadFileItem = async ({
       let speedStr = '';
       if (stats) {
         const timeDiff = now - stats.lastTime;
-        // Only update speed every ~500ms to prevent flickering
-        if (timeDiff > 500) {
+        if (timeDiff > UPLOAD_SPEED_UPDATE_INTERVAL_MS) {
           const bytesDiff = loaded - stats.lastLoaded;
-          const speed = bytesDiff / (timeDiff / 1000); // Bytes per second
-          speedStr = formatSpeed(speed);
+          const bytesPerSecond = bytesDiff / (timeDiff / 1000);
+          speedStr = formatSpeed(bytesPerSecond);
 
-          // Update stored stats
           uploadStatsRef.current.set(fileId, { lastLoaded: loaded, lastTime: now });
         }
       }
 
-      const percent = Math.round((loaded / total) * 100);
+      const progressPercent = Math.round((loaded / total) * PERCENT_MULTIPLIER);
 
-      setSelectedFiles((prev) =>
-        prev.map((selectedFile) => {
+      setSelectedFiles((previousFiles) =>
+        previousFiles.map((selectedFile) => {
           if (selectedFile.id === fileId) {
             return {
               ...selectedFile,
-              progress: percent,
-              uploadSpeed: speedStr || selectedFile.uploadSpeed, // Keep old speed if not updated this tick
+              progress: progressPercent,
+              uploadSpeed: speedStr || selectedFile.uploadSpeed,
             };
           }
           return selectedFile;
@@ -159,8 +156,8 @@ export const uploadFileItem = async ({
 
       const { uploadState, isProcessing } = getUploadLifecycleForGeminiState(uploadedFileInfo.state);
 
-      setSelectedFiles((prev) =>
-        prev.map((selectedFile) =>
+      setSelectedFiles((previousFiles) =>
+        previousFiles.map((selectedFile) =>
           selectedFile.id === fileId
             ? {
                 ...selectedFile,
@@ -195,8 +192,8 @@ export const uploadFileItem = async ({
 
       releaseManagedObjectUrl(dataUrl);
 
-      setSelectedFiles((prev) =>
-        prev.map((selectedFile) =>
+      setSelectedFiles((previousFiles) =>
+        previousFiles.map((selectedFile) =>
           selectedFile.id === fileId
             ? {
                 ...selectedFile,
@@ -205,8 +202,8 @@ export const uploadFileItem = async ({
                 uploadState: uploadStateUpdate,
                 abortController: undefined,
                 uploadSpeed: undefined,
-                dataUrl: undefined, // Clear dataUrl so UI renders fallback icon
-                rawFile: undefined, // Free memory
+                dataUrl: undefined,
+                rawFile: undefined,
               }
             : selectedFile,
         ),
@@ -215,7 +212,6 @@ export const uploadFileItem = async ({
       uploadStatsRef.current.delete(fileId);
     }
   } else {
-    // Inline processing (Base64 or Text content)
     const initialFileState: UploadedFile = createProcessingPlaceholderFile({
       id: fileId,
       name: file.name,
@@ -227,10 +223,10 @@ export const uploadFileItem = async ({
       transferStrategy: 'inline',
       mediaResolution: defaultResolution,
     });
-    setSelectedFiles((prev) => [...prev, initialFileState]);
+    setSelectedFiles((previousFiles) => [...previousFiles, initialFileState]);
 
-    setSelectedFiles((prev) =>
-      prev.map((selectedFile) =>
+    setSelectedFiles((previousFiles) =>
+      previousFiles.map((selectedFile) =>
         selectedFile.id === fileId
           ? { ...selectedFile, isProcessing: false, progress: 100, uploadState: 'active' }
           : selectedFile,

@@ -8,6 +8,8 @@ export const readProjectFile = (relativePath: string) => fs.readFileSync(path.jo
 
 export const readSourceFile = (relativePath: string) => fs.readFileSync(path.join(srcRoot, relativePath), 'utf8');
 
+export const readMarkdownCss = () => readProjectFile('src/styles/markdown.css');
+
 export const listProjectSourceFiles = (relativeDir: string): string[] => {
   const absoluteDir = path.join(projectRoot, relativeDir);
   return fs
@@ -22,5 +24,8 @@ export const listProjectSourceFiles = (relativeDir: string): string[] => {
     })
     .sort();
 };
+
+export const listProjectSourceFilesExcept = (relativeDir: string, excludedRelativePath: string): string[] =>
+  listProjectSourceFiles(relativeDir).filter((relativePath) => relativePath !== excludedRelativePath);
 
 export const countLines = (source: string): number => source.split('\n').length;

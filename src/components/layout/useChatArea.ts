@@ -4,7 +4,7 @@ import { useUIStore } from '@/stores/uiStore';
 
 export const useChatArea = () => {
   const { chatInputHeight, chatInputContainerRef } = useChatInputHeight();
-  const setChatInputHeight = useUIStore((s) => s.setChatInputHeight);
+  const setChatInputHeight = useUIStore((state) => state.setChatInputHeight);
 
   useEffect(() => {
     setChatInputHeight(chatInputHeight);

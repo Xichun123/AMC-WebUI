@@ -22,6 +22,7 @@ import {
 const ZOOM_STEP = 0.1;
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 3.0;
+const MODAL_EXIT_DELAY_MS = 300;
 
 interface UseHtmlPreviewModalProps {
   isOpen: boolean;
@@ -78,14 +79,20 @@ export const useHtmlPreviewModal = ({
       setIsPreviewReady(false);
       setIsDirectFullscreenLaunch(initialTrueFullscreenRequest);
     } else {
-      const timer = setTimeout(() => setIsActuallyOpen(false), 300);
+      const timer = setTimeout(() => setIsActuallyOpen(false), MODAL_EXIT_DELAY_MS);
       return () => clearTimeout(timer);
     }
     return undefined;
   }, [isOpen, initialTrueFullscreenRequest, htmlContent]);
 
-  const handleZoomIn = useCallback(() => setScale((s) => Math.min(MAX_ZOOM, s + ZOOM_STEP)), []);
-  const handleZoomOut = useCallback(() => setScale((s) => Math.max(MIN_ZOOM, s - ZOOM_STEP)), []);
+  const handleZoomIn = useCallback(
+    () => setScale((previousScale) => Math.min(MAX_ZOOM, previousScale + ZOOM_STEP)),
+    [],
+  );
+  const handleZoomOut = useCallback(
+    () => setScale((previousScale) => Math.max(MIN_ZOOM, previousScale - ZOOM_STEP)),
+    [],
+  );
 
   const enterTrueFullscreen = useCallback(async () => {
     const element = iframeRef.current;
@@ -269,8 +276,8 @@ export const useHtmlPreviewModal = ({
           exportFailed: (message) => t('export_failed_with_message').replace('{message}', message),
         },
       });
-    } catch (err) {
-      logService.error('Failed to take screenshot of iframe content:', err);
+    } catch (screenshotError) {
+      logService.error('Failed to take screenshot of iframe content:', screenshotError);
       alert(t('htmlPreview_screenshot_failed'));
     } finally {
       cleanup();

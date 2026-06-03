@@ -225,6 +225,35 @@ describe('ApiConfigSection', () => {
     );
   });
 
+  it('previews the OpenAI-compatible request URL and warns when the endpoint path is already included', async () => {
+    await renderApiConfigSection({
+      settings: {
+        ...settingsFixture,
+        isOpenAICompatibleApiEnabled: true,
+        apiMode: 'openai-compatible',
+        openaiCompatibleBaseUrl: 'https://gateway.example.com/v1',
+      },
+    });
+
+    expect(renderer.container.textContent).toContain('Request URL Preview');
+    expect(renderer.container.textContent).toContain('https://gateway.example.com/v1/chat/completions');
+    expect(renderer.container.textContent).not.toContain('AMC appends');
+
+    await renderApiConfigSection({
+      settings: {
+        ...settingsFixture,
+        isOpenAICompatibleApiEnabled: true,
+        apiMode: 'openai-compatible',
+        openaiCompatibleBaseUrl: 'https://gateway.example.com/v1/chat/completions',
+      },
+    });
+
+    expect(renderer.container.textContent).toContain(
+      'https://gateway.example.com/v1/chat/completions/chat/completions',
+    );
+    expect(renderer.container.textContent).toContain('AMC appends /chat/completions automatically');
+  });
+
   it('edits the OpenAI-compatible API key without overwriting the Gemini API key', async () => {
     const setApiKey = vi.fn();
     const onUpdate = vi.fn();

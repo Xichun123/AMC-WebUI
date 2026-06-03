@@ -144,9 +144,9 @@ async function installDependencies(code) {
         const micropip = pyodide.pyimport("micropip");
         
         await micropip.install(packagesToInstall);
-    } catch (e) {
-        console.warn("Dependency resolution warning:", e);
-        throw new Error("Failed to install dependencies: " + e.message);
+    } catch (dependencyError) {
+        console.warn("Dependency resolution warning:", dependencyError);
+        throw new Error("Failed to install dependencies: " + dependencyError.message);
     }
 }
 
@@ -195,7 +195,7 @@ self.onmessage = async (event) => {
       try {
           const fsFiles = listFilesRecursively(runDir);
           for (const file of fsFiles) initialFiles.add(file);
-      } catch (e) { /* ignore */ }
+      } catch { /* ignore */ }
 
       // Reset stdout/stderr capture
       let stdout = [];
@@ -256,8 +256,8 @@ self.onmessage = async (event) => {
                    });
               }
           }
-      } catch (e) {
-          console.error("Error reading output files", e);
+      } catch (outputError) {
+          console.error("Error reading output files", outputError);
       }
 
       if (image && generatedFiles.some((file) => file.type.startsWith('image/'))) {
@@ -281,8 +281,8 @@ self.onmessage = async (event) => {
       removePath(runDir);
     }
 
-  } catch (err) {
-    self.postMessage({ id, status: 'error', error: err.message });
+  } catch (executionError) {
+    self.postMessage({ id, status: 'error', error: executionError.message });
   }
 };
 `;

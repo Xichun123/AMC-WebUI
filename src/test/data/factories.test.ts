@@ -4,6 +4,7 @@ import {
   createChatMessage,
   createChatSettings,
   createSavedChatSession,
+  createSavedChatSessionMetadata,
   createUploadedFile,
 } from './factories';
 import { createMessageSenderProps, createSessionLoaderProps, createStandardChatProps } from '@/test/hooks/factories';
@@ -15,6 +16,7 @@ describe('typed test factories', () => {
     expect(createUploadedFile({ name: 'report.pdf', type: 'application/pdf' }).name).toBe('report.pdf');
     expect(createChatMessage({ role: 'model', content: 'answer' }).content).toBe('answer');
     expect(createSavedChatSession({ title: 'Saved' }).settings.modelId).toBe('gemini-3.1-pro-preview');
+    expect(createSavedChatSessionMetadata({ id: 'metadata-only' }).messages).toEqual([]);
   });
 
   it('creates complete hook props with typed nested overrides', () => {

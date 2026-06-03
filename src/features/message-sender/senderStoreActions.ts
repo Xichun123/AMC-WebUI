@@ -1,6 +1,6 @@
 import type { MutableRefObject } from 'react';
 import { useChatStore } from '@/stores/chatStore';
-import type { SessionsUpdater } from './types';
+import type { SessionsUpdater } from './messageSenderTypes';
 
 interface SenderStoreActions {
   updateAndPersistSessions: SessionsUpdater;

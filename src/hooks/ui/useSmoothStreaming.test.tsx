@@ -1,4 +1,5 @@
 import { act } from 'react';
+import { installTestAnimationFrameController, type TestAnimationFrameController } from '@/test/browser/animationFrames';
 import { setupTestRenderer } from '@/test/render/renderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useSmoothStreaming } from './useSmoothStreaming';
@@ -12,27 +13,7 @@ const TestComponent = ({ text, isStreaming }: { text: string; isStreaming: boole
 
 describe('useSmoothStreaming', () => {
   const renderer = setupTestRenderer();
-  let nextAnimationFrameId: number;
-  let scheduledFrames: Map<number, FrameRequestCallback>;
-  let currentTime: number;
-
-  const flushNextFrame = () => {
-    const nextFrame = scheduledFrames.entries().next().value as [number, FrameRequestCallback] | undefined;
-
-    if (!nextFrame) {
-      return false;
-    }
-
-    const [frameId, callback] = nextFrame;
-    scheduledFrames.delete(frameId);
-    currentTime += 16;
-
-    act(() => {
-      callback(currentTime);
-    });
-
-    return true;
-  };
+  let animationFrames: TestAnimationFrameController;
 
   const flushUntilTextMatches = (expectedText: string, maxFrames = 20) => {
     for (let i = 0; i < maxFrames; i += 1) {
@@ -40,37 +21,19 @@ describe('useSmoothStreaming', () => {
         return;
       }
 
-      if (!flushNextFrame()) {
+      if (!animationFrames.flushNextFrame()) {
         return;
       }
     }
   };
 
   beforeEach(() => {
-    nextAnimationFrameId = 0;
-    scheduledFrames = new Map<number, FrameRequestCallback>();
-    currentTime = 0;
+    animationFrames = installTestAnimationFrameController();
 
     Object.defineProperty(document, 'hidden', {
       configurable: true,
       value: false,
     });
-
-    vi.stubGlobal(
-      'requestAnimationFrame',
-      vi.fn((callback: FrameRequestCallback) => {
-        const frameId = ++nextAnimationFrameId;
-        scheduledFrames.set(frameId, callback);
-        return frameId;
-      }),
-    );
-
-    vi.stubGlobal(
-      'cancelAnimationFrame',
-      vi.fn((frameId: number) => {
-        scheduledFrames.delete(frameId);
-      }),
-    );
   });
 
   afterEach(() => {
@@ -82,12 +45,12 @@ describe('useSmoothStreaming', () => {
       renderer.root.render(<TestComponent text="abc" isStreaming />);
     });
 
-    expect(scheduledFrames.size).toBe(1);
+    expect(animationFrames.scheduledFrameCount).toBe(1);
 
     flushUntilTextMatches('abc');
 
     expect(renderer.container.querySelector(OUTPUT_SELECTOR)).toHaveTextContent('abc');
-    expect(scheduledFrames.size).toBe(0);
+    expect(animationFrames.scheduledFrameCount).toBe(0);
   });
 
   it('restarts animation when new streamed text arrives after the previous text finished rendering', () => {
@@ -98,18 +61,18 @@ describe('useSmoothStreaming', () => {
     flushUntilTextMatches('abc');
 
     expect(renderer.container.querySelector(OUTPUT_SELECTOR)).toHaveTextContent('abc');
-    expect(scheduledFrames.size).toBe(0);
+    expect(animationFrames.scheduledFrameCount).toBe(0);
 
     act(() => {
       renderer.root.render(<TestComponent text="abcdef" isStreaming />);
     });
 
-    expect(scheduledFrames.size).toBe(1);
+    expect(animationFrames.scheduledFrameCount).toBe(1);
 
     flushUntilTextMatches('abcdef');
 
     expect(renderer.container.querySelector(OUTPUT_SELECTOR)).toHaveTextContent('abcdef');
-    expect(scheduledFrames.size).toBe(0);
+    expect(animationFrames.scheduledFrameCount).toBe(0);
   });
 
   it('bypasses character-by-character animation for markdown tables while streaming', () => {
@@ -120,7 +83,7 @@ describe('useSmoothStreaming', () => {
     });
 
     expect(renderer.container.querySelector(OUTPUT_SELECTOR)?.textContent).toBe(tableMarkdown);
-    expect(scheduledFrames.size).toBe(0);
+    expect(animationFrames.scheduledFrameCount).toBe(0);
   });
 
   it('bypasses character-by-character animation for streaming Live Artifact html candidates', () => {
@@ -131,7 +94,7 @@ describe('useSmoothStreaming', () => {
     });
 
     expect(renderer.container.querySelector(OUTPUT_SELECTOR)?.textContent).toBe(partialArtifact);
-    expect(scheduledFrames.size).toBe(0);
+    expect(animationFrames.scheduledFrameCount).toBe(0);
   });
 
   it('bypasses character-by-character animation for streaming fenced interaction artifacts', () => {
@@ -142,6 +105,6 @@ describe('useSmoothStreaming', () => {
     });
 
     expect(renderer.container.querySelector(OUTPUT_SELECTOR)?.textContent).toBe(partialInteraction);
-    expect(scheduledFrames.size).toBe(0);
+    expect(animationFrames.scheduledFrameCount).toBe(0);
   });
 });

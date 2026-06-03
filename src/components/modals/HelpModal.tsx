@@ -16,6 +16,8 @@ interface HelpModalProps {
   commands: CommandInfo[];
 }
 
+const COPIED_COMMAND_FEEDBACK_MS = 1500;
+
 export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, commands }) => {
   const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,7 +35,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, commands 
   const handleCopy = (text: string) => {
     copyToClipboard(text);
     setCopiedCommand(text);
-    setTimeout(() => setCopiedCommand(null), 1500);
+    setTimeout(() => setCopiedCommand(null), COPIED_COMMAND_FEEDBACK_MS);
   };
 
   return (

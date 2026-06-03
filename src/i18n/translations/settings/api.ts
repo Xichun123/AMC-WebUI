@@ -32,6 +32,39 @@ const apiSettings = {
   settingsOpenAICompatibleModelId: { en: 'OpenAI-Compatible Model IDs', zh: 'OpenAI 兼容模型 ID' },
   settingsOpenAICompatibleModelIdShort: { en: 'Model ID', zh: '模型 ID' },
   settingsOpenAICompatibleModelName: { en: 'Model Name', zh: '模型名称' },
+  settingsOpenAICompatibleManageModels: { en: 'Manage Models', zh: '管理模型' },
+  settingsOpenAICompatibleManageModelsHelp: {
+    en: 'Manage model IDs with search, batch paste, and fetch preview before importing.',
+    zh: '支持搜索、批量粘贴和拉取预览后再导入模型。',
+  },
+  settingsOpenAICompatibleModelSearch: { en: 'Search models...', zh: '搜索模型…' },
+  settingsOpenAICompatibleCurrentModels: { en: 'Current Models', zh: '当前模型' },
+  settingsOpenAICompatibleBatchPasteTitle: { en: 'Paste Model IDs', zh: '批量粘贴模型 ID' },
+  settingsOpenAICompatibleBatchPastePlaceholder: {
+    en: 'Paste model IDs separated by commas, spaces, or new lines.',
+    zh: '粘贴模型 ID，可用逗号、空格或换行分隔。',
+  },
+  settingsOpenAICompatibleAddPastedModels: { en: 'Add Pasted Models', zh: '添加粘贴的模型' },
+  settingsOpenAICompatibleModelPasteNoNewModels: { en: 'No new model IDs found.', zh: '未找到新的模型 ID。' },
+  settingsOpenAICompatibleModelPasteAdded: { en: 'Added {count} models.', zh: '已添加 {count} 个模型。' },
+  settingsOpenAICompatibleFetchedPreviewTitle: { en: 'Fetched Models', zh: '已获取模型' },
+  settingsOpenAICompatibleFetchedPreviewCount: {
+    en: '{selected} selected from {count} fetched models.',
+    zh: '已从 {count} 个模型中选择 {selected} 个。',
+  },
+  settingsOpenAICompatibleSelectAllFetched: { en: 'Select all', zh: '全选' },
+  settingsOpenAICompatibleClearFetchedSelection: { en: 'Clear', zh: '清空选择' },
+  settingsOpenAICompatibleAlreadyAdded: { en: 'Already added', zh: '已添加' },
+  settingsOpenAICompatibleImportSelectedModels: { en: 'Import Selected', zh: '导入所选' },
+  settingsOpenAICompatibleModelImportNoSelection: {
+    en: 'Select models to import.',
+    zh: '请选择要导入的模型。',
+  },
+  settingsOpenAICompatibleModelImportAdded: { en: 'Imported {count} models.', zh: '已导入 {count} 个模型。' },
+  settingsOpenAICompatibleFetchedPreviewEmpty: {
+    en: 'Fetch models to preview and import them.',
+    zh: '获取模型后可预览并选择导入。',
+  },
   settingsFetchModelList: { en: 'Fetch Models', zh: '获取模型列表' },
   settingsFetchingModelList: { en: 'Fetching...', zh: '获取中…' },
   settingsOpenAICompatibleModelFetchSuccess: {
@@ -50,6 +83,11 @@ const apiSettings = {
   settingsOpenAICompatibleHelp: {
     en: 'Used only when OpenAI Compatible mode is selected. Gemini Native requests keep using the existing Gemini API settings.',
     zh: '仅在选择 OpenAI 兼容模式时使用。Gemini 原生请求仍使用现有 Gemini API 设置。',
+  },
+  settingsOpenAICompatibleRequestUrlPreview: { en: 'Request URL Preview', zh: '请求 URL 预览' },
+  settingsOpenAICompatibleBaseUrlEndpointWarning: {
+    en: 'AMC appends {path} automatically. Use the API root as the Base URL to avoid duplicating the endpoint path.',
+    zh: 'AMC 会自动追加 {path}。请将 Base URL 填为 API 根路径，避免重复拼接 endpoint。',
   },
   settingsOpenAICompatibleApiKeyHelp: {
     en: 'Stored separately from Gemini API keys. Use this for OpenAI or GPT-compatible providers.',

@@ -77,8 +77,8 @@ export const FilePreviewHeader = React.forwardRef<FilePreviewHeaderHandle, FileP
       try {
         await copyFileToClipboard(file);
         showCopyFeedback();
-      } catch (err) {
-        logService.error('Failed to copy content:', err);
+      } catch (copyError) {
+        logService.error('Failed to copy content:', copyError);
         alert(t('filePreview_copy_failed'));
       }
     }, [file, isCopied, showCopyFeedback, t]);
@@ -95,8 +95,8 @@ export const FilePreviewHeader = React.forwardRef<FilePreviewHeaderHandle, FileP
           const url = createManagedObjectUrl(blob);
           const filename = `${file.name.split('.')[0] || 'diagram'}.svg`;
           triggerDownload(url, filename, true);
-        } catch (e) {
-          logService.error('Failed to download SVG:', e);
+        } catch (svgDownloadError) {
+          logService.error('Failed to download SVG:', svgDownloadError);
         } finally {
           setIsDownloading(false);
         }
@@ -106,8 +106,8 @@ export const FilePreviewHeader = React.forwardRef<FilePreviewHeaderHandle, FileP
       setIsDownloading(true);
       try {
         triggerDownload(file.dataUrl, file.name, false);
-      } catch (e) {
-        logService.error('Failed to initiate download:', e);
+      } catch (downloadError) {
+        logService.error('Failed to initiate download:', downloadError);
       } finally {
         setIsDownloading(false);
       }

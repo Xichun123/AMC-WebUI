@@ -13,6 +13,7 @@ interface UseRecorderOptions {
 }
 
 const RECORDING_MIME_TYPE_CANDIDATES = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+const RECORDING_DURATION_TICK_MS = 1000;
 
 const getSupportedRecordingMimeType = (): string | undefined => {
   if (typeof MediaRecorder === 'undefined' || typeof MediaRecorder.isTypeSupported !== 'function') {
@@ -39,31 +40,26 @@ export const useRecorder = (options: UseRecorderOptions = {}) => {
   const timerRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  // Track resources for cleanup
   const micStreamRef = useRef<MediaStream | null>(null);
   const mixedStreamCleanupRef = useRef<(() => void) | null>(null);
   const startRequestIdRef = useRef(0);
 
-  // Sync stream state to ref for cleanup access
   useEffect(() => {
     streamRef.current = stream;
   }, [stream]);
 
   const cleanup = useCallback(() => {
-    // Stop main recorder stream (could be mixed or raw mic)
     if (streamRef.current) {
       stopStreamTracks(streamRef.current);
       setStream(null);
       streamRef.current = null;
     }
 
-    // Run mixed stream specific cleanup (closes AudioContext, stops display stream)
     if (mixedStreamCleanupRef.current) {
       mixedStreamCleanupRef.current();
       mixedStreamCleanupRef.current = null;
     }
 
-    // Stop raw mic stream
     if (micStreamRef.current) {
       stopStreamTracks(micStreamRef.current);
       micStreamRef.current = null;
@@ -76,7 +72,6 @@ export const useRecorder = (options: UseRecorderOptions = {}) => {
     mediaRecorderRef.current = null;
   }, []);
 
-  // Ensure cleanup on unmount only
   useEffect(() => {
     return () => {
       cleanup();
@@ -84,16 +79,15 @@ export const useRecorder = (options: UseRecorderOptions = {}) => {
   }, [cleanup]);
 
   const startRecording = useCallback(
-    async (opts?: { captureSystemAudio?: boolean }) => {
+    async (recordingOptions?: { captureSystemAudio?: boolean }) => {
       const requestId = startRequestIdRef.current + 1;
       startRequestIdRef.current = requestId;
       setError(null);
       setIsInitializing(true);
       onSystemAudioWarning?.(null);
-      cleanup(); // Ensure fresh start
+      cleanup();
 
       try {
-        // 1. Get Microphone Stream
         const micStream = await navigator.mediaDevices.getUserMedia({
           audio: {
             echoCancellation: false,
@@ -107,15 +101,13 @@ export const useRecorder = (options: UseRecorderOptions = {}) => {
           return;
         }
 
-        // Store mic stream to stop it later
         micStreamRef.current = micStream;
 
-        // 2. Mix with System Audio if requested
         const {
           stream: finalStream,
           cleanup: streamCleanup,
           warning: systemAudioWarning,
-        } = await getMixedAudioStream(micStream, opts?.captureSystemAudio);
+        } = await getMixedAudioStream(micStream, recordingOptions?.captureSystemAudio);
 
         if (startRequestIdRef.current !== requestId) {
           streamCleanup();
@@ -126,7 +118,6 @@ export const useRecorder = (options: UseRecorderOptions = {}) => {
 
         onSystemAudioWarning?.(systemAudioWarning ?? null);
 
-        // Store cleanup for mixed stream resources
         mixedStreamCleanupRef.current = streamCleanup;
 
         setStream(finalStream);
@@ -138,8 +129,8 @@ export const useRecorder = (options: UseRecorderOptions = {}) => {
         mediaRecorderRef.current = recorder;
         chunksRef.current = [];
 
-        recorder.ondataavailable = (e) => {
-          if (e.data.size > 0) chunksRef.current.push(e.data);
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) chunksRef.current.push(event.data);
         };
 
         recorder.onstop = () => {
@@ -153,12 +144,15 @@ export const useRecorder = (options: UseRecorderOptions = {}) => {
         recorder.start();
         setStatus('recording');
         setDuration(0);
-        timerRef.current = window.setInterval(() => setDuration((d) => d + 1), 1000);
-      } catch (err) {
-        logService.error('Recorder error:', err);
-        const msg = permissionErrorMessage ?? getTranslator('en')('voiceInput_permission_error');
-        setError(msg);
-        if (onError) onError(msg);
+        timerRef.current = window.setInterval(
+          () => setDuration((previousDuration) => previousDuration + 1),
+          RECORDING_DURATION_TICK_MS,
+        );
+      } catch (recorderError) {
+        logService.error('Recorder error:', recorderError);
+        const errorMessage = permissionErrorMessage ?? getTranslator('en')('voiceInput_permission_error');
+        setError(errorMessage);
+        if (onError) onError(errorMessage);
         setStatus('idle');
         cleanup();
       } finally {
@@ -180,7 +174,7 @@ export const useRecorder = (options: UseRecorderOptions = {}) => {
   const cancelRecording = useCallback(() => {
     startRequestIdRef.current += 1;
     if (mediaRecorderRef.current) {
-      // Nullify handlers to prevent onStop callback from firing with data
+      // Prevent canceling from publishing the recorded chunks.
       mediaRecorderRef.current.ondataavailable = null;
       mediaRecorderRef.current.onstop = null;
 

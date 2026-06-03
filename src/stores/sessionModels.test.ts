@@ -1,25 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_MODEL_ID } from '@/constants/modelConfiguration';
 import type { SavedChatSession } from '@/types';
-import { createChatSettings } from '@/test/data/factories';
+import { createSavedChatSessionMetadata } from '@/test/data/factories';
 import { sanitizeSessionModel, shouldRetainRuntimeMessages, sortSessionsInPlace } from './sessionModels';
-
-const makeSession = (overrides: Partial<SavedChatSession> = {}): SavedChatSession => ({
-  id: 'session',
-  title: 'Session',
-  timestamp: 0,
-  messages: [],
-  settings: createChatSettings(),
-  ...overrides,
-});
 
 describe('sessionModels', () => {
   it('sorts pinned sessions first, then by newest timestamp', () => {
     const sessions = [
-      makeSession({ id: 'old', timestamp: 1 }),
-      makeSession({ id: 'pinned-old', timestamp: 2, isPinned: true }),
-      makeSession({ id: 'new', timestamp: 4 }),
-      makeSession({ id: 'pinned-new', timestamp: 3, isPinned: true }),
+      createSavedChatSessionMetadata({ id: 'old', timestamp: 1 }),
+      createSavedChatSessionMetadata({ id: 'pinned-old', timestamp: 2, isPinned: true }),
+      createSavedChatSessionMetadata({ id: 'new', timestamp: 4 }),
+      createSavedChatSessionMetadata({ id: 'pinned-new', timestamp: 3, isPinned: true }),
     ];
 
     const sorted = sortSessionsInPlace(sessions);
@@ -38,7 +29,7 @@ describe('sessionModels', () => {
 
   it('sanitizes missing model IDs to the default supported model', () => {
     const sanitized = sanitizeSessionModel(
-      makeSession({
+      createSavedChatSessionMetadata({
         settings: {
           temperature: 1,
         } as SavedChatSession['settings'],

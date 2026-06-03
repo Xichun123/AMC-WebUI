@@ -16,6 +16,22 @@ interface UseMessageExportProps {
 
 export type ExportType = 'png' | 'html' | 'txt' | 'json';
 
+const EXPORTING_STATE_PAINT_DELAY_MS = 500;
+const MESSAGE_PNG_EXPORT_SCALE = 2.5;
+const MESSAGE_CONTENT_SELECTORS = ['.message-content-container', '.markdown-body', '.shadow-sm'];
+
+const findMessageContentNode = (messageId: string): HTMLElement | null => {
+  const messageWrapper = document.querySelector(`[data-message-id="${messageId}"]`);
+  if (!messageWrapper) return null;
+
+  for (const selector of MESSAGE_CONTENT_SELECTORS) {
+    const contentNode = messageWrapper.querySelector<HTMLElement>(selector);
+    if (contentNode) return contentNode;
+  }
+
+  return null;
+};
+
 export const useMessageExport = ({ message, sessionTitle, messageIndex, themeId }: UseMessageExportProps) => {
   const { language, t } = useI18n();
   const [exportingType, setExportingType] = useState<ExportType | null>(null);
@@ -35,36 +51,24 @@ export const useMessageExport = ({ message, sessionTitle, messageIndex, themeId 
         messageIndex,
       });
 
-      const dateObj = new Date(message.timestamp);
-      const { dateStr } = createExportDateMeta(dateObj);
+      const messageDate = new Date(message.timestamp);
+      const { dateStr: dateLabel } = createExportDateMeta(messageDate);
 
-      // Small delay to allow UI to update to "Exporting..." state
       if (type !== 'png') {
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, EXPORTING_STATE_PAINT_DELAY_MS));
       }
 
-      // Find the rendered DOM bubble to preserve Math/Syntax/Diagrams
-      // We use the data-message-id attribute which is present in the Message component
-      const messageWrapper = document.querySelector(`[data-message-id="${message.id}"]`);
-      // We want the inner bubble, usually inside the wrapper.
-      // The structure is Wrapper -> Container -> [Actions, Bubble, Actions]
-      // Prefer the message content container, then broader bubble selectors.
-      const contentNodeSource =
-        messageWrapper?.querySelector('.message-content-container') ||
-        messageWrapper?.querySelector('.markdown-body') ||
-        messageWrapper?.querySelector('.shadow-sm');
+      const messageContentNode = findMessageContentNode(message.id);
 
       if (type === 'png' || type === 'html') {
-        if (!contentNodeSource) {
+        if (!messageContentNode) {
           throw new Error(t('export_message_content_missing'));
         }
 
         const { exportHtmlStringAsFile, prepareElementForExport, generateSnapshotPng, buildHtmlDocument } =
           await loadExportRuntime();
 
-        // Use unified helper to clone, clean, and embed images
-        // For PNG, we want expanded details visible. For HTML, we want them collapsed by default but interactive.
-        const cleanedContent = await prepareElementForExport(contentNodeSource as HTMLElement, {
+        const cleanedContent = await prepareElementForExport(messageContentNode, {
           expandDetails: type === 'png',
         });
 
@@ -75,11 +79,11 @@ export const useMessageExport = ({ message, sessionTitle, messageIndex, themeId 
             themeId,
             {
               title: t('export_message_title'),
-              metaLeft: dateStr,
+              metaLeft: dateLabel,
               metaRight: t('export_message_id').replace('{id}', shortId),
             },
             {
-              scale: 2.5, // Use slightly higher scale for single message clarity
+              scale: MESSAGE_PNG_EXPORT_SCALE,
               messages: {
                 imageTooLarge: t('export_image_too_large'),
                 exportFailed: (message) => t('export_failed_with_message').replace('{message}', message),
@@ -90,7 +94,6 @@ export const useMessageExport = ({ message, sessionTitle, messageIndex, themeId 
             return;
           }
         } else {
-          // Wrap the cleaned content
           const wrapper = document.createElement('div');
           wrapper.className = 'markdown-body';
           wrapper.appendChild(cleanedContent);
@@ -98,7 +101,7 @@ export const useMessageExport = ({ message, sessionTitle, messageIndex, themeId 
 
           const fullHtml = await buildHtmlDocument({
             title: t('export_message_html_title').replace('{id}', shortId),
-            date: dateStr,
+            date: dateLabel,
             model: t('export_message_id').replace('{id}', shortId),
             contentHtml: chatHtml,
             themeId,
@@ -111,7 +114,7 @@ export const useMessageExport = ({ message, sessionTitle, messageIndex, themeId 
         const { exportTextStringAsFile, buildTextDocument } = await loadExportRuntime();
         const txtContent = buildTextDocument({
           title: t('export_message_text_title').replace('{id}', shortId),
-          date: dateStr,
+          date: dateLabel,
           model: t('export_not_applicable'),
           messages: [
             {
@@ -129,10 +132,15 @@ export const useMessageExport = ({ message, sessionTitle, messageIndex, themeId 
         triggerDownload(createManagedObjectUrl(blob), `${filenameBase}.json`);
       }
 
-      if (onSuccess) onSuccess();
-    } catch (err) {
-      logService.error(`Failed to export message as ${type.toUpperCase()}:`, err);
-      alert(t('export_failed_with_message').replace('{message}', err instanceof Error ? err.message : String(err)));
+      onSuccess?.();
+    } catch (exportError) {
+      logService.error(`Failed to export message as ${type.toUpperCase()}:`, exportError);
+      alert(
+        t('export_failed_with_message').replace(
+          '{message}',
+          exportError instanceof Error ? exportError.message : String(exportError),
+        ),
+      );
     } finally {
       setExportingType(null);
     }

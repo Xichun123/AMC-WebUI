@@ -3,9 +3,8 @@ import { useCallback } from 'react';
 import { type AppSettings, type ChatSettings, type UploadedFile, type MediaResolution } from '@/types';
 import { buildContentParts } from '@/utils/chat/builder';
 import { useI18n } from '@/contexts/I18nContext';
-import { getApiKeyErrorTranslationKey, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
-import { ensureFilesApiReferences } from '@/features/message-sender/fileApiReference';
-import { formatMessageSenderText } from '@/features/message-sender/i18nFormat';
+import { formatApiKeyErrorMessage, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
+import { ensureFilesApiReferences, formatFileReferenceErrorMessage } from '@/features/message-sender/fileApiReference';
 
 type SetSelectedFiles = (files: UploadedFile[] | ((prevFiles: UploadedFile[]) => UploadedFile[])) => void;
 
@@ -75,8 +74,7 @@ export const useLiveModeHandler = ({
         });
 
         if ('error' in keyResult) {
-          const translationKey = getApiKeyErrorTranslationKey(keyResult.error);
-          setAppFileError(translationKey ? t(translationKey) : keyResult.error);
+          setAppFileError(formatApiKeyErrorMessage(keyResult.error, t));
           return;
         }
 
@@ -94,12 +92,7 @@ export const useLiveModeHandler = ({
         });
 
         if (!fileReferenceResult.ok) {
-          const template = t(fileReferenceResult.errorKey);
-          setAppFileError(
-            fileReferenceResult.fileName
-              ? formatMessageSenderText(template, { filename: fileReferenceResult.fileName })
-              : template,
-          );
+          setAppFileError(formatFileReferenceErrorMessage(fileReferenceResult, t));
           return;
         }
 

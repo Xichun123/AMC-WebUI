@@ -37,6 +37,7 @@ export interface MarkdownRendererProps {
   diagramRenderDelayMs?: number;
   interactiveMode?: 'enabled' | 'disabled';
   contentPreNormalized?: boolean;
+  liveArtifactFontSize?: number;
 }
 
 type MarkdownCodeProps = React.ComponentPropsWithoutRef<'code'> & {
@@ -137,6 +138,7 @@ export const BaseMarkdownRenderer: React.FC<BaseMarkdownRendererProps> = React.m
     diagramRenderDelayMs = 500,
     interactiveMode = 'enabled',
     contentPreNormalized = false,
+    liveArtifactFontSize,
     remarkPlugins,
     rehypePlugins,
   }) => {
@@ -293,6 +295,7 @@ export const BaseMarkdownRenderer: React.FC<BaseMarkdownRendererProps> = React.m
               showPreviewControls={isInteractive}
               isLoading={isLoading}
               onOpenSidePanel={onOpenSidePanel}
+              liveArtifactFontSize={liveArtifactFontSize}
             >
               {codeElement || children}
             </CodeBlock>
@@ -315,6 +318,7 @@ export const BaseMarkdownRenderer: React.FC<BaseMarkdownRendererProps> = React.m
         onOpenSidePanel,
         t,
         themeId,
+        liveArtifactFontSize,
       ],
     );
 
@@ -349,6 +353,7 @@ export const BaseMarkdownRenderer: React.FC<BaseMarkdownRendererProps> = React.m
             showPreviewControls={isInteractive}
             isLoading={isLoading}
             onOpenSidePanel={onOpenSidePanel}
+            liveArtifactFontSize={liveArtifactFontSize}
           >
             <code className={`language-${singleLiveArtifact.language}`}>{singleLiveArtifact.code}</code>
           </CodeBlock>

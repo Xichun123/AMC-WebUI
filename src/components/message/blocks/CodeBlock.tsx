@@ -29,15 +29,20 @@ interface CodeBlockProps {
   onOpenSidePanel: (content: SideViewContent) => void;
   showPreviewControls?: boolean;
   isLoading?: boolean;
+  liveArtifactFontSize?: number;
   onLiveArtifactFollowUp?: (payload: LiveArtifactFollowupPayload) => void;
 }
 
-const LiveArtifactInteractionPendingFrame: React.FC<{ label: string }> = ({ label }) => (
+const LiveArtifactInteractionPendingFrame: React.FC<{ label: string; baseFontSize?: number }> = ({
+  label,
+  baseFontSize,
+}) => (
   <div
     data-live-artifact-interaction-pending="true"
     aria-label={label}
     aria-live="polite"
     className="my-3 rounded-lg border border-[var(--theme-border-primary)] bg-[var(--theme-bg-model-message)] p-4 shadow-sm"
+    style={baseFontSize ? { fontSize: `${baseFontSize}px` } : undefined}
   >
     <div className="space-y-3">
       <div className="h-3 w-40 rounded bg-[var(--theme-border-secondary)] animate-pulse" />
@@ -123,11 +128,17 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
     (isLikelyHtml(resolvedCodeText) || (Boolean(props.isLoading) && isLikelyStreamingHtmlArtifact(resolvedCodeText)));
 
   if (isInteractive && interactionSpec) {
-    return <LiveArtifactInteractionFrame spec={interactionSpec} onFollowUp={props.onLiveArtifactFollowUp} />;
+    return (
+      <LiveArtifactInteractionFrame
+        spec={interactionSpec}
+        baseFontSize={props.liveArtifactFontSize}
+        onFollowUp={props.onLiveArtifactFollowUp}
+      />
+    );
   }
 
   if (isInteractive && isStreamingInteractionCandidate) {
-    return <LiveArtifactInteractionPendingFrame label={t('thinking_text')} />;
+    return <LiveArtifactInteractionPendingFrame label={t('thinking_text')} baseFontSize={props.liveArtifactFontSize} />;
   }
 
   if (showInlineHtmlPreview) {
@@ -136,6 +147,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
         html={resolvedCodeText}
         cacheKey={props.cacheKey}
         isLoading={props.isLoading}
+        baseFontSize={props.liveArtifactFontSize}
         onFollowUp={props.onLiveArtifactFollowUp}
       />
     );

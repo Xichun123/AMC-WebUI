@@ -78,8 +78,8 @@ export const GraphvizBlock: React.FC<GraphvizBlockProps> = ({
           vizInstanceRef.current = instance;
         }
       })
-      .catch((e) => {
-        logService.error('Failed to initialize Viz', e);
+      .catch((error) => {
+        logService.error('Failed to initialize Viz', error);
       });
 
     return () => {
@@ -178,11 +178,11 @@ export const GraphvizBlock: React.FC<GraphvizBlockProps> = ({
 
       setError('');
       setIsRendering(false);
-    } catch (e) {
+    } catch (error) {
       if (isMessageLoading) {
         setIsRendering(true);
       } else {
-        const errorMessage = e instanceof Error ? e.message : t('diagram_render_graphviz_failed');
+        const errorMessage = error instanceof Error ? error.message : t('diagram_render_graphviz_failed');
         setError(errorMessage.replace(/.*error:\s*/, ''));
         setSvgContent('');
         setIsRendering(false);
@@ -194,8 +194,8 @@ export const GraphvizBlock: React.FC<GraphvizBlockProps> = ({
     let isMounted = true;
     const timeoutId = setTimeout(() => {
       if (!isMounted) return;
-      renderGraph().catch((e) => {
-        logService.error('Failed to render Graphviz diagram', e);
+      renderGraph().catch((error) => {
+        logService.error('Failed to render Graphviz diagram', error);
       });
     }, renderDelayMs);
 
@@ -215,8 +215,8 @@ export const GraphvizBlock: React.FC<GraphvizBlockProps> = ({
     try {
       const { exportSvgAsImage } = await import('@/utils/export/image');
       await exportSvgAsImage(svgContent, `graphviz-diagram-${Date.now()}.jpg`, 5, 'image/jpeg');
-    } catch (e) {
-      setError(e instanceof Error ? e.message : t('diagram_export_failed'));
+    } catch (error) {
+      setError(error instanceof Error ? error.message : t('diagram_export_failed'));
     } finally {
       setIsDownloading(false);
     }

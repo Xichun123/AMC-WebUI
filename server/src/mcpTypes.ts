@@ -1,23 +1,6 @@
-export type McpServerTransport = 'stdio' | 'http';
-export type McpServerAuthType = 'none' | 'bearer' | 'customHeaders';
+import type { McpServerConfig } from '../../shared/mcpServerConfig.js';
 
-export interface McpServerAuthConfig {
-  type: McpServerAuthType;
-  token?: string;
-}
-
-export interface McpServerConfig {
-  id: string;
-  name: string;
-  enabled: boolean;
-  transport: McpServerTransport;
-  command?: string;
-  args?: string[];
-  env?: Record<string, string>;
-  url?: string;
-  headers?: Record<string, string>;
-  auth?: McpServerAuthConfig;
-}
+export type { McpServerConfig } from '../../shared/mcpServerConfig.js';
 
 export interface McpTool {
   name: string;

@@ -85,11 +85,11 @@ export const ImagenAspectRatioSelector: React.FC<ImagenAspectRatioSelectorProps>
       wrapperClassName="relative w-[120px]"
       direction="up"
     >
-      {ratios.map((r) => (
-        <option key={r} value={r}>
+      {ratios.map((ratio) => (
+        <option key={ratio} value={ratio}>
           <div className="flex items-center gap-2">
-            <AspectRatioIcon ratio={r} />
-            <span>{r}</span>
+            <AspectRatioIcon ratio={ratio} />
+            <span>{ratio}</span>
           </div>
         </option>
       ))}

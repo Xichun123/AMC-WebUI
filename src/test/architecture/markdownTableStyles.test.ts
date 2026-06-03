@@ -1,13 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import fs from 'fs';
-import path from 'path';
-import { projectRoot } from './projectFiles';
-
-const markdownCssPath = path.join(projectRoot, 'src/styles/markdown.css');
+import { readMarkdownCss } from './projectFiles';
 
 describe('markdown table styling', () => {
   it('wraps wide markdown tables instead of forcing natural-width overflow', () => {
-    const css = fs.readFileSync(markdownCssPath, 'utf8');
+    const css = readMarkdownCss();
 
     expect(css).toContain('.markdown-body table:not(.rich-html-table)');
     expect(css).toContain('width: 100%;');
@@ -21,7 +17,7 @@ describe('markdown table styling', () => {
   });
 
   it('does not apply standard table resets to rich raw html tables', () => {
-    const css = fs.readFileSync(markdownCssPath, 'utf8');
+    const css = readMarkdownCss();
 
     expect(css).toContain('.markdown-body table:not(.rich-html-table) thead th');
     expect(css).toContain('.markdown-body table:not(.rich-html-table) tbody td');

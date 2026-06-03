@@ -31,6 +31,31 @@ describe('ArtifactFrame', () => {
     vi.useRealTimers();
   });
 
+  it('injects the configured base font size into static artifact documents', () => {
+    act(() => {
+      renderer.root.render(<ArtifactFrame html="<section><p>Artifact text</p></section>" baseFontSize={18} />);
+    });
+
+    const iframe = renderer.container.querySelector('iframe');
+
+    expect(iframe?.getAttribute('srcdoc')).toContain('data-amc-live-artifact-base-font-size="true"');
+    expect(iframe?.getAttribute('srcdoc')).toContain('--amc-live-artifact-font-size:18px');
+  });
+
+  it('injects the configured base font size into streaming artifact documents', () => {
+    act(() => {
+      renderer.root.render(
+        <ArtifactFrame html="<section><p>Artifact text</p></section>" baseFontSize={20} isLoading />,
+      );
+    });
+
+    const iframe = renderer.container.querySelector('iframe');
+
+    expect(iframe?.getAttribute('srcdoc')).toContain('data-amc-live-artifact-base-font-size="true"');
+    expect(iframe?.getAttribute('srcdoc')).toContain('--amc-live-artifact-font-size:20px');
+    expect(iframe?.getAttribute('srcdoc')).toContain('data-amc-stream-preview-root');
+  });
+
   it('relays iframe text selections to the parent selection toolbar event', () => {
     const handleSelection = vi.fn();
     window.addEventListener('amc-live-artifact-selection', handleSelection);

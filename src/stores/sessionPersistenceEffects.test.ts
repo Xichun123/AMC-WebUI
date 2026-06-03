@@ -1,20 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { SavedChatSession } from '@/types';
-import { createChatSettings } from '@/test/data/factories';
+import { createSavedChatSessionMetadata } from '@/test/data/factories';
 import { persistSessionChanges } from './sessionPersistenceEffects';
-
-const makeSession = (overrides: Partial<SavedChatSession> = {}): SavedChatSession => ({
-  id: 'session',
-  title: 'Session',
-  timestamp: 0,
-  messages: [],
-  settings: createChatSettings(),
-  ...overrides,
-});
 
 describe('sessionPersistenceEffects', () => {
   it('saves a changed active session and broadcasts a content update', async () => {
-    const session = makeSession({
+    const session = createSavedChatSessionMetadata({
       id: 'active',
       messages: [{ id: 'message', role: 'user', content: 'Hi', timestamp: new Date() }],
     });
@@ -48,8 +39,8 @@ describe('sessionPersistenceEffects', () => {
       content: 'Keep me',
       timestamp: new Date(),
     };
-    const session = makeSession({ id: 'archive', title: 'Renamed', messages: [] });
-    const persistedSession = makeSession({
+    const session = createSavedChatSessionMetadata({ id: 'archive', title: 'Renamed', messages: [] });
+    const persistedSession = createSavedChatSessionMetadata({
       id: 'archive',
       title: 'Archive',
       messages: [persistedMessage],
@@ -78,7 +69,7 @@ describe('sessionPersistenceEffects', () => {
   it('skips stale session saves when a newer persist version appears before DB lookup finishes', async () => {
     let resolvePersistedSession: (session: SavedChatSession) => void = () => {};
     const sessionPersistVersions = new Map<string, number>();
-    const session = makeSession({ id: 'archive', messages: [] });
+    const session = createSavedChatSessionMetadata({ id: 'archive', messages: [] });
     const saveSession = vi.fn();
 
     const persistPromise = persistSessionChanges({
@@ -99,7 +90,7 @@ describe('sessionPersistenceEffects', () => {
 
     expect(sessionPersistVersions.get('archive')).toBe(1);
     sessionPersistVersions.set('archive', 2);
-    resolvePersistedSession(makeSession({ id: 'archive', messages: [] }));
+    resolvePersistedSession(createSavedChatSessionMetadata({ id: 'archive', messages: [] }));
     await persistPromise;
 
     expect(saveSession).not.toHaveBeenCalled();

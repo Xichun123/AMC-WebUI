@@ -9,12 +9,20 @@ interface UseMessageListScrollProps {
 }
 
 const CURRENT_TURN_VIEWPORT_OFFSET_PX = 96;
+const SCROLL_BOTTOM_THRESHOLD_PX = 150;
 
-type StoredScrollSnapshot = {
+type StoredMessageScrollSnapshot = {
   messageId: string;
   scrollTop: number;
   topOffset: number;
 };
+
+type StoredBottomScrollSnapshot = {
+  atBottom: true;
+  scrollTop: number;
+};
+
+type StoredScrollSnapshot = StoredMessageScrollSnapshot | StoredBottomScrollSnapshot;
 
 const getScrollStorageKey = (sessionId: string) => `chat_scroll_pos_${sessionId}`;
 
@@ -29,7 +37,13 @@ const parseStoredScrollSnapshot = (rawValue: string | null): StoredScrollSnapsho
   }
 
   try {
-    const parsed = JSON.parse(rawValue) as Partial<StoredScrollSnapshot>;
+    const parsed = JSON.parse(rawValue) as Partial<StoredMessageScrollSnapshot & StoredBottomScrollSnapshot>;
+    if (parsed.atBottom === true && Number.isFinite(parsed.scrollTop)) {
+      return {
+        atBottom: true,
+        scrollTop: Number(parsed.scrollTop),
+      };
+    }
     if (
       typeof parsed.messageId === 'string' &&
       Number.isFinite(parsed.scrollTop) &&
@@ -51,7 +65,17 @@ const parseStoredScrollSnapshot = (rawValue: string | null): StoredScrollSnapsho
   return null;
 };
 
+const isNearScrollBottom = (container: HTMLElement) =>
+  container.scrollHeight - container.clientHeight - container.scrollTop <= SCROLL_BOTTOM_THRESHOLD_PX;
+
 const createScrollSnapshot = (container: HTMLElement): StoredScrollSnapshot | null => {
+  if (isNearScrollBottom(container)) {
+    return {
+      atBottom: true,
+      scrollTop: Math.max(0, Math.round(container.scrollTop)),
+    };
+  }
+
   const containerRect = container.getBoundingClientRect();
   const renderedMessages = Array.from(container.querySelectorAll<HTMLElement>('[data-message-id]'));
   const firstVisibleMessage =
@@ -313,6 +337,12 @@ export const useMessageListScroll = ({
           if (typeof savedSnapshot === 'number') {
             virtuosoRef.current?.scrollTo({ top: savedSnapshot });
           } else if (savedSnapshot) {
+            if ('atBottom' in savedSnapshot) {
+              virtuosoRef.current?.scrollToIndex({ index: 'LAST', align: 'end' });
+              lastRestoredSessionIdRef.current = sessionIdForRestore;
+              return;
+            }
+
             const targetIndex = messages.findIndex((message) => message.id === savedSnapshot.messageId);
             if (targetIndex >= 0) {
               virtuosoRef.current?.scrollToIndex({

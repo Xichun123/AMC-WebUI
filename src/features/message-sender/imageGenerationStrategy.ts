@@ -2,10 +2,8 @@ import { type AppSettings, type ChatSettings as IndividualChatSettings, type Ima
 import { generateImagesApi } from '@/services/api/generation/imageApi';
 import { createUploadedFileFromBase64 } from '@/utils/chat/parsing';
 import { formatMessageSenderText } from './i18nFormat';
-import { runOptimisticMessagePipeline } from './messagePipeline';
-import type { MessageSenderTranslator, SessionsUpdater } from './types';
-
-type MessageLifecycleRunner = Parameters<typeof runOptimisticMessagePipeline>[0]['runMessageLifecycle'];
+import { runOptimisticMessagePipeline, type MessageLifecycleRunner } from './messagePipeline';
+import type { MessageSenderTranslator, SessionsUpdater } from './messageSenderTypes';
 
 interface SendImageGenerationMessageParams {
   keyToUse: string;

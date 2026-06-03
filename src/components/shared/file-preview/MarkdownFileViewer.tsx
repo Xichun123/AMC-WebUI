@@ -59,16 +59,16 @@ export const MarkdownFileViewer: React.FC<MarkdownFileViewerProps> = ({
 
     if (file.dataUrl) {
       fetch(file.dataUrl)
-        .then((res) => res.text())
+        .then((response) => response.text())
         .then((text) => {
           if (cancelled) return;
           setLocalContent(text);
           onLoad?.(text);
           setIsLoading(false);
         })
-        .catch((err) => {
+        .catch((error) => {
           if (cancelled) return;
-          logService.error('Failed to load markdown content', err);
+          logService.error('Failed to load markdown content', error);
           setLocalContent(t('filePreview_failed_text_content'));
           setIsLoading(false);
         });

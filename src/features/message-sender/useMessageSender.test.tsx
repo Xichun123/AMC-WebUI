@@ -73,10 +73,10 @@ vi.mock('@/utils/chat/ids', () => ({
 
 vi.mock('@/utils/apiKeySelection', () => ({
   getKeyForRequest: vi.fn(() => ({ key: 'api-key', isNewKey: false })),
-  getApiKeyErrorTranslationKey: vi.fn((error: string) => {
-    if (error === 'API Key not configured.') return 'apiRuntime_keyNotConfigured';
-    if (error === 'No valid API keys found.') return 'apiRuntime_noValidKeysFound';
-    return null;
+  formatApiKeyErrorMessage: vi.fn((error: string, translate: (translationKey: string) => string) => {
+    if (error === 'API Key not configured.') return translate('apiRuntime_keyNotConfigured');
+    if (error === 'No valid API keys found.') return translate('apiRuntime_noValidKeysFound');
+    return error;
   }),
 }));
 

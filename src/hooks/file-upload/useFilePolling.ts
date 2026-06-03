@@ -1,6 +1,6 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import { type AppSettings, type ChatSettings as IndividualChatSettings, type UploadedFile } from '@/types';
-import { getApiKeyErrorTranslationKey, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
+import { formatApiKeyErrorMessage, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
 import { logService } from '@/services/logService';
 import { POLLING_INTERVAL_MS, MAX_POLLING_DURATION_MS } from '@/services/api/filePollingConfig';
 import { getFileMetadataApi } from '@/services/api/fileApi';
@@ -103,8 +103,7 @@ export const useFilePolling = ({
           const keyResult = getGeminiKeyForRequest(appSettings, currentChatSettings, { skipIncrement: true });
           if ('error' in keyResult) {
             logService.error(`Polling for ${fileApiName} stopped: ${keyResult.error}`);
-            const translationKey = getApiKeyErrorTranslationKey(keyResult.error);
-            const errorMessage = translationKey ? t(translationKey) : keyResult.error;
+            const errorMessage = formatApiKeyErrorMessage(keyResult.error, t);
             setSelectedFiles((prev) =>
               prev.map((selectedFile) =>
                 selectedFile.id === fileId

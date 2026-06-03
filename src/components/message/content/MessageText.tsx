@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { type ChatMessage, type UploadedFile, type AppSettings, type SideViewContent } from '@/types';
 import { useI18n } from '@/contexts/I18nContext';
 import { LazyMarkdownRenderer } from '@/components/message/LazyMarkdownRenderer';
@@ -10,6 +10,14 @@ import { useMessageStream } from '@/hooks/ui/useMessageStream';
 import { extractRawThinkingBlocks } from '@/utils/chat/reasoning';
 import type { LiveArtifactFollowupPayload } from '@/utils/liveArtifactFollowup';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  getUserMessageCollapseKey,
+  shouldCollapseUserMessageContent,
+  USER_MESSAGE_COLLAPSED_LINE_HEIGHT,
+  USER_MESSAGE_COLLAPSE_LINE_THRESHOLD,
+  type UserMessageCollapseController,
+} from './userMessageCollapse';
+import { resolveLiveArtifactsFontSize } from '@/utils/liveArtifactsFontSize';
 
 interface MessageTextProps {
   message: ChatMessage;
@@ -24,19 +32,8 @@ interface MessageTextProps {
   isMermaidRenderingEnabled: boolean;
   isGraphvizRenderingEnabled: boolean;
   onOpenSidePanel: (content: SideViewContent) => void;
+  userMessageCollapse?: UserMessageCollapseController;
 }
-
-const USER_MESSAGE_COLLAPSE_CHARACTER_THRESHOLD = 600;
-const USER_MESSAGE_COLLAPSE_LINE_THRESHOLD = 8;
-const USER_MESSAGE_COLLAPSED_LINE_HEIGHT = 1.65;
-
-const shouldCollapseUserMessageContent = (content: string): boolean => {
-  if (content.length > USER_MESSAGE_COLLAPSE_CHARACTER_THRESHOLD) return true;
-  return (content.match(/\n/g)?.length ?? 0) + 1 > USER_MESSAGE_COLLAPSE_LINE_THRESHOLD;
-};
-
-const getUserMessageCollapseKey = (messageId: string, content: string): string =>
-  `${messageId}:${content.length}:${content.slice(0, 64)}:${content.slice(-64)}`;
 
 export const MessageText: React.FC<MessageTextProps> = ({
   message,
@@ -51,11 +48,11 @@ export const MessageText: React.FC<MessageTextProps> = ({
   isMermaidRenderingEnabled,
   isGraphvizRenderingEnabled,
   onOpenSidePanel,
+  userMessageCollapse,
 }) => {
   const { t } = useI18n();
   const { content, audioSrc, groundingMetadata, urlContextMetadata, thoughts } = message;
   const isLoading = message.isLoading ?? false;
-  const [expandedUserMessageKey, setExpandedUserMessageKey] = useState<string | null>(null);
 
   const { streamContent, streamThoughts } = useMessageStream(message.id, isLoading && message.role === 'model');
 
@@ -70,12 +67,16 @@ export const MessageText: React.FC<MessageTextProps> = ({
     [displayedContent, shouldSmooth],
   );
   const shouldOfferUserMessageCollapse =
-    message.role === 'user' && !isLoading && shouldCollapseUserMessageContent(displayedContent);
+    Boolean(userMessageCollapse) &&
+    message.role === 'user' &&
+    !isLoading &&
+    shouldCollapseUserMessageContent(displayedContent);
   const userMessageCollapseKey = getUserMessageCollapseKey(message.id, displayedContent);
-  const isUserMessageExpanded = expandedUserMessageKey === userMessageCollapseKey;
+  const isUserMessageExpanded = userMessageCollapse?.expandedUserMessageKeys.has(userMessageCollapseKey) ?? false;
   const isUserMessageCollapsed = shouldOfferUserMessageCollapse && !isUserMessageExpanded;
   const userMessageCollapseRegionId = `${message.id}-message-text`;
   const collapsedMaxHeight = baseFontSize * USER_MESSAGE_COLLAPSED_LINE_HEIGHT * USER_MESSAGE_COLLAPSE_LINE_THRESHOLD;
+  const liveArtifactFontSize = useMemo(() => resolveLiveArtifactsFontSize(appSettings), [appSettings]);
 
   const prevIsLoadingRef = useRef(isLoading);
   useEffect(() => {
@@ -100,12 +101,7 @@ export const MessageText: React.FC<MessageTextProps> = ({
     };
   }, [isLoading, appSettings.autoFullscreenHtml, effectiveContent, message.role, onOpenHtmlPreview]);
 
-  // Only show the primary thinking indicator (spinner) if:
-  // 1. It is loading
-  // 2. There is no content yet
-  // 3. There is no audio yet
-  // 4. AND either thoughts are disabled OR there are no thoughts (even streamed ones) yet.
-  // This prevents showing the spinner here when the MessageThoughts component is already showing it.
+  // Avoid showing the primary spinner when content, audio, or MessageThoughts already covers the loading state.
   const showPrimaryThinkingIndicator =
     isLoading && !effectiveContent && !audioSrc && (!showThoughts || !effectiveThoughts);
 
@@ -136,6 +132,7 @@ export const MessageText: React.FC<MessageTextProps> = ({
           themeId={themeId}
           onOpenSidePanel={onOpenSidePanel}
           files={message.files}
+          liveArtifactFontSize={liveArtifactFontSize}
         />
       ) : effectiveContent ? (
         <div data-user-message-collapsed={shouldOfferUserMessageCollapse ? String(isUserMessageCollapsed) : undefined}>
@@ -161,6 +158,7 @@ export const MessageText: React.FC<MessageTextProps> = ({
                 onOpenSidePanel={onOpenSidePanel}
                 hideThinkingInContext={appSettings.hideThinkingInContext}
                 files={message.files}
+                liveArtifactFontSize={liveArtifactFontSize}
               />
             </div>
           </div>
@@ -172,11 +170,7 @@ export const MessageText: React.FC<MessageTextProps> = ({
               aria-expanded={isUserMessageExpanded}
               aria-label={isUserMessageExpanded ? t('collapse') : t('expand')}
               className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-current opacity-80 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/40"
-              onClick={() =>
-                setExpandedUserMessageKey((expandedKey) =>
-                  expandedKey === userMessageCollapseKey ? null : userMessageCollapseKey,
-                )
-              }
+              onClick={() => userMessageCollapse?.onToggleUserMessageExpanded(userMessageCollapseKey)}
             >
               {isUserMessageExpanded ? t('collapse') : t('expand')}
               {isUserMessageExpanded ? (

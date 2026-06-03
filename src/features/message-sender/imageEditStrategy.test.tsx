@@ -47,17 +47,13 @@ vi.mock('@/services/logService', async () => {
   return createLogServiceMockModule();
 });
 
-vi.mock('@/utils/chat/session', () => ({
-  performOptimisticSessionUpdate: performOptimisticSessionUpdateMock,
-  createMessage: (role: 'user' | 'model', content: string, options: Record<string, unknown> = {}) => ({
-    id: options.id ?? `${role}-message`,
-    role,
-    content,
-    timestamp: new Date('2026-04-21T00:00:00.000Z'),
-    ...options,
-  }),
-  generateSessionTitle: vi.fn(() => 'Generated Title'),
-}));
+vi.mock('@/utils/chat/session', async () => {
+  const { createChatSessionMockModule } = await import('@/test/doubles/moduleMocks');
+
+  return createChatSessionMockModule({
+    performOptimisticSessionUpdate: performOptimisticSessionUpdateMock,
+  });
+});
 
 vi.mock('@/utils/chat/parsing', () => ({
   createUploadedFileFromBase64: createUploadedFileFromBase64Mock,

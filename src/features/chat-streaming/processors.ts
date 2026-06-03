@@ -35,18 +35,23 @@ export const finalizeMessages = ({
   let cumulativeTotal =
     [...messages]
       .reverse()
-      .find((m) => m.cumulativeTotalTokens !== undefined && m.generationStartTime !== generationStartTime)
-      ?.cumulativeTotalTokens || 0;
+      .find(
+        (message) => message.cumulativeTotalTokens !== undefined && message.generationStartTime !== generationStartTime,
+      )?.cumulativeTotalTokens || 0;
 
   let completedMessageForNotification: ChatMessage | null = null;
 
-  let finalMessages = messages.map((m) => {
-    if (m.generationStartTime && m.generationStartTime.getTime() === generationStartTime.getTime() && m.isLoading) {
-      let thinkingTime = m.thinkingTimeMs;
+  let finalMessages = messages.map((message) => {
+    if (
+      message.generationStartTime &&
+      message.generationStartTime.getTime() === generationStartTime.getTime() &&
+      message.isLoading
+    ) {
+      let thinkingTime = message.thinkingTimeMs;
       if (thinkingTime === undefined && firstContentPartTime) {
         thinkingTime = firstContentPartTime.getTime() - generationStartTime.getTime();
       }
-      const isLastMessageOfRun = m.id === Array.from(newModelMessageIds).pop();
+      const isLastMessageOfRun = message.id === Array.from(newModelMessageIds).pop();
 
       const { promptTokens, cachedPromptTokens, completionTokens, totalTokens, thoughtTokens, toolUsePromptTokens } =
         calculateTokenStats(isLastMessageOfRun ? usageMetadata : undefined);
@@ -56,10 +61,10 @@ export const finalizeMessages = ({
       }
 
       const completedMessage = {
-        ...m,
+        ...message,
         isLoading: false,
-        content: m.content,
-        thoughts: m.thoughts, // Data preservation: Always save thoughts regardless of display setting
+        content: message.content,
+        thoughts: message.thoughts,
         generationEndTime: new Date(),
         thinkingTimeMs: thinkingTime,
         groundingMetadata: isLastMessageOfRun ? groundingMetadata : undefined,
@@ -89,19 +94,19 @@ export const finalizeMessages = ({
       }
       return completedMessage;
     }
-    return m;
+    return message;
   });
 
   if (!isAborted) {
     finalMessages = finalMessages.filter(
-      (m) =>
-        m.role !== 'model' ||
-        m.isInternalToolMessage ||
-        (m.apiParts && m.apiParts.length > 0) ||
-        m.content?.trim() !== '' ||
-        (m.files && m.files.length > 0) ||
-        m.audioSrc ||
-        (m.thoughts && m.thoughts.trim() !== ''),
+      (message) =>
+        message.role !== 'model' ||
+        message.isInternalToolMessage ||
+        (message.apiParts && message.apiParts.length > 0) ||
+        message.content?.trim() !== '' ||
+        (message.files && message.files.length > 0) ||
+        message.audioSrc ||
+        (message.thoughts && message.thoughts.trim() !== ''),
     );
   }
 

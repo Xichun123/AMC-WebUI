@@ -12,8 +12,8 @@ interface FileStrategyControlProps {
 
 export const FileStrategyControl: React.FC<FileStrategyControlProps> = ({ settings, onUpdate }) => {
   const { t } = useI18n();
-  const updateFileConfig = (key: keyof FilesApiConfig, val: boolean) => {
-    onUpdate('filesApiConfig', { ...settings.filesApiConfig, [key]: val });
+  const updateFileConfig = (key: keyof FilesApiConfig, enabled: boolean) => {
+    onUpdate('filesApiConfig', { ...settings.filesApiConfig, [key]: enabled });
   };
 
   return (
@@ -34,31 +34,31 @@ export const FileStrategyControl: React.FC<FileStrategyControlProps> = ({ settin
         <ToggleItem
           label={t('settings_filesApi_images')}
           checked={settings.filesApiConfig.images}
-          onChange={(v) => updateFileConfig('images', v)}
+          onChange={(enabled) => updateFileConfig('images', enabled)}
           small
         />
         <ToggleItem
           label={t('settings_filesApi_pdfs')}
           checked={settings.filesApiConfig.pdfs}
-          onChange={(v) => updateFileConfig('pdfs', v)}
+          onChange={(enabled) => updateFileConfig('pdfs', enabled)}
           small
         />
         <ToggleItem
           label={t('settings_filesApi_audio')}
           checked={settings.filesApiConfig.audio}
-          onChange={(v) => updateFileConfig('audio', v)}
+          onChange={(enabled) => updateFileConfig('audio', enabled)}
           small
         />
         <ToggleItem
           label={t('settings_filesApi_video')}
           checked={settings.filesApiConfig.video}
-          onChange={(v) => updateFileConfig('video', v)}
+          onChange={(enabled) => updateFileConfig('video', enabled)}
           small
         />
         <ToggleItem
           label={t('settings_filesApi_text')}
           checked={settings.filesApiConfig.text}
-          onChange={(v) => updateFileConfig('text', v)}
+          onChange={(enabled) => updateFileConfig('text', enabled)}
           small
         />
       </div>

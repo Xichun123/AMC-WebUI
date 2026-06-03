@@ -1,40 +1,16 @@
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useMessageStream } from './useMessageStream';
+import { installTestAnimationFrameController, type TestAnimationFrameController } from '@/test/browser/animationFrames';
 import { streamingStore } from '@/services/streamingStore';
 import { renderHook } from '@/test/render/renderer';
 
 describe('useMessageStream', () => {
-  let nextAnimationFrameId: number;
-  let scheduledFrames: Map<number, FrameRequestCallback>;
-
-  const flushAnimationFrames = () => {
-    for (const [frameId, callback] of Array.from(scheduledFrames.entries())) {
-      scheduledFrames.delete(frameId);
-      act(() => {
-        callback(16);
-      });
-    }
-  };
+  let animationFrames: TestAnimationFrameController;
 
   beforeEach(() => {
     vi.useFakeTimers();
-    nextAnimationFrameId = 0;
-    scheduledFrames = new Map<number, FrameRequestCallback>();
-    vi.stubGlobal(
-      'requestAnimationFrame',
-      vi.fn((callback: FrameRequestCallback) => {
-        const frameId = ++nextAnimationFrameId;
-        scheduledFrames.set(frameId, callback);
-        return frameId;
-      }),
-    );
-    vi.stubGlobal(
-      'cancelAnimationFrame',
-      vi.fn((frameId: number) => {
-        scheduledFrames.delete(frameId);
-      }),
-    );
+    animationFrames = installTestAnimationFrameController();
     streamingStore.clear('message-stream');
     streamingStore.clear('stale-stream');
     streamingStore.clear('active-stream');
@@ -62,7 +38,7 @@ describe('useMessageStream', () => {
       streamingStore.updateContent('message-stream', 'Hello');
       streamingStore.updateThoughts('message-stream', 'Thinking');
     });
-    flushAnimationFrames();
+    animationFrames.flushScheduledFrames(16);
 
     expect(result.current.streamContent).toBe('Hello');
     expect(result.current.streamThoughts).toBe('Thinking');
@@ -87,9 +63,9 @@ describe('useMessageStream', () => {
     expect(streamingStore.getContent('batched-stream')).toBe('Hello');
     expect(streamingStore.getThoughts('batched-stream')).toBe('Thinking');
     expect(listener).not.toHaveBeenCalled();
-    expect(scheduledFrames.size).toBe(1);
+    expect(animationFrames.scheduledFrameCount).toBe(1);
 
-    flushAnimationFrames();
+    animationFrames.flushScheduledFrames(16);
 
     expect(listener).toHaveBeenCalledTimes(1);
 

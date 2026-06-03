@@ -56,16 +56,16 @@ class ApiKeyUsageTracker {
       if (Array.isArray(parsed)) {
         this.usage = new Map(parsed);
       }
-    } catch (e) {
-      this.reportError('Failed to load API key usage:', e);
+    } catch (storageError) {
+      this.reportError('Failed to load API key usage:', storageError);
     }
   }
 
   private save() {
     try {
       localStorage.setItem(API_USAGE_STORAGE_KEY, JSON.stringify(Array.from(this.usage.entries())));
-    } catch (e) {
-      this.reportError('Failed to save API key usage:', e);
+    } catch (storageError) {
+      this.reportError('Failed to save API key usage:', storageError);
     }
   }
 
@@ -152,16 +152,16 @@ class TokenUsageTracker {
       if (Array.isArray(parsed)) {
         this.usage = new Map(parsed.map(([modelId, stats]) => [modelId, this.normalize(stats)]));
       }
-    } catch (e) {
-      this.reportError('Failed to load token usage:', e);
+    } catch (storageError) {
+      this.reportError('Failed to load token usage:', storageError);
     }
   }
 
   private save() {
     try {
       localStorage.setItem(TOKEN_USAGE_STORAGE_KEY, JSON.stringify(Array.from(this.usage.entries())));
-    } catch (e) {
-      this.reportError('Failed to save token usage:', e);
+    } catch (storageError) {
+      this.reportError('Failed to save token usage:', storageError);
     }
   }
 

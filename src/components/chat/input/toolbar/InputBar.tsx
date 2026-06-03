@@ -38,20 +38,19 @@ export const InputBar: React.FC<InputBarProps> = ({
   const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
     if (value.trim() && !isLoading && !disabled) {
       onSubmit();
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Escape') {
       onCancel();
     }
   };
 
-  // Ensure focus when mounted if autoFocus is true
   useEffect(() => {
     if (autoFocus && inputRef.current) {
       inputRef.current.focus();
@@ -72,7 +71,7 @@ export const InputBar: React.FC<InputBarProps> = ({
             ref={inputRef}
             type={type}
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={(event) => onChange(event.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className="w-full py-2 pl-9 pr-3 bg-[var(--theme-bg-input)] border border-[var(--theme-border-secondary)] rounded-lg text-sm text-[var(--theme-text-primary)] placeholder-[var(--theme-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-border-focus)] focus:border-transparent transition-all shadow-inner font-mono"

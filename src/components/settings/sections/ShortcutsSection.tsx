@@ -81,7 +81,7 @@ export const ShortcutsSection: React.FC<ShortcutsSectionProps> = ({
                       <ShortcutRecorder
                         value={effectiveKey}
                         defaultValue={item.defaultKey}
-                        onChange={(val) => handleShortcutChange(item.id, val)}
+                        onChange={(shortcut) => handleShortcutChange(item.id, shortcut)}
                       />
                     </div>
                   </div>

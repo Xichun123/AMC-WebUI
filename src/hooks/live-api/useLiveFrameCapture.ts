@@ -11,6 +11,10 @@ interface UseLiveFrameCaptureProps {
   sessionRef: MutableRefObject<Promise<LiveSession> | null>;
 }
 
+const LIVE_FRAME_CAPTURE_INTERVAL_MS = 1000;
+const AUDIO_ACTIVITY_THRESHOLD = 0.01;
+const AUDIO_ACTIVITY_WINDOW_MS = 2000;
+
 export const useLiveFrameCapture = ({
   isConnected,
   videoStream,
@@ -22,8 +26,6 @@ export const useLiveFrameCapture = ({
 }: UseLiveFrameCaptureProps) => {
   const frameIntervalRef = useRef<number | null>(null);
   const lastAudioActivityAtRef = useRef<number>(0);
-  const AUDIO_ACTIVITY_THRESHOLD = 0.01;
-  const AUDIO_ACTIVITY_WINDOW_MS = 2000;
 
   useEffect(() => {
     if (!isMuted && volume >= AUDIO_ACTIVITY_THRESHOLD) {
@@ -68,7 +70,7 @@ export const useLiveFrameCapture = ({
     };
 
     // Live API docs recommend a maximum of 1 frame per second.
-    frameIntervalRef.current = window.setInterval(sendFrame, 1000);
+    frameIntervalRef.current = window.setInterval(sendFrame, LIVE_FRAME_CAPTURE_INTERVAL_MS);
 
     return () => {
       if (frameIntervalRef.current) clearInterval(frameIntervalRef.current);

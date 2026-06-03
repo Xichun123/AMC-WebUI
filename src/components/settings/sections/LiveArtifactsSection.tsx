@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { ChevronDown, RotateCcw, Wand2 } from 'lucide-react';
-import { Select } from '@/components/shared/Select';
 import { SETTINGS_INPUT_CLASS } from '@/constants/formClasses';
 import { loadLiveArtifactsSystemPrompt, resolveLiveArtifactsPromptTheme } from '@/features/prompts/promptRegistry';
 import {
@@ -75,47 +74,23 @@ export const LiveArtifactsSection: React.FC<LiveArtifactsSectionProps> = ({
       </h4>
       <div className="space-y-1">
         <div className="py-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <button
-              id="live-artifacts-prompt-toggle"
-              type="button"
-              aria-expanded={isPromptExpanded}
-              aria-controls="live-artifacts-prompt-panel"
-              onClick={() => setIsPromptExpanded((prev) => !prev)}
-              className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-lg px-0 py-2 text-left text-sm font-medium text-[var(--theme-text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--theme-bg-primary)]"
-            >
-              <span>{t('settings_liveArtifactsSystemPrompt_label')}</span>
-              <ChevronDown
-                size={16}
-                className={`flex-shrink-0 text-[var(--theme-text-tertiary)] transition-transform duration-200 ${
-                  isPromptExpanded ? 'rotate-180' : ''
-                }`}
-                strokeWidth={1.75}
-              />
-            </button>
-
-            <div className="w-full sm:w-64">
-              <Select
-                id="live-artifacts-prompt-mode-select"
-                label=""
-                hideLabel
-                aria-label={t('settings_liveArtifactsPromptMode_label')}
-                value={liveArtifactsPromptMode}
-                onChange={(event) =>
-                  onUpdateSetting(
-                    'liveArtifactsPromptMode',
-                    event.target.value as AppSettings['liveArtifactsPromptMode'],
-                  )
-                }
-                className="w-full"
-                wrapperClassName="relative w-full"
-              >
-                <option value="inline">{t('settings_liveArtifactsPromptMode_inline')}</option>
-                <option value="full">{t('settings_liveArtifactsPromptMode_full')}</option>
-                <option value="fullHtml">{t('settings_liveArtifactsPromptMode_fullHtml')}</option>
-              </Select>
-            </div>
-          </div>
+          <button
+            id="live-artifacts-prompt-toggle"
+            type="button"
+            aria-expanded={isPromptExpanded}
+            aria-controls="live-artifacts-prompt-panel"
+            onClick={() => setIsPromptExpanded((prev) => !prev)}
+            className="flex w-full min-w-0 items-center justify-between gap-3 rounded-lg px-0 py-2 text-left text-sm font-medium text-[var(--theme-text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--theme-bg-primary)]"
+          >
+            <span>{t('settings_liveArtifactsSystemPrompt_label')}</span>
+            <ChevronDown
+              size={16}
+              className={`flex-shrink-0 text-[var(--theme-text-tertiary)] transition-transform duration-200 ${
+                isPromptExpanded ? 'rotate-180' : ''
+              }`}
+              strokeWidth={1.75}
+            />
+          </button>
 
           {isPromptExpanded && (
             <div id="live-artifacts-prompt-panel" className="mt-2">

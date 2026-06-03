@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildOpenAICompatibleChatCompletionsUrl, buildOpenAICompatibleModelsUrl } from './openaiCompatibleUrls';
+import {
+  buildOpenAICompatibleChatCompletionsUrl,
+  buildOpenAICompatibleModelsUrl,
+  getOpenAICompatibleBaseUrlWarning,
+} from './openaiCompatibleUrls';
 
 describe('openaiCompatibleUrls', () => {
   it('appends chat completions and models paths to the configured API root', () => {
@@ -14,5 +18,13 @@ describe('openaiCompatibleUrls', () => {
   it('uses the default OpenAI-compatible API root when the configured root is blank', () => {
     expect(buildOpenAICompatibleChatCompletionsUrl('  ')).toBe('https://api.openai.com/v1/chat/completions');
     expect(buildOpenAICompatibleModelsUrl(null)).toBe('https://api.openai.com/v1/models');
+  });
+
+  it('warns when the configured root already includes an endpoint path', () => {
+    expect(getOpenAICompatibleBaseUrlWarning('https://api.example.com/v1/chat/completions')).toBe(
+      'chat-completions-endpoint',
+    );
+    expect(getOpenAICompatibleBaseUrlWarning('https://api.example.com/v1/models/')).toBe('models-endpoint');
+    expect(getOpenAICompatibleBaseUrlWarning('https://api.example.com/v1')).toBeNull();
   });
 });

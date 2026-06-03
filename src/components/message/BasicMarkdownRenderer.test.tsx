@@ -1,27 +1,11 @@
-import { act, type ComponentProps } from 'react';
+import { act } from 'react';
 import { setupTestRenderer } from '@/test/render/renderer';
 import { describe, expect, it, vi } from 'vitest';
-import { BasicMarkdownRenderer } from './BasicMarkdownRenderer';
+import { renderBasicMarkdown, type BasicMarkdownRendererTestProps } from '@/test/message/basicMarkdownRenderer';
 
 describe('BasicMarkdownRenderer', () => {
   const renderer = setupTestRenderer();
-  const renderMarkdown = (props: Partial<ComponentProps<typeof BasicMarkdownRenderer>> & { content: string }) => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-          {...props}
-        />,
-      );
-    });
-  };
+  const renderMarkdown = (props: BasicMarkdownRendererTestProps) => renderBasicMarkdown(renderer.root, props);
 
   it('renders bold text when quoted emphasis is adjacent to surrounding CJK text', () => {
     renderMarkdown({ content: '遇到的**“不定式”**问题。' });
@@ -89,23 +73,10 @@ describe('BasicMarkdownRenderer', () => {
   });
 
   it('preserves html table captions when raw html is allowed', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={
-            'Inline raw HTML:\n\n<table><caption>Monthly totals</caption><thead><tr><th>Name</th><th>Total</th></tr></thead><tbody><tr><td>Alice</td><td>42</td></tr></tbody></table>'
-          }
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
+    renderMarkdown({
+      content:
+        'Inline raw HTML:\n\n<table><caption>Monthly totals</caption><thead><tr><th>Name</th><th>Total</th></tr></thead><tbody><tr><td>Alice</td><td>42</td></tr></tbody></table>',
+      allowHtml: true,
     });
 
     const caption = renderer.container.querySelector('caption');
@@ -115,33 +86,20 @@ describe('BasicMarkdownRenderer', () => {
   });
 
   it('renders generated files inside sanitized tool result blocks', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={
-            '<div class="tool-result outcome-ok"><strong>Execution Result (OK):</strong><pre><code>plot saved</code></pre></div>'
-          }
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-          files={[
-            {
-              id: 'generated-plot',
-              name: 'generated-plot.png',
-              type: 'image/png',
-              size: 12,
-              dataUrl: 'blob:generated-plot',
-              uploadState: 'active',
-            },
-          ]}
-        />,
-      );
+    renderMarkdown({
+      content:
+        '<div class="tool-result outcome-ok"><strong>Execution Result (OK):</strong><pre><code>plot saved</code></pre></div>',
+      allowHtml: true,
+      files: [
+        {
+          id: 'generated-plot',
+          name: 'generated-plot.png',
+          type: 'image/png',
+          size: 12,
+          dataUrl: 'blob:generated-plot',
+          uploadState: 'active',
+        },
+      ],
     });
 
     const generatedOutputLabel = renderer.container.textContent || '';
@@ -152,27 +110,14 @@ describe('BasicMarkdownRenderer', () => {
   });
 
   it('preserves safe inline styles in allowed raw html', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={
-            'Inline raw HTML:\n\n' +
-            '<div style="display:flex;gap:12px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:20px 16px">' +
-            '<table style="width:100%;border-collapse:collapse;text-align:center">' +
-            '<tbody><tr><td style="padding:12px 16px"><span style="background:#e8f5e9;color:#2e7d32;border-radius:20px">Ready</span></td></tr></tbody>' +
-            '</table></div>'
-          }
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
+    renderMarkdown({
+      content:
+        'Inline raw HTML:\n\n' +
+        '<div style="display:flex;gap:12px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:20px 16px">' +
+        '<table style="width:100%;border-collapse:collapse;text-align:center">' +
+        '<tbody><tr><td style="padding:12px 16px"><span style="background:#e8f5e9;color:#2e7d32;border-radius:20px">Ready</span></td></tr></tbody>' +
+        '</table></div>',
+      allowHtml: true,
     });
 
     const wrapper = renderer.container.querySelector('div[style*="display"]');
@@ -193,35 +138,22 @@ describe('BasicMarkdownRenderer', () => {
   });
 
   it('preserves richer safe controls and svg primitives in allowed raw html', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={
-            'Inline raw HTML:\n\n' +
-            '<section style="display:grid;grid-template-columns:1fr auto;align-content:center;justify-items:start;aspect-ratio:2/1">' +
-            '<label for="tone">Tone</label>' +
-            '<input id="tone" type="range" min="0" max="10" value="7" aria-label="Tone" />' +
-            '<button type="button" disabled>Preview</button>' +
-            '<progress value="70" max="100">70%</progress>' +
-            '<meter min="0" max="100" value="70">70</meter>' +
-            '<svg viewBox="0 0 120 40" width="120" height="40" role="img" aria-label="trend">' +
-            '<rect x="0" y="0" width="120" height="40" fill="#eef2ff" />' +
-            '<circle cx="24" cy="20" r="8" fill="#4f46e5" />' +
-            '<text x="42" y="24" fill="#111827">OK</text>' +
-            '</svg>' +
-            '</section>'
-          }
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
+    renderMarkdown({
+      content:
+        'Inline raw HTML:\n\n' +
+        '<section style="display:grid;grid-template-columns:1fr auto;align-content:center;justify-items:start;aspect-ratio:2/1">' +
+        '<label for="tone">Tone</label>' +
+        '<input id="tone" type="range" min="0" max="10" value="7" aria-label="Tone" />' +
+        '<button type="button" disabled>Preview</button>' +
+        '<progress value="70" max="100">70%</progress>' +
+        '<meter min="0" max="100" value="70">70</meter>' +
+        '<svg viewBox="0 0 120 40" width="120" height="40" role="img" aria-label="trend">' +
+        '<rect x="0" y="0" width="120" height="40" fill="#eef2ff" />' +
+        '<circle cx="24" cy="20" r="8" fill="#4f46e5" />' +
+        '<text x="42" y="24" fill="#111827">OK</text>' +
+        '</svg>' +
+        '</section>',
+      allowHtml: true,
     });
 
     const sectionStyle = renderer.container.querySelector('section')?.getAttribute('style')?.replace(/\s+/g, '');
@@ -242,27 +174,14 @@ describe('BasicMarkdownRenderer', () => {
   });
 
   it('marks styled raw html tables as rich tables so inline styles can win', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={
-            'Inline raw HTML:\n\n' +
-            '<table style="width:100%;border-collapse:collapse;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.08)">' +
-            '<thead><tr style="background:#1a1a2e;color:#fff"><th style="padding:12px 16px;background:#16213e">React</th></tr></thead>' +
-            '<tbody><tr style="background:#fafafa"><td style="color:#2e7d32;font-weight:600">Ready</td></tr></tbody>' +
-            '</table>'
-          }
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
+    renderMarkdown({
+      content:
+        'Inline raw HTML:\n\n' +
+        '<table style="width:100%;border-collapse:collapse;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.08)">' +
+        '<thead><tr style="background:#1a1a2e;color:#fff"><th style="padding:12px 16px;background:#16213e">React</th></tr></thead>' +
+        '<tbody><tr style="background:#fafafa"><td style="color:#2e7d32;font-weight:600">Ready</td></tr></tbody>' +
+        '</table>',
+      allowHtml: true,
     });
 
     const table = renderer.container.querySelector('table');
@@ -275,22 +194,7 @@ describe('BasicMarkdownRenderer', () => {
   });
 
   it('keeps markdown tables on the standard table styling path', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={'| Name | Total |\n|---|---:|\n| Alice | 42 |'}
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
-    });
+    renderMarkdown({ content: '| Name | Total |\n|---|---:|\n| Alice | 42 |', allowHtml: true });
 
     const table = renderer.container.querySelector('table');
 
@@ -300,23 +204,10 @@ describe('BasicMarkdownRenderer', () => {
   });
 
   it('strips raw html positioning attributes that can escape the markdown surface', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={
-            'Inline raw HTML:\n\n<section id="danger-zone" class="fixed inset-0 z-[9999]" style="position:fixed;inset:0">Safe text</section>'
-          }
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
+    renderMarkdown({
+      content:
+        'Inline raw HTML:\n\n<section id="danger-zone" class="fixed inset-0 z-[9999]" style="position:fixed;inset:0">Safe text</section>',
+      allowHtml: true,
     });
 
     const section = renderer.container.querySelector('section');
@@ -330,43 +221,14 @@ describe('BasicMarkdownRenderer', () => {
   });
 
   it('keeps escaped dollar delimiters literal in prose', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={'Price is \\$5\\$ today.'}
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
-    });
+    renderMarkdown({ content: 'Price is \\$5\\$ today.' });
 
     expect(renderer.container.textContent).toContain('Price is $5$ today.');
     expect(renderer.container.textContent).not.toContain('Price is (5) today.');
   });
 
   it('keeps thinking tags literal inside inline code examples', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={'示例：`<thinking>secret</thinking>`'}
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-          hideThinkingInContext
-        />,
-      );
-    });
+    renderMarkdown({ content: '示例：`<thinking>secret</thinking>`', hideThinkingInContext: true });
 
     const code = renderer.container.querySelector('code');
 
@@ -375,44 +237,14 @@ describe('BasicMarkdownRenderer', () => {
   });
 
   it('keeps thinking tags literal inside fenced code blocks', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={'```html\n<thinking>secret</thinking>\n```'}
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-          hideThinkingInContext
-        />,
-      );
-    });
+    renderMarkdown({ content: '```html\n<thinking>secret</thinking>\n```', hideThinkingInContext: true });
 
     expect(renderer.container.querySelector('details')).toBeNull();
     expect(renderer.container.textContent).toContain('<thinking>secret</thinking>');
   });
 
   it('keeps all raw html pre children when html is allowed', () => {
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content={'<pre><span>alpha</span>beta</pre>'}
-          isLoading={false}
-          onImageClick={vi.fn()}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          allowHtml
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-        />,
-      );
-    });
+    renderMarkdown({ content: '<pre><span>alpha</span>beta</pre>', allowHtml: true });
 
     expect(renderer.container.textContent).toContain('alpha');
     expect(renderer.container.textContent).toContain('beta');
@@ -421,21 +253,10 @@ describe('BasicMarkdownRenderer', () => {
   it('does not make markdown images clickable when interactive mode is disabled', () => {
     const handleImageClick = vi.fn();
 
-    act(() => {
-      renderer.root.render(
-        <BasicMarkdownRenderer
-          content="![Diagram](data:image/png;base64,ZmFrZQ==)"
-          isLoading={false}
-          onImageClick={handleImageClick}
-          onOpenHtmlPreview={vi.fn()}
-          expandCodeBlocksByDefault={false}
-          isMermaidRenderingEnabled={false}
-          isGraphvizRenderingEnabled={false}
-          themeId="pearl"
-          onOpenSidePanel={vi.fn()}
-          interactiveMode="disabled"
-        />,
-      );
+    renderMarkdown({
+      content: '![Diagram](data:image/png;base64,ZmFrZQ==)',
+      onImageClick: handleImageClick,
+      interactiveMode: 'disabled',
     });
 
     const image = renderer.container.querySelector('img');

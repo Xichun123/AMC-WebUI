@@ -1,3 +1,5 @@
+import type { McpServerAuthType, McpServerConfig, McpServerTransport } from '../../shared/mcpServerConfig';
+
 export interface ModelOption {
   id: string;
   name: string;
@@ -32,13 +34,12 @@ export enum MediaResolution {
 export type ImageOutputMode = 'IMAGE_TEXT' | 'IMAGE_ONLY';
 export type ImagePersonGeneration = 'ALLOW_ADULT' | 'ALLOW_ALL' | 'DONT_ALLOW';
 export type ApiMode = 'gemini-native' | 'openai-compatible';
-export type McpServerTransport = 'stdio' | 'http';
-export type McpServerAuthType = 'none' | 'bearer' | 'customHeaders';
+export type { McpServerAuthType, McpServerConfig, McpServerTransport };
 
 /** All valid thinking levels — used for both type checking and runtime validation. */
 export const THINKING_LEVELS = ['MINIMAL', 'LOW', 'MEDIUM', 'HIGH'] as const;
 export type ThinkingLevel = (typeof THINKING_LEVELS)[number];
-export type LiveArtifactsPromptMode = 'inline' | 'full' | 'fullHtml';
+export type LiveArtifactsPromptMode = 'inline';
 export type LiveArtifactsSystemPrompts = Record<LiveArtifactsPromptMode, string>;
 export type TranslationTargetLanguage =
   | 'English'
@@ -61,22 +62,6 @@ export interface FilesApiConfig {
   audio: boolean;
   video: boolean;
   text: boolean;
-}
-
-export interface McpServerConfig {
-  id: string;
-  name: string;
-  enabled: boolean;
-  transport: McpServerTransport;
-  command?: string;
-  args?: string[];
-  env?: Record<string, string>;
-  url?: string;
-  headers?: Record<string, string>;
-  auth?: {
-    type: McpServerAuthType;
-    token?: string;
-  };
 }
 
 export interface ChatSettings {
@@ -142,6 +127,7 @@ export interface AppSettings extends ChatSettings {
   liveArtifactsPromptMode?: LiveArtifactsPromptMode;
   liveArtifactsSystemPrompt?: string;
   liveArtifactsSystemPrompts?: LiveArtifactsSystemPrompts;
+  liveArtifactsCustomFontSize?: number;
   isPasteRichTextAsMarkdownEnabled?: boolean;
   isPasteAsTextFileEnabled?: boolean;
   showInputPasteButton?: boolean;

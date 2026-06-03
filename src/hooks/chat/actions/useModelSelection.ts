@@ -60,8 +60,10 @@ export const useModelSelection = ({
         if (modelId !== currentChatSettings.modelId) {
           setIsSwitchingModel(true);
           updateAndPersistSessions((prev) =>
-            prev.map((s) =>
-              s.id === activeSessionId ? { ...s, settings: { ...s.settings, ...resolvedModelSettings } } : s,
+            prev.map((session) =>
+              session.id === activeSessionId
+                ? { ...session, settings: { ...session.settings, ...resolvedModelSettings } }
+                : session,
             ),
           );
         } else if (hasResolvedModelSettingChanges(currentChatSettings, resolvedModelSettings)) {

@@ -16,17 +16,17 @@ interface TextFileViewerProps {
   onLoad?: (content: string) => void;
 }
 
-const ROW_HEIGHT = 21; // 14px font size * 1.5 line height
-const PADDING_Y = 96; // 24 * 4 = 96px (pt-24 equivalent)
+const ROW_HEIGHT_PX = 21;
+const VERTICAL_PADDING_PX = 96;
+const VIRTUALIZATION_OVERSCAN_ROWS = 15;
 
 const VirtualTextViewer: React.FC<{ content: string }> = ({ content }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(600);
 
-  // Split content into lines. Memoize to prevent expensive splits on re-renders.
   const lines = useMemo(() => content.split(/\r\n|\r|\n/), [content]);
-  const totalHeight = lines.length * ROW_HEIGHT + PADDING_Y * 2;
+  const totalHeight = lines.length * ROW_HEIGHT_PX + VERTICAL_PADDING_PX * 2;
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -47,25 +47,26 @@ const VirtualTextViewer: React.FC<{ content: string }> = ({ content }) => {
     return () => observer.disconnect();
   }, []);
 
-  const onScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    setScrollTop(e.currentTarget.scrollTop);
+  const onScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop(event.currentTarget.scrollTop);
   }, []);
 
-  const buffer = 15;
-  // Calculate start index based on scroll position minus top padding
-  const effectiveScrollTop = Math.max(0, scrollTop - PADDING_Y);
-  const startIndex = Math.max(0, Math.floor(effectiveScrollTop / ROW_HEIGHT) - buffer);
-  const endIndex = Math.min(lines.length - 1, Math.ceil((effectiveScrollTop + viewportHeight) / ROW_HEIGHT) + buffer);
+  const effectiveScrollTop = Math.max(0, scrollTop - VERTICAL_PADDING_PX);
+  const startIndex = Math.max(0, Math.floor(effectiveScrollTop / ROW_HEIGHT_PX) - VIRTUALIZATION_OVERSCAN_ROWS);
+  const endIndex = Math.min(
+    lines.length - 1,
+    Math.ceil((effectiveScrollTop + viewportHeight) / ROW_HEIGHT_PX) + VIRTUALIZATION_OVERSCAN_ROWS,
+  );
 
   const visibleLines = [];
-  for (let i = startIndex; i <= endIndex; i++) {
+  for (let lineIndex = startIndex; lineIndex <= endIndex; lineIndex++) {
     visibleLines.push(
       <div
-        key={i}
+        key={lineIndex}
         className="absolute left-1/2 -translate-x-1/2 w-full max-w-5xl px-8 whitespace-pre font-mono text-sm leading-[21px] text-[var(--theme-text-primary)]"
-        style={{ top: PADDING_Y + i * ROW_HEIGHT, height: ROW_HEIGHT }}
+        style={{ top: VERTICAL_PADDING_PX + lineIndex * ROW_HEIGHT_PX, height: ROW_HEIGHT_PX }}
       >
-        {lines[i]}
+        {lines[lineIndex]}
       </div>,
     );
   }
@@ -100,17 +101,16 @@ export const TextFileViewer: React.FC<TextFileViewerProps> = ({
       return;
     }
 
-    // Otherwise fetch from dataUrl
     if (file.dataUrl) {
       fetch(file.dataUrl)
-        .then((res) => res.text())
+        .then((response) => response.text())
         .then((text) => {
           setLocalContent(text);
           if (onLoad) onLoad(text);
           setIsLoading(false);
         })
-        .catch((err) => {
-          logService.error('Failed to load text content', err);
+        .catch((error) => {
+          logService.error('Failed to load text content', error);
           setLocalContent(t('filePreview_failed_text_content'));
           setIsLoading(false);
         });
@@ -126,7 +126,6 @@ export const TextFileViewer: React.FC<TextFileViewerProps> = ({
   const displayContent = content ?? localContent;
   const markdownPreviewKey = `${file.id}:${file.name}:${renderMode}:${displayContent ?? ''}`;
   const shouldForceMarkdownRender = forcedMarkdownPreviewKey === markdownPreviewKey;
-  // Use virtualization for files larger than ~50KB to prevent freezing
   const isLargeFile = (displayContent?.length || 0) > LARGE_FILE_PREVIEW_LENGTH_THRESHOLD;
   const shouldShowLoading = hasProvidedContent ? false : isLoading;
   const shouldRenderMarkdown = !isEditable && renderMode === 'markdown' && !shouldShowLoading;
@@ -156,7 +155,7 @@ export const TextFileViewer: React.FC<TextFileViewerProps> = ({
         <textarea
           ref={textareaRef}
           value={displayContent || ''}
-          onChange={(e) => onChange && onChange(e.target.value)}
+          onChange={(event) => onChange && onChange(event.target.value)}
           className="w-full h-full p-4 sm:p-8 pt-24 pb-24 bg-transparent text-sm font-mono text-[var(--theme-text-primary)] whitespace-pre-wrap break-all outline-none resize-none custom-scrollbar"
           spellCheck={false}
         />

@@ -11,23 +11,12 @@ vi.mock('@/services/logService', async () => {
 
 import { useMessageActions } from './useMessageActions';
 import { finishActiveGenerationJob, startActiveGenerationJob } from '@/features/message-sender/activeGenerationJobs';
-import { renderHook } from '@/test/render/renderer';
+import { createDeferred, renderHook } from '@/test/render/renderer';
 
 describe('useMessageActions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
-
-  const createDeferred = <T,>() => {
-    let resolve!: (value: T) => void;
-    let reject!: (reason?: unknown) => void;
-    const promise = new Promise<T>((promiseResolve, promiseReject) => {
-      resolve = promiseResolve;
-      reject = promiseReject;
-    });
-
-    return { promise, resolve, reject };
-  };
 
   it('does not abort unrelated active jobs when the current session has no loading message', () => {
     const otherAbort = vi.fn();

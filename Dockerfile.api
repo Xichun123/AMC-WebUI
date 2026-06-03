@@ -6,6 +6,7 @@ COPY package.json package-lock.json .npmrc ./
 RUN npm ci
 
 COPY server ./server
+COPY shared ./shared
 COPY tsconfig.json ./
 RUN npm run build:api
 

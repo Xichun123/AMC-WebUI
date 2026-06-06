@@ -1,6 +1,7 @@
 import type { SavedChatSession } from '@/types';
 import type { SyncMessage } from '@/types/sync';
 import { mergePersistedSessionMessages } from './sessionPersistence';
+import { clearPendingSessionWrite, recordPendingSessionWrite } from './sessionWriteJournal';
 
 interface PersistSessionChangesOptions {
   modifiedSessions: SavedChatSession[];
@@ -32,7 +33,9 @@ export async function persistSessionChanges({
     const nextVersion = (sessionPersistVersions.get(session.id) ?? 0) + 1;
     sessionPersistVersions.set(session.id, nextVersion);
     persistVersions.set(session.id, nextVersion);
+    recordPendingSessionWrite(session, nextVersion);
   });
+  deletedSessionIds.forEach((sessionId) => clearPendingSessionWrite(sessionId));
 
   const sessionsToPersist = await Promise.all(
     modifiedSessions.map(async (session) => {
@@ -67,6 +70,7 @@ export async function persistSessionChanges({
 
       if (version !== undefined && sessionPersistVersions.get(session.id) === version) {
         persistedSessionIds.add(session.id);
+        clearPendingSessionWrite(session.id, version);
       }
     }),
     ...deletedSessionIds.map((id) => deleteSession(id)),

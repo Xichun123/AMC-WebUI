@@ -3,6 +3,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import { ACTIVE_CHAT_SESSION_ID_KEY } from '@/constants/storageKeys';
 import { dbService } from '@/services/db/dbService';
 import { logService } from '@/services/logService';
+import { mergePendingSessionMetadata, resolveSessionWithPendingWrite } from '@/stores/sessionWriteJournal';
 import type { SetActiveSessionOptions } from '@/stores/chatStore';
 import type { ChatGroup, ChatMessage, SavedChatSession } from '@/types';
 import { rehydrateSessionFiles } from '@/utils/chat/session';
@@ -77,12 +78,21 @@ export const loadInitialSessionData = async ({
   try {
     logService.info('Attempting to load chat history metadata from IndexedDB.');
 
-    const [metadataList, groups] = await Promise.all([dbService.getAllSessionMetadata(), dbService.getAllGroups()]);
+    const [storedMetadataList, groups] = await Promise.all([
+      dbService.getAllSessionMetadata(),
+      dbService.getAllGroups(),
+    ]);
+    const metadataList = mergePendingSessionMetadata(storedMetadataList);
 
     let initialActiveId = resolveInitialActiveSessionId(metadataList);
 
     if (initialActiveId) {
-      const fullActiveSession = await dbService.getSession(initialActiveId);
+      const fullActiveSession = await resolveSessionWithPendingWrite(
+        initialActiveId,
+        dbService.getSession.bind(dbService),
+        dbService.saveSession.bind(dbService),
+        (error) => logService.error('Failed to recover pending session write:', error),
+      );
       if (fullActiveSession) {
         logService.info(`Loaded full content for active session: ${initialActiveId}`);
         const rehydrated = rehydrateSessionFiles(sanitizeSessionModel(fullActiveSession));
@@ -104,7 +114,12 @@ export const loadInitialSessionData = async ({
       let reused = false;
 
       if (mostRecent) {
-        const fullSession = await dbService.getSession(mostRecent.id);
+        const fullSession = await resolveSessionWithPendingWrite(
+          mostRecent.id,
+          dbService.getSession.bind(dbService),
+          dbService.saveSession.bind(dbService),
+          (error) => logService.error('Failed to recover pending session write:', error),
+        );
         if (fullSession && fullSession.messages.length === 0 && !fullSession.settings.systemInstruction) {
           logService.info(`Reusing empty recent session: ${mostRecent.id}`);
           const rehydrated = rehydrateSessionFiles(sanitizeSessionModel(fullSession));

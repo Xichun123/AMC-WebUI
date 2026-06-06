@@ -40,6 +40,7 @@ vi.mock('@/services/logService', async () => {
 
 vi.mock('@/utils/chat/session', () => ({
   rehydrateSessionFiles: vi.fn((session: any) => session),
+  stripSessionFilePayloads: vi.fn((session: any) => session),
 }));
 
 vi.mock('@/i18n/translations', () => ({

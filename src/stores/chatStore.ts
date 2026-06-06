@@ -23,6 +23,7 @@ import {
   stripStoredSessionMessages,
 } from './sessionPersistence';
 import { persistSessionChanges } from './sessionPersistenceEffects';
+import { mergePendingSessionMetadata, resolveSessionWithPendingWrite } from './sessionWriteJournal';
 import { setupChatStoreSync } from './chatStoreSync';
 import { createChatUiSlice, type ChatUiSliceActions, type ChatUiSliceState } from './chatStoreSlices';
 import { resolveUpdaterOrValue, type UpdaterOrValue } from './stateUpdaters';
@@ -129,11 +130,16 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
 
   refreshSessions: async () => {
     try {
-      const metadataList = await dbService.getAllSessionMetadata();
+      const metadataList = mergePendingSessionMetadata(await dbService.getAllSessionMetadata());
       const { activeSessionId, loadingSessionIds, setActiveMessages, setSavedSessions } = get();
 
       if (activeSessionId && !loadingSessionIds.has(activeSessionId)) {
-        const fullActiveSession = await dbService.getSession(activeSessionId);
+        const fullActiveSession = await resolveSessionWithPendingWrite(
+          activeSessionId,
+          dbService.getSession.bind(dbService),
+          dbService.saveSession.bind(dbService),
+          (error) => logService.error('Failed to recover pending session write', { error }),
+        );
         if (fullActiveSession) {
           const rehydrated = rehydrateSessionFiles(sanitizeSessionModel(fullActiveSession));
           setActiveMessages(rehydrated.messages);

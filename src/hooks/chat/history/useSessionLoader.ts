@@ -11,6 +11,7 @@ import { logService } from '@/services/logService';
 import { createNewSession, rehydrateSessionFiles } from '@/utils/chat/session';
 import { dbService } from '@/services/db/dbService';
 import { useChatStore, type SetActiveSessionOptions } from '@/stores/chatStore';
+import { resolveSessionWithPendingWrite } from '@/stores/sessionWriteJournal';
 import {
   cleanupSessionFilePreviews,
   clearSessionDraftFiles,
@@ -248,7 +249,12 @@ export const useSessionLoader = ({
       retainOutgoingSessionDraft({ skipSessionId: sessionId });
 
       try {
-        const sessionToLoad = await dbService.getSession(sessionId);
+        const sessionToLoad = await resolveSessionWithPendingWrite(
+          sessionId,
+          dbService.getSession.bind(dbService),
+          dbService.saveSession.bind(dbService),
+          (error) => logService.error('Failed to recover pending session write:', error),
+        );
 
         if (requestId !== sessionViewRequestIdRef.current) {
           return;

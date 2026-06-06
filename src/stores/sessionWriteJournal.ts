@@ -149,7 +149,7 @@ const getPendingSessionWriteRecord = (
   return isPendingSessionNewer(pendingSession, persistedSession) ? { ...pending, session: pendingSession } : null;
 };
 
-export const mergePendingSessionWrites = (sessions: SavedChatSession[]): SavedChatSession[] => {
+const mergePendingSessionWrites = (sessions: SavedChatSession[]): SavedChatSession[] => {
   const sessionsById = new Map(sessions.map((session) => [session.id, session]));
 
   Object.values(readJournal()).forEach((pending) => {

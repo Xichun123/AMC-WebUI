@@ -9,6 +9,36 @@ type ChatInputPasteResult =
   | { type: 'text'; content: string }
   | { type: 'empty' };
 
+const hasHtmlTags = (htmlContent: string) => /<[a-z][\s\S]*>/i.test(htmlContent);
+
+export const shouldHandleChatInputPasteSynchronously = (
+  clipboardData: DataTransfer | null,
+  options: {
+    isPasteRichTextAsMarkdownEnabled: boolean;
+    isPasteAsTextFileEnabled: boolean;
+  },
+) => {
+  if (!clipboardData) return false;
+
+  const items = clipboardData.items;
+  if (items) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.kind === 'file' && SUPPORTED_UPLOAD_MIME_TYPES.includes(item.type)) {
+        return true;
+      }
+    }
+  }
+
+  const pastedText = clipboardData.getData('text/plain');
+  if (options.isPasteAsTextFileEnabled && pastedText && pastedText.length > PASTE_TEXT_AS_FILE_THRESHOLD) {
+    return true;
+  }
+
+  const htmlContent = clipboardData.getData('text/html');
+  return Boolean(htmlContent && options.isPasteRichTextAsMarkdownEnabled && hasHtmlTags(htmlContent));
+};
+
 export const processChatInputClipboardData = async (
   clipboardData: DataTransfer | null,
   options: {
@@ -45,8 +75,7 @@ export const processChatInputClipboardData = async (
   }
 
   if (htmlContent && options.isPasteRichTextAsMarkdownEnabled) {
-    const hasTags = /<[a-z][\s\S]*>/i.test(htmlContent);
-    if (hasTags) {
+    if (hasHtmlTags(htmlContent)) {
       const { convertHtmlToMarkdown } = await import('@/utils/htmlToMarkdown');
       const markdown = convertHtmlToMarkdown(htmlContent);
       if (markdown) {

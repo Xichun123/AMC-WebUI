@@ -227,6 +227,100 @@ describe('ChatInput composer actions', () => {
     expect(document.activeElement).toBe(textarea);
   });
 
+  it('prevents the browser default before converting rich text paste to markdown', async () => {
+    const providerValue = createProviderValue(null);
+    providerValue.input.isEditing = false;
+    providerValue.input.editMode = 'resend';
+    providerValue.input.editingMessageId = null;
+
+    await act(async () => {
+      renderChatInput(providerValue);
+    });
+
+    const textarea = renderer.container.querySelector<HTMLTextAreaElement>('[data-testid="chat-input-textarea"]');
+    expect(textarea).not.toBeNull();
+
+    await act(async () => {
+      if (!textarea) {
+        return;
+      }
+
+      setTextareaValue(textarea, '');
+    });
+
+    const pastedText = 'AMC_DUPLICATE_PROBE_0609';
+    const pasteEvent = new Event('paste', { bubbles: true, cancelable: true });
+    Object.defineProperty(pasteEvent, 'clipboardData', {
+      value: {
+        items: [],
+        getData: (type: string) => {
+          if (type === 'text/plain') {
+            return pastedText;
+          }
+          if (type === 'text/html') {
+            return `<strong>${pastedText}</strong>`;
+          }
+          return '';
+        },
+      },
+    });
+
+    await act(async () => {
+      if (!textarea) {
+        return;
+      }
+
+      textarea.dispatchEvent(pasteEvent);
+      expect(pasteEvent.defaultPrevented).toBe(true);
+    });
+
+    await vi.waitFor(() => {
+      expect(textarea?.value).toBe('**AMC\\_DUPLICATE\\_PROBE\\_0609**');
+    });
+  });
+
+  it('leaves ordinary plain text paste to the browser default', async () => {
+    const providerValue = createProviderValue(null);
+    providerValue.input.isEditing = false;
+    providerValue.input.editMode = 'resend';
+    providerValue.input.editingMessageId = null;
+
+    await act(async () => {
+      renderChatInput(providerValue);
+    });
+
+    const textarea = renderer.container.querySelector<HTMLTextAreaElement>('[data-testid="chat-input-textarea"]');
+    expect(textarea).not.toBeNull();
+
+    await act(async () => {
+      if (!textarea) {
+        return;
+      }
+
+      setTextareaValue(textarea, '');
+    });
+
+    const pasteEvent = new Event('paste', { bubbles: true, cancelable: true });
+    Object.defineProperty(pasteEvent, 'clipboardData', {
+      value: {
+        items: [],
+        getData: (type: string) => (type === 'text/plain' ? 'plain clipboard text' : ''),
+      },
+    });
+
+    await act(async () => {
+      if (!textarea) {
+        return;
+      }
+
+      textarea.dispatchEvent(pasteEvent);
+      expect(pasteEvent.defaultPrevented).toBe(false);
+      await Promise.resolve();
+    });
+
+    expect(textarea?.value).toBe('');
+  });
+
   it('processes clipboard images from the paste action without inserting image filename text', async () => {
     const imageBlob = new Blob(['fake-png'], { type: 'image/png' });
     const getType = vi.fn(async () => imageBlob);

@@ -30,6 +30,7 @@ interface CodeBlockProps {
   showPreviewControls?: boolean;
   isLoading?: boolean;
   liveArtifactFontSize?: number;
+  themeId?: string;
   onLiveArtifactFollowUp?: (payload: LiveArtifactFollowupPayload) => void;
 }
 
@@ -148,6 +149,7 @@ export const CodeBlock: React.FC<CodeBlockProps> = (props) => {
         cacheKey={props.cacheKey}
         isLoading={props.isLoading}
         baseFontSize={props.liveArtifactFontSize}
+        themeId={props.themeId}
         onFollowUp={props.onLiveArtifactFollowUp}
       />
     );

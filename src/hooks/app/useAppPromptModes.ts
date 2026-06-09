@@ -7,7 +7,6 @@ import {
   loadBboxSystemPrompt,
   loadLiveArtifactsSystemPrompt,
   loadHdGuideSystemPrompt,
-  resolveLiveArtifactsPromptTheme,
 } from '@/features/prompts/promptRegistry';
 import { DEFAULT_SYSTEM_INSTRUCTION } from '@/constants/settingsDefaults';
 import { focusChatInput } from '@/utils/chat-input/focus';
@@ -32,7 +31,6 @@ interface UseAppPromptModesOptions {
     liveArtifactsSystemPrompt?: string | null;
     liveArtifactsSystemPrompts?: AppSettings['liveArtifactsSystemPrompts'];
   };
-  currentThemeId: string;
   setAppSettings: Dispatch<SetStateAction<AppSettings>>;
   activeChat: SavedChatSession | undefined;
   activeSessionId: string | null;
@@ -42,89 +40,9 @@ interface UseAppPromptModesOptions {
   setCommandedInput: (command: InputCommand) => void;
 }
 
-interface LiveArtifactsPromptThemeSyncOptions {
-  activeSessionId: string | null;
-  appSystemInstruction?: string | null;
-  configuredLiveArtifactsSystemPrompt?: string | null;
-  currentChatSystemInstruction?: string | null;
-  currentThemeId: string;
-  loadBuiltInLiveArtifactsPrompt: () => Promise<string>;
-  setAppSettings: Dispatch<SetStateAction<AppSettings>>;
-  setCurrentChatSettings: (updater: (prev: ChatSettings) => ChatSettings) => void;
-}
-
-const useLiveArtifactsPromptThemeSync = ({
-  activeSessionId,
-  appSystemInstruction,
-  configuredLiveArtifactsSystemPrompt,
-  currentChatSystemInstruction,
-  currentThemeId,
-  loadBuiltInLiveArtifactsPrompt,
-  setAppSettings,
-  setCurrentChatSettings,
-}: LiveArtifactsPromptThemeSyncOptions) => {
-  useEffect(() => {
-    if (!currentThemeId || configuredLiveArtifactsSystemPrompt) {
-      return;
-    }
-
-    const hasBuiltInLiveArtifactsPrompt =
-      isLiveArtifactsSystemInstruction(currentChatSystemInstruction) ||
-      isLiveArtifactsSystemInstruction(appSystemInstruction);
-
-    if (!hasBuiltInLiveArtifactsPrompt) {
-      return;
-    }
-
-    let isStale = false;
-
-    loadBuiltInLiveArtifactsPrompt()
-      .then((systemInstruction) => {
-        if (isStale) {
-          return;
-        }
-
-        if (isLiveArtifactsSystemInstruction(appSystemInstruction) && appSystemInstruction !== systemInstruction) {
-          setAppSettings((prev) =>
-            isLiveArtifactsSystemInstruction(prev.systemInstruction) && prev.systemInstruction !== systemInstruction
-              ? { ...prev, systemInstruction }
-              : prev,
-          );
-        }
-
-        if (
-          activeSessionId &&
-          isLiveArtifactsSystemInstruction(currentChatSystemInstruction) &&
-          currentChatSystemInstruction !== systemInstruction
-        ) {
-          setCurrentChatSettings((prev) =>
-            isLiveArtifactsSystemInstruction(prev.systemInstruction) && prev.systemInstruction !== systemInstruction
-              ? { ...prev, systemInstruction }
-              : prev,
-          );
-        }
-      })
-      .catch(() => {});
-
-    return () => {
-      isStale = true;
-    };
-  }, [
-    activeSessionId,
-    appSystemInstruction,
-    configuredLiveArtifactsSystemPrompt,
-    currentChatSystemInstruction,
-    currentThemeId,
-    loadBuiltInLiveArtifactsPrompt,
-    setAppSettings,
-    setCurrentChatSettings,
-  ]);
-};
-
 export const useAppPromptModes = ({
   language = 'zh',
   appSettings,
-  currentThemeId,
   setAppSettings,
   activeChat,
   activeSessionId,
@@ -139,7 +57,6 @@ export const useAppPromptModes = ({
   const [liveArtifactsPromptOverrideState, setLiveArtifactsPromptOverrideState] =
     useState<LiveArtifactsPromptOverrideState | null>(null);
   const liveArtifactsPromptMode = appSettings.liveArtifactsPromptMode ?? 'inline';
-  const liveArtifactsPromptTheme = resolveLiveArtifactsPromptTheme(currentThemeId);
   const configuredLiveArtifactsSystemPrompt = getLiveArtifactsSystemPromptOverride(
     appSettings,
     liveArtifactsPromptMode,
@@ -163,23 +80,9 @@ export const useAppPromptModes = ({
 
   const isLiveArtifactsPromptActive = liveArtifactsPromptOverrideActive ?? persistedLiveArtifactsPromptActive;
   const loadBuiltInLiveArtifactsPrompt = useCallback(
-    () =>
-      liveArtifactsPromptTheme
-        ? loadLiveArtifactsSystemPrompt(language, liveArtifactsPromptMode, liveArtifactsPromptTheme)
-        : loadLiveArtifactsSystemPrompt(language, liveArtifactsPromptMode),
-    [language, liveArtifactsPromptMode, liveArtifactsPromptTheme],
+    () => loadLiveArtifactsSystemPrompt(language, liveArtifactsPromptMode),
+    [language, liveArtifactsPromptMode],
   );
-
-  useLiveArtifactsPromptThemeSync({
-    activeSessionId,
-    appSystemInstruction: appSettings.systemInstruction,
-    configuredLiveArtifactsSystemPrompt,
-    currentChatSystemInstruction: currentChatSettings.systemInstruction,
-    currentThemeId,
-    loadBuiltInLiveArtifactsPrompt,
-    setAppSettings,
-    setCurrentChatSettings,
-  });
 
   useEffect(() => {
     if (!pendingLiveArtifactsPromptActivation) {

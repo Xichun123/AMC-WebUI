@@ -21,19 +21,26 @@ describe('code style boundaries', () => {
     expect(eslintConfig).toContain("'react-refresh/only-export-components': 'off'");
   });
 
-  it('keeps local development pinned to the Node major used by CI and Docker', () => {
+  it('keeps Node support broad enough for LTS users while pinning CI and Docker defaults', () => {
     const packageJson = JSON.parse(readProjectFile('package.json')) as { engines?: Record<string, string> };
     const npmrc = readProjectFile('.npmrc');
     const zhReadme = readProjectFile('README.md');
     const enReadme = readProjectFile('README.en.md');
     const contributing = readProjectFile('CONTRIBUTING.md');
+    const workflow = readProjectFile('.github/workflows/ci.yml');
 
-    expect(packageJson.engines?.node).toBe('>=26 <27');
+    expect(packageJson.engines?.node).toBe('>=24 <27');
     expect(npmrc).toContain('engine-strict=true');
-    expect(zhReadme).toContain('Node.js 26');
-    expect(enReadme).toContain('Node.js 26');
+    expect(zhReadme).toContain('推荐使用 Node.js 26');
+    expect(zhReadme).toContain('最低支持 Node.js 24');
+    expect(enReadme).toContain('Node.js 26 is recommended');
+    expect(enReadme).toContain('Node.js 24 is the minimum supported version');
     expect(contributing).toContain('nvm use');
-    expect(contributing).toContain('Node.js 26');
+    expect(contributing).toContain('Node.js 26 is recommended');
+    expect(contributing).toContain('Node.js 24 is the minimum supported version');
+    expect(workflow).toContain('node24-build-compatibility:');
+    expect(workflow).toContain('node-version: 24');
+    expect(workflow).toContain('npm run build:api');
   });
 
   it('keeps source imports on the app alias when crossing directories', () => {

@@ -54,18 +54,24 @@
   color: inherit;
 }
 
-.theme-onyx .hljs {
+.theme-onyx .hljs,
+.theme-graphite .hljs {
   color: #e8eef6;
 }
 
 .theme-onyx .hljs-comment,
-.theme-onyx .hljs-quote {
+.theme-onyx .hljs-quote,
+.theme-graphite .hljs-comment,
+.theme-graphite .hljs-quote {
   color: #8b9bb4;
 }
 
 .theme-onyx .hljs-keyword,
 .theme-onyx .hljs-selector-tag,
-.theme-onyx .hljs-subst {
+.theme-onyx .hljs-subst,
+.theme-graphite .hljs-keyword,
+.theme-graphite .hljs-selector-tag,
+.theme-graphite .hljs-subst {
   color: #ffb86c;
 }
 
@@ -73,7 +79,12 @@
 .theme-onyx .hljs-doctag,
 .theme-onyx .hljs-title,
 .theme-onyx .hljs-section,
-.theme-onyx .hljs-selector-id {
+.theme-onyx .hljs-selector-id,
+.theme-graphite .hljs-string,
+.theme-graphite .hljs-doctag,
+.theme-graphite .hljs-title,
+.theme-graphite .hljs-section,
+.theme-graphite .hljs-selector-id {
   color: #7ee787;
 }
 
@@ -81,7 +92,12 @@
 .theme-onyx .hljs-literal,
 .theme-onyx .hljs-variable,
 .theme-onyx .hljs-template-variable,
-.theme-onyx .hljs-tag .hljs-attr {
+.theme-onyx .hljs-tag .hljs-attr,
+.theme-graphite .hljs-number,
+.theme-graphite .hljs-literal,
+.theme-graphite .hljs-variable,
+.theme-graphite .hljs-template-variable,
+.theme-graphite .hljs-tag .hljs-attr {
   color: #79c0ff;
 }
 
@@ -89,7 +105,12 @@
 .theme-onyx .hljs-type,
 .theme-onyx .hljs-symbol,
 .theme-onyx .hljs-bullet,
-.theme-onyx .hljs-link {
+.theme-onyx .hljs-link,
+.theme-graphite .hljs-built_in,
+.theme-graphite .hljs-type,
+.theme-graphite .hljs-symbol,
+.theme-graphite .hljs-bullet,
+.theme-graphite .hljs-link {
   color: #d2a8ff;
 }
 

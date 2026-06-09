@@ -26,14 +26,11 @@ import { createDeferred, renderHook } from '@/test/render/renderer';
 const LIVE_ARTIFACTS_PROMPT = '[Live Artifacts Protocol - zh]\nLive Artifacts prompt';
 const LIVE_ARTIFACTS_PROMPT_EN = '[Live Artifacts Protocol - en]\nLive Artifacts prompt';
 
-type UseAppPromptModesTestOptions = Omit<Parameters<typeof useAppPromptModes>[0], 'currentThemeId'> & {
-  currentThemeId?: string;
-};
+type UseAppPromptModesTestOptions = Parameters<typeof useAppPromptModes>[0];
 
 const createSetCommandedInputMock = () => vi.fn<(command: InputCommand) => void>();
 
-const useAppPromptModesWithDefaultTheme = (options: UseAppPromptModesTestOptions) =>
-  useAppPromptModes({ currentThemeId: 'pearl', ...options });
+const useAppPromptModesWithDefaultTheme = (options: UseAppPromptModesTestOptions) => useAppPromptModes(options);
 
 const createLiveArtifactsChatSettings = (overrides: Partial<ChatSettings> = {}) =>
   createChatSettings({
@@ -138,7 +135,7 @@ describe('useAppPromptModes', () => {
       await result.current.handleLoadLiveArtifactsPromptAndSave();
     });
 
-    expect(mockLoadLiveArtifactsSystemPrompt).toHaveBeenCalledWith('en', 'inline', 'light');
+    expect(mockLoadLiveArtifactsSystemPrompt).toHaveBeenCalledWith('en', 'inline');
     expect(setAppSettings).toHaveBeenCalledWith(expect.any(Function));
     const appSettingsUpdater = setAppSettings.mock.calls.at(-1)?.[0] as (prev: AppSettings) => AppSettings;
     expect(appSettingsUpdater(createAppSettings()).systemInstruction).toBe(LIVE_ARTIFACTS_PROMPT_EN);
@@ -146,14 +143,13 @@ describe('useAppPromptModes', () => {
     unmount();
   });
 
-  it('passes the current page theme to the built-in Live Artifacts prompt loader', async () => {
-    mockLoadLiveArtifactsSystemPrompt.mockResolvedValue(`${LIVE_ARTIFACTS_PROMPT_EN}\nCurrent Page Theme: dark`);
+  it('keeps the current page theme out of the built-in Live Artifacts prompt loader', async () => {
+    mockLoadLiveArtifactsSystemPrompt.mockResolvedValue(LIVE_ARTIFACTS_PROMPT_EN);
 
     const setAppSettings = vi.fn();
     const { result, unmount } = renderHook(() =>
       useAppPromptModesWithDefaultTheme({
         appSettings: createAppSettings(),
-        currentThemeId: 'onyx',
         setAppSettings,
         activeChat: createLiveArtifactsSession(),
         activeSessionId: 'session-1',
@@ -169,23 +165,19 @@ describe('useAppPromptModes', () => {
       await result.current.handleLoadLiveArtifactsPromptAndSave();
     });
 
-    expect(mockLoadLiveArtifactsSystemPrompt).toHaveBeenCalledWith('en', 'inline', 'dark');
+    expect(mockLoadLiveArtifactsSystemPrompt).toHaveBeenCalledWith('en', 'inline');
     const appSettingsUpdater = setAppSettings.mock.calls.at(-1)?.[0] as (prev: AppSettings) => AppSettings;
-    expect(appSettingsUpdater(createAppSettings()).systemInstruction).toContain('Current Page Theme: dark');
+    expect(appSettingsUpdater(createAppSettings()).systemInstruction).toBe(LIVE_ARTIFACTS_PROMPT_EN);
 
     unmount();
   });
 
-  it('refreshes an active built-in Live Artifacts prompt for the current page theme', async () => {
-    const themedPrompt = `${LIVE_ARTIFACTS_PROMPT_EN}\nCurrent Page Theme: light`;
-    mockLoadLiveArtifactsSystemPrompt.mockResolvedValue(themedPrompt);
-
+  it('does not refresh an active built-in Live Artifacts prompt when only the page theme changes', async () => {
     const setAppSettings = vi.fn();
     const setCurrentChatSettings = vi.fn();
     const { unmount } = renderHook(() =>
       useAppPromptModesWithDefaultTheme({
         appSettings: createAppSettings({ systemInstruction: LIVE_ARTIFACTS_PROMPT_EN }),
-        currentThemeId: 'pearl',
         setAppSettings,
         activeChat: createLiveArtifactsSession({ title: 'Session 1' }, { systemInstruction: LIVE_ARTIFACTS_PROMPT_EN }),
         activeSessionId: 'session-1',
@@ -197,19 +189,13 @@ describe('useAppPromptModes', () => {
       }),
     );
 
-    await vi.waitFor(() => {
-      expect(mockLoadLiveArtifactsSystemPrompt).toHaveBeenCalledWith('en', 'inline', 'light');
+    await act(async () => {
+      await Promise.resolve();
     });
 
-    const appSettingsUpdater = setAppSettings.mock.calls.at(-1)?.[0] as (prev: AppSettings) => AppSettings;
-    const chatSettingsUpdater = setCurrentChatSettings.mock.calls.at(-1)?.[0] as (prev: ChatSettings) => ChatSettings;
-    expect(
-      appSettingsUpdater(createAppSettings({ systemInstruction: LIVE_ARTIFACTS_PROMPT_EN })).systemInstruction,
-    ).toBe(themedPrompt);
-    expect(
-      chatSettingsUpdater(createLiveArtifactsChatSettings({ systemInstruction: LIVE_ARTIFACTS_PROMPT_EN }))
-        .systemInstruction,
-    ).toBe(themedPrompt);
+    expect(mockLoadLiveArtifactsSystemPrompt).not.toHaveBeenCalled();
+    expect(setAppSettings).not.toHaveBeenCalled();
+    expect(setCurrentChatSettings).not.toHaveBeenCalled();
 
     unmount();
   });

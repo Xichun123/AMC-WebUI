@@ -102,7 +102,6 @@ vi.mock('@/features/prompts/promptRegistry', () => ({
     !!instruction && instruction.includes('[Live Artifacts Protocol - zh]'),
   isBboxSystemInstruction: () => false,
   isHdGuideSystemInstruction: () => false,
-  resolveLiveArtifactsPromptTheme: vi.fn(() => 'light'),
   loadLiveArtifactsSystemPrompt: vi.fn(async () => LIVE_ARTIFACTS_PROMPT),
   loadBboxSystemPrompt: vi.fn(async () => 'bbox prompt'),
   loadHdGuideSystemPrompt: vi.fn(async () => 'guide prompt'),

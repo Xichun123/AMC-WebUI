@@ -258,8 +258,8 @@ describe('ModelsSection', () => {
     await vi.waitFor(() => {
       const promptValue = renderer.container.querySelector<HTMLTextAreaElement>('#live-artifacts-prompt-input')?.value;
       expect(promptValue).toContain('[Live Artifacts Inline Protocol - en]');
-      expect(promptValue).toContain('Current Page Theme');
-      expect(promptValue).toContain('light theme');
+      expect(promptValue).not.toContain('Current Page Theme');
+      expect(promptValue).not.toContain('light theme');
     });
   });
 

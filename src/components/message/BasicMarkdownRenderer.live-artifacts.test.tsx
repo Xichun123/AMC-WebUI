@@ -147,6 +147,22 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
     expect(iframe?.getAttribute('srcdoc')).toContain('--amc-live-artifact-font-size:21px');
   });
 
+  it('passes the current app theme into artifact frames as transparent theme tokens', () => {
+    renderMarkdown({
+      content: '<section style="display:grid"><strong>Inline Artifact</strong></section>',
+      allowHtml: true,
+      themeId: 'onyx',
+    });
+
+    const iframe = renderer.container.querySelector('iframe[title="HTML Preview"]');
+    const srcDoc = iframe?.getAttribute('srcdoc') ?? '';
+
+    expect(srcDoc).toContain('data-amc-live-artifact-theme="true"');
+    expect(srcDoc).toContain('html,body{margin:0;padding:0;background:transparent');
+    expect(srcDoc).toContain('--amc-live-artifact-text:#f4f4f5');
+    expect(srcDoc).toContain('--amc-live-artifact-surface:#18181b');
+  });
+
   it('does not show inline action buttons over Live Artifact frames', () => {
     renderMarkdown({
       content: '<section style="display:grid"><strong>Inline Artifact</strong></section>',

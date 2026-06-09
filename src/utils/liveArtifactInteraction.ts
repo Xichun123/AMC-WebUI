@@ -3,7 +3,16 @@ import type { LiveArtifactFollowupPayload } from './liveArtifactFollowup';
 const LIVE_ARTIFACT_INTERACTION_SOURCE = 'amc-live-artifact-interaction:v1';
 
 export type LiveArtifactInteractionPrimitive = string | number | boolean;
-export type LiveArtifactInteractionPropertyType = 'string' | 'number' | 'integer' | 'boolean';
+export type LiveArtifactInteractionArrayValue = LiveArtifactInteractionPrimitive[];
+export type LiveArtifactInteractionValue = LiveArtifactInteractionPrimitive | LiveArtifactInteractionArrayValue;
+export type LiveArtifactInteractionScalarPropertyType = 'string' | 'number' | 'integer' | 'boolean';
+export type LiveArtifactInteractionPropertyType = LiveArtifactInteractionScalarPropertyType | 'array';
+
+export interface LiveArtifactInteractionArrayItems {
+  type: LiveArtifactInteractionScalarPropertyType;
+  enum: LiveArtifactInteractionPrimitive[];
+  enumNames?: string[];
+}
 
 export interface LiveArtifactInteractionProperty {
   type: LiveArtifactInteractionPropertyType;
@@ -11,10 +20,11 @@ export interface LiveArtifactInteractionProperty {
   description?: string;
   enum?: LiveArtifactInteractionPrimitive[];
   enumNames?: string[];
-  default?: LiveArtifactInteractionPrimitive;
-  format?: 'textarea' | string;
+  default?: LiveArtifactInteractionValue;
+  format?: 'textarea' | 'range' | 'date' | string;
   minimum?: number;
   maximum?: number;
+  items?: LiveArtifactInteractionArrayItems;
 }
 
 export interface LiveArtifactInteractionSchema {
@@ -44,11 +54,15 @@ const MAX_FIELDS = 24;
 const MAX_TEXT_LENGTH = 2000;
 const MAX_SHORT_TEXT_LENGTH = 500;
 const FIELD_KEY_REGEX = /^[A-Za-z0-9_.-]{1,80}$/;
-const SUPPORTED_PROPERTY_TYPES = new Set<LiveArtifactInteractionPropertyType>([
+const SUPPORTED_SCALAR_PROPERTY_TYPES = new Set<LiveArtifactInteractionScalarPropertyType>([
   'string',
   'number',
   'integer',
   'boolean',
+]);
+const SUPPORTED_PROPERTY_TYPES = new Set<LiveArtifactInteractionPropertyType>([
+  ...SUPPORTED_SCALAR_PROPERTY_TYPES,
+  'array',
 ]);
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
@@ -74,7 +88,12 @@ const normalizeOptionalText = (value: unknown, maxLength = MAX_SHORT_TEXT_LENGTH
 const isPrimitive = (value: unknown): value is LiveArtifactInteractionPrimitive =>
   typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
 
-const isValidNumberForType = (value: unknown, type: LiveArtifactInteractionPropertyType): value is number => {
+const isScalarPropertyType = (
+  value: LiveArtifactInteractionPropertyType,
+): value is LiveArtifactInteractionScalarPropertyType =>
+  SUPPORTED_SCALAR_PROPERTY_TYPES.has(value as LiveArtifactInteractionScalarPropertyType);
+
+const isValidNumberForType = (value: unknown, type: LiveArtifactInteractionScalarPropertyType): value is number => {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     return false;
   }
@@ -89,7 +108,7 @@ const arePrimitiveValuesEqual = (
 
 const normalizePrimitiveDefault = (
   value: unknown,
-  type: LiveArtifactInteractionPropertyType,
+  type: LiveArtifactInteractionScalarPropertyType,
 ): LiveArtifactInteractionPrimitive | undefined | null => {
   if (value === undefined) {
     return undefined;
@@ -112,7 +131,7 @@ const normalizePrimitiveDefault = (
 
 const normalizeEnum = (
   value: unknown,
-  type: LiveArtifactInteractionPropertyType,
+  type: LiveArtifactInteractionScalarPropertyType,
 ): LiveArtifactInteractionPrimitive[] | undefined | null => {
   if (value === undefined) {
     return undefined;
@@ -155,6 +174,73 @@ const normalizeEnumNames = (value: unknown, enumLength: number): string[] | unde
   return names as string[];
 };
 
+const normalizeArrayItems = (value: unknown): LiveArtifactInteractionArrayItems | null => {
+  if (!isPlainObject(value) || typeof value.type !== 'string') {
+    return null;
+  }
+
+  const type = value.type.toLowerCase() as LiveArtifactInteractionScalarPropertyType;
+  if (!SUPPORTED_SCALAR_PROPERTY_TYPES.has(type)) {
+    return null;
+  }
+
+  const enumValues = normalizeEnum(value.enum, type);
+  if (!enumValues) {
+    return null;
+  }
+
+  const enumNames = normalizeEnumNames(value.enumNames, enumValues.length);
+  if (enumNames === null) {
+    return null;
+  }
+
+  return {
+    type,
+    enum: enumValues,
+    ...(enumNames ? { enumNames } : {}),
+  };
+};
+
+const normalizeArrayDefault = (
+  value: unknown,
+  items: LiveArtifactInteractionArrayItems,
+): LiveArtifactInteractionArrayValue | undefined | null => {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!Array.isArray(value) || value.length > items.enum.length) {
+    return null;
+  }
+
+  const normalizedValues = value.filter(isPrimitive);
+  if (normalizedValues.length !== value.length) {
+    return null;
+  }
+
+  if (items.type === 'number' || items.type === 'integer') {
+    if (!normalizedValues.every((item) => isValidNumberForType(item, items.type))) {
+      return null;
+    }
+  } else if (items.type === 'boolean') {
+    if (!normalizedValues.every((item) => typeof item === 'boolean')) {
+      return null;
+    }
+  } else if (!normalizedValues.every((item) => typeof item === 'string')) {
+    return null;
+  }
+
+  const seenValues = new Set<LiveArtifactInteractionPrimitive>();
+  for (const item of normalizedValues) {
+    if (seenValues.has(item) || !items.enum.some((enumValue) => arePrimitiveValuesEqual(enumValue, item))) {
+      return null;
+    }
+    seenValues.add(item);
+  }
+
+  return normalizedValues;
+};
+
 const normalizeProperty = (value: unknown): LiveArtifactInteractionProperty | null => {
   if (!isPlainObject(value) || typeof value.type !== 'string') {
     return null;
@@ -167,18 +253,48 @@ const normalizeProperty = (value: unknown): LiveArtifactInteractionProperty | nu
 
   const title = normalizeOptionalText(value.title);
   const description = normalizeOptionalText(value.description, MAX_TEXT_LENGTH);
+  const format = normalizeOptionalText(value.format, 80);
+
+  if (title === null || description === null || format === null) {
+    return null;
+  }
+
+  if (type === 'array') {
+    const items = normalizeArrayItems(value.items);
+    if (!items) {
+      return null;
+    }
+
+    const defaultValue = normalizeArrayDefault(value.default, items);
+    if (defaultValue === null) {
+      return null;
+    }
+
+    return {
+      type,
+      ...(title ? { title } : {}),
+      ...(description ? { description } : {}),
+      ...(defaultValue !== undefined ? { default: defaultValue } : {}),
+      items,
+    };
+  }
+
+  if (!isScalarPropertyType(type)) {
+    return null;
+  }
+
   const defaultValue = normalizePrimitiveDefault(value.default, type);
   const enumValues = normalizeEnum(value.enum, type);
   const enumNames = enumValues ? normalizeEnumNames(value.enumNames, enumValues.length) : undefined;
-  const format = normalizeOptionalText(value.format, 80);
+
+  if (defaultValue === null || enumValues === null || enumNames === null) {
+    return null;
+  }
 
   if (
-    title === null ||
-    description === null ||
-    defaultValue === null ||
-    enumValues === null ||
-    enumNames === null ||
-    format === null
+    (format === 'textarea' && type !== 'string') ||
+    (format === 'date' && type !== 'string') ||
+    (format === 'range' && type !== 'number' && type !== 'integer')
   ) {
     return null;
   }
@@ -306,9 +422,13 @@ export const getLiveArtifactInteractionFields = (spec: LiveArtifactInteractionSp
 
 export const getLiveArtifactInteractionDefaultValue = (
   property: LiveArtifactInteractionProperty,
-): LiveArtifactInteractionPrimitive | '' => {
+): LiveArtifactInteractionValue | '' => {
   if (property.default !== undefined) {
-    return property.default;
+    return Array.isArray(property.default) ? [...property.default] : property.default;
+  }
+
+  if (property.type === 'array') {
+    return [];
   }
 
   if (property.enum && property.enum.length > 0) {
@@ -324,7 +444,7 @@ export const getLiveArtifactInteractionDefaultValue = (
 
 export const buildLiveArtifactInteractionPayload = (
   spec: LiveArtifactInteractionSpec,
-  state: Record<string, LiveArtifactInteractionPrimitive | ''>,
+  state: Record<string, LiveArtifactInteractionValue | ''>,
 ): LiveArtifactFollowupPayload => ({
   instruction: spec.instruction,
   ...(spec.title ? { title: spec.title } : {}),

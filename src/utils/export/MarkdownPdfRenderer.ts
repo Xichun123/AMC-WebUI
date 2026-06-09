@@ -3,6 +3,7 @@ import { jsPDF } from 'jspdf';
 import { CJK_FONT_FILE, CJK_FONT_NAME, loadCjkFontBase64 } from './markdownPdfFonts';
 import { fetchImageAsDataUrl, getImageFormat, getImageSize } from './markdownPdfImages';
 import type { MarkdownNode } from './markdownPdfTypes';
+import { isDarkThemeId } from '@/utils/themeMode';
 
 type PdfDocument = InstanceType<typeof jsPDF>;
 
@@ -25,10 +26,10 @@ const LINE_HEIGHT = 5.8;
 const CODE_LINE_HEIGHT = 5;
 const TEXT_STROKE_WIDTH = 0.06;
 
-const getTextColor = (themeId: string) => (themeId === 'onyx' ? [255, 255, 255] : [0, 0, 0]);
-const getMutedTextColor = (themeId: string) => (themeId === 'onyx' ? [161, 161, 170] : [82, 82, 91]);
-const getRuleColor = (themeId: string) => (themeId === 'onyx' ? [63, 63, 70] : [212, 212, 216]);
-const getCodeFillColor = (themeId: string) => (themeId === 'onyx' ? [39, 39, 42] : [244, 244, 245]);
+const getTextColor = (themeId: string) => (isDarkThemeId(themeId) ? [255, 255, 255] : [0, 0, 0]);
+const getMutedTextColor = (themeId: string) => (isDarkThemeId(themeId) ? [161, 161, 170] : [82, 82, 91]);
+const getRuleColor = (themeId: string) => (isDarkThemeId(themeId) ? [63, 63, 70] : [212, 212, 216]);
+const getCodeFillColor = (themeId: string) => (isDarkThemeId(themeId) ? [39, 39, 42] : [244, 244, 245]);
 
 const normalizeWhitespace = (value: string): string => value.replace(/\s+/g, ' ').trim();
 

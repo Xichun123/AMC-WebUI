@@ -5,6 +5,7 @@ import { type SideViewContent, type UploadedFile } from '@/types';
 import { MESSAGE_BLOCK_BUTTON_CLASS } from '@/constants/buttonClasses';
 import { DiagramWrapper } from './parts/DiagramWrapper';
 import { useI18n } from '@/contexts/I18nContext';
+import { isDarkThemeId } from '@/utils/themeMode';
 
 const graphvizCache = new Map<string, string>();
 type VizInstance = {
@@ -134,7 +135,7 @@ export const GraphvizBlock: React.FC<GraphvizBlockProps> = ({
         }
       }
 
-      const isDark = themeId === 'onyx';
+      const isDark = isDarkThemeId(themeId);
       const color = isDark ? '#e4e4e7' : '#374151';
       const themeDefaults = `
         graph [bgcolor="transparent" fontcolor="${color}" margin="0"];

@@ -3,6 +3,7 @@ import mermaid from 'mermaid';
 import { type SideViewContent, type UploadedFile } from '@/types';
 import { DiagramWrapper } from './parts/DiagramWrapper';
 import { useI18n } from '@/contexts/I18nContext';
+import { isDarkThemeId } from '@/utils/themeMode';
 
 interface MermaidBlockProps {
   code: string;
@@ -42,7 +43,7 @@ export const MermaidBlock: React.FC<MermaidBlockProps> = ({
 
         mermaid.initialize({
           startOnLoad: false,
-          theme: themeId === 'onyx' ? 'dark' : 'default',
+          theme: isDarkThemeId(themeId) ? 'dark' : 'default',
           securityLevel: 'loose',
           fontFamily: 'inherit',
         });

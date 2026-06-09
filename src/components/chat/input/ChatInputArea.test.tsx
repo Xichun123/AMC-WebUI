@@ -23,6 +23,16 @@ describe('ChatInputArea default spacing', () => {
     expect(source).not.toContain('pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)]');
   });
 
+  it('widens the non-fullscreen composer shell by ten percent', () => {
+    const source = fs.readFileSync(chatInputAreaPath, 'utf8');
+    const layoutSource = fs.readFileSync(chatInputAreaLayoutPath, 'utf8');
+
+    expect(source).toContain('max-w-[44.35rem]');
+    expect(layoutSource).toContain('max-w-[44.35rem]');
+    expect(source).not.toContain('max-w-[40.32rem]');
+    expect(layoutSource).not.toContain('max-w-[40.32rem]');
+  });
+
   it('keeps the action row in normal flow without an internal divider line', () => {
     const source = fs.readFileSync(chatInputAreaLayoutPath, 'utf8');
 

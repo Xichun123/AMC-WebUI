@@ -69,6 +69,14 @@ describe('settingsStore', () => {
       expect(useSettingsStore.getState().currentTheme.id).toBe('onyx');
     });
 
+    it('resolves theme when themeId changes to graphite', () => {
+      useSettingsStore.getState().setAppSettings((prev) => ({
+        ...prev,
+        themeId: 'graphite',
+      }));
+      expect(useSettingsStore.getState().currentTheme.id).toBe('graphite');
+    });
+
     it('resolves language when language changes to zh', () => {
       useSettingsStore.getState().setAppSettings((prev) => ({
         ...prev,

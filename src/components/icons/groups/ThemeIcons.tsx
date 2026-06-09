@@ -73,3 +73,26 @@ export const IconThemeLight: React.FC<IconProps> = ({
     <path d="M19.07 4.93l-1.41 1.41" />
   </svg>
 );
+
+export const IconThemeGray: React.FC<IconProps> = ({
+  size = defaultSize,
+  strokeWidth = defaultStroke,
+  className,
+  color = defaultColor,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 3a9 9 0 0 1 0 18" />
+    <path d="M12 7a5 5 0 0 1 0 10" />
+  </svg>
+);

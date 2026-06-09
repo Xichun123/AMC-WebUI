@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { reasonerScenario, voxelScenario } from '@/constants/defaultScenarios';
+import {
+  annaScenario,
+  eniManualPasteScenario,
+  fopScenario,
+  pyriteScenario,
+  reasonerScenario,
+  unrestrictedScenario,
+  voxelScenario,
+} from '@/constants/defaultScenarios';
 import {
   buildSavedScenarios,
   buildScenarioExportPayload,
@@ -40,25 +48,56 @@ describe('scenarioLibrary', () => {
     );
 
     expect(result.didChange).toBe(true);
-    expect(result.userScenarios).toEqual([voxelScenario]);
-    expect(result.savedScenarios.map((scenario) => scenario.id)).toEqual([...SYSTEM_SCENARIO_IDS, voxelScenario.id]);
+    // cyberpunk pruned as deprecated; reasoner is a system scenario so filtered out;
+    // voxel and jailbreak scenarios seeded from the new v2 flag (old v1 flags ignored)
+    expect(result.userScenarios.map((s) => s.id)).toEqual([
+      voxelScenario.id,
+      fopScenario.id,
+      unrestrictedScenario.id,
+      pyriteScenario.id,
+      annaScenario.id,
+      eniManualPasteScenario.id,
+    ]);
+    expect(result.savedScenarios.map((scenario) => scenario.id)).toEqual([
+      ...SYSTEM_SCENARIO_IDS,
+      voxelScenario.id,
+      fopScenario.id,
+      unrestrictedScenario.id,
+      pyriteScenario.id,
+      annaScenario.id,
+      eniManualPasteScenario.id,
+    ]);
     expect(storage.setItem).toHaveBeenCalledWith('hasSeededPlayablePresets_v1', 'true');
+    expect(storage.setItem).toHaveBeenCalledWith('hasSeededJailbreakPresets_v2', 'true');
   });
 
-  it('does not seed jailbreak or persona override presets by default', () => {
+  it('seeds jailbreak and persona override presets by default', () => {
     const storage = createStorage();
 
     const result = initializeScenarioState([], storage);
 
-    expect(result.userScenarios.map((scenario) => scenario.id)).toEqual([voxelScenario.id]);
-    expect(result.savedScenarios.map((scenario) => scenario.id)).toEqual([...SYSTEM_SCENARIO_IDS, voxelScenario.id]);
+    expect(result.userScenarios.map((s) => s.id)).toEqual([
+      voxelScenario.id,
+      fopScenario.id,
+      unrestrictedScenario.id,
+      pyriteScenario.id,
+      annaScenario.id,
+      eniManualPasteScenario.id,
+    ]);
+    expect(result.savedScenarios.map((scenario) => scenario.id)).toEqual([
+      ...SYSTEM_SCENARIO_IDS,
+      voxelScenario.id,
+      fopScenario.id,
+      unrestrictedScenario.id,
+      pyriteScenario.id,
+      annaScenario.id,
+      eniManualPasteScenario.id,
+    ]);
     expect(storage.setItem).toHaveBeenCalledWith('hasSeededPlayablePresets_v1', 'true');
-    expect(storage.setItem).not.toHaveBeenCalledWith('hasSeededJailbreaks_v1', expect.any(String));
-    expect(storage.setItem).not.toHaveBeenCalledWith('hasSeededAnna_v1', expect.any(String));
-    expect(storage.setItem).not.toHaveBeenCalledWith('hasSeededEniManualPaste_v1', expect.any(String));
+    expect(storage.setItem).toHaveBeenCalledWith('hasSeededJailbreakPresets_v2', 'true');
   });
 
-  it('prunes previously seeded jailbreak and persona override presets', () => {
+  it('preserves jailbreak presets that are no longer deprecated', () => {
     const result = initializeScenarioState(
       [
         { id: 'fop-scenario-default', title: 'FOP Mode', messages: [] },
@@ -71,9 +110,25 @@ describe('scenarioLibrary', () => {
       createStorage({ hasSeededPlayablePresets_v1: 'true' }),
     );
 
-    expect(result.didChange).toBe(true);
-    expect(result.userScenarios).toEqual([{ id: 'custom-scenario', title: 'Custom Scenario', messages: [] }]);
-    expect(result.savedScenarios.map((scenario) => scenario.id)).toEqual([...SYSTEM_SCENARIO_IDS, 'custom-scenario']);
+    // None pruned — jailbreak scenarios are no longer in the deprecated list
+    expect(result.didChange).toBe(false);
+    expect(result.userScenarios.map((s) => s.id)).toEqual([
+      'fop-scenario-default',
+      'unrestricted-scenario-default',
+      'pyrite-scenario-default',
+      'anna-scenario-default',
+      'eni-manual-paste-scenario-2026-04-12',
+      'custom-scenario',
+    ]);
+    expect(result.savedScenarios.map((scenario) => scenario.id)).toEqual([
+      ...SYSTEM_SCENARIO_IDS,
+      'fop-scenario-default',
+      'unrestricted-scenario-default',
+      'pyrite-scenario-default',
+      'anna-scenario-default',
+      'eni-manual-paste-scenario-2026-04-12',
+      'custom-scenario',
+    ]);
   });
 
   it('exports only user scenarios', () => {

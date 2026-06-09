@@ -2,6 +2,11 @@ import { SUPPORTED_UPLOAD_MIME_TYPES } from '@/constants/fileTypeSupport';
 
 const PASTE_TEXT_AS_FILE_THRESHOLD = 5000;
 
+type ChatInputClipboardOptions = {
+  isPasteRichTextAsMarkdownEnabled: boolean;
+  isPasteAsTextFileEnabled: boolean;
+};
+
 type ChatInputPasteResult =
   | { type: 'files'; files: File[] }
   | { type: 'large-text-file'; files: File[] }
@@ -9,57 +14,67 @@ type ChatInputPasteResult =
   | { type: 'text'; content: string }
   | { type: 'empty' };
 
-const hasHtmlTags = (htmlContent: string) => /<[a-z][\s\S]*>/i.test(htmlContent);
+const isSupportedClipboardFileItem = (item: DataTransferItem) =>
+  item.kind === 'file' && SUPPORTED_UPLOAD_MIME_TYPES.includes(item.type);
 
-export const shouldHandleChatInputPasteSynchronously = (
-  clipboardData: DataTransfer | null,
-  options: {
-    isPasteRichTextAsMarkdownEnabled: boolean;
-    isPasteAsTextFileEnabled: boolean;
-  },
-) => {
-  if (!clipboardData) return false;
-
+const hasSupportedClipboardFile = (clipboardData: DataTransfer) => {
   const items = clipboardData.items;
-  if (items) {
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (item.kind === 'file' && SUPPORTED_UPLOAD_MIME_TYPES.includes(item.type)) {
-        return true;
-      }
+  if (!items) return false;
+
+  for (let i = 0; i < items.length; i++) {
+    if (isSupportedClipboardFileItem(items[i])) {
+      return true;
     }
   }
 
-  const pastedText = clipboardData.getData('text/plain');
-  if (options.isPasteAsTextFileEnabled && pastedText && pastedText.length > PASTE_TEXT_AS_FILE_THRESHOLD) {
-    return true;
-  }
-
-  const htmlContent = clipboardData.getData('text/html');
-  return Boolean(htmlContent && options.isPasteRichTextAsMarkdownEnabled && hasHtmlTags(htmlContent));
+  return false;
 };
 
-export const processChatInputClipboardData = async (
-  clipboardData: DataTransfer | null,
-  options: {
-    isPasteRichTextAsMarkdownEnabled: boolean;
-    isPasteAsTextFileEnabled: boolean;
-  },
-): Promise<ChatInputPasteResult> => {
-  if (!clipboardData) return { type: 'empty' };
-
+const getSupportedClipboardFiles = (clipboardData: DataTransfer): File[] => {
   const items = clipboardData.items;
   const filesToProcess: File[] = [];
   if (items) {
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      if (item.kind === 'file' && SUPPORTED_UPLOAD_MIME_TYPES.includes(item.type)) {
+      if (isSupportedClipboardFileItem(item)) {
         const file = item.getAsFile();
         if (file) filesToProcess.push(file);
       }
     }
   }
 
+  return filesToProcess;
+};
+
+const hasHtmlTags = (htmlContent: string) => /<[a-z][\s\S]*>/i.test(htmlContent);
+
+export const shouldHandleChatInputClipboardData = (
+  clipboardData: DataTransfer | null,
+  options: ChatInputClipboardOptions,
+): boolean => {
+  if (!clipboardData) return false;
+
+  if (hasSupportedClipboardFile(clipboardData)) {
+    return true;
+  }
+
+  const pastedText = clipboardData.getData('text/plain');
+  const htmlContent = clipboardData.getData('text/html');
+
+  if (options.isPasteAsTextFileEnabled && pastedText && pastedText.length > PASTE_TEXT_AS_FILE_THRESHOLD) {
+    return true;
+  }
+
+  return Boolean(htmlContent && options.isPasteRichTextAsMarkdownEnabled && hasHtmlTags(htmlContent));
+};
+
+export const processChatInputClipboardData = async (
+  clipboardData: DataTransfer | null,
+  options: ChatInputClipboardOptions,
+): Promise<ChatInputPasteResult> => {
+  if (!clipboardData) return { type: 'empty' };
+
+  const filesToProcess = getSupportedClipboardFiles(clipboardData);
   if (filesToProcess.length > 0) {
     return { type: 'files', files: filesToProcess };
   }

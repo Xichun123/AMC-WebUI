@@ -1,7 +1,8 @@
 import React from 'react';
-import { Type } from 'lucide-react';
+import { Info, Type } from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
 import type { AppSettings } from '@/types';
+import { Tooltip } from '@/components/shared/Tooltip';
 import {
   LIVE_ARTIFACTS_CUSTOM_FONT_SIZE_MAX,
   LIVE_ARTIFACTS_CUSTOM_FONT_SIZE_MIN,
@@ -20,13 +21,18 @@ export const LiveArtifactsFontSizeControl: React.FC<LiveArtifactsFontSizeControl
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label
-          htmlFor="live-artifacts-custom-font-size"
-          className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--theme-text-tertiary)]"
-        >
-          <Type size={14} strokeWidth={1.5} />
-          {t('settingsLiveArtifactsFontSize')}
-        </label>
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor="live-artifacts-custom-font-size"
+            className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--theme-text-tertiary)]"
+          >
+            <Type size={14} strokeWidth={1.5} />
+            {t('settingsLiveArtifactsFontSize')}
+          </label>
+          <Tooltip text={t('settingsLiveArtifactsFontSizeTooltip')}>
+            <Info size={14} className="text-[var(--theme-text-tertiary)] cursor-help" strokeWidth={1.5} />
+          </Tooltip>
+        </div>
         <span className="rounded-md bg-[var(--theme-bg-tertiary)] px-2 py-0.5 font-mono text-sm text-[var(--theme-text-link)]">
           {customFontSize}px
         </span>

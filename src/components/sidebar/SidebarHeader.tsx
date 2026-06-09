@@ -2,6 +2,7 @@ import React from 'react';
 import { useI18n } from '@/contexts/I18nContext';
 import { IconSidebarToggle } from '@/components/icons';
 import { FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS } from '@/constants/focusClasses';
+import { isDarkThemeId } from '@/utils/themeMode';
 
 interface SidebarHeaderProps {
   onToggle: () => void;
@@ -22,7 +23,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ onToggle, isOpen, 
         aria-label={`${sidebarToggleLabel} AMC WebUI`}
       >
         <img
-          src={themeId === 'onyx' ? '/sidebar-logo-dark.png' : '/sidebar-logo.png'}
+          src={isDarkThemeId(themeId) ? '/sidebar-logo-dark.png' : '/sidebar-logo.png'}
           alt="AMC WebUI"
           className="h-8 w-auto object-contain"
         />

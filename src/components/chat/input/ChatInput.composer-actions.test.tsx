@@ -227,7 +227,7 @@ describe('ChatInput composer actions', () => {
     expect(document.activeElement).toBe(textarea);
   });
 
-  it('prevents the browser default before converting rich text paste to markdown', async () => {
+  it('prevents the browser default paste synchronously when converting rich text to markdown', async () => {
     const providerValue = createProviderValue(null);
     providerValue.input.isEditing = false;
     providerValue.input.editMode = 'resend';
@@ -246,40 +246,38 @@ describe('ChatInput composer actions', () => {
       }
 
       setTextareaValue(textarea, '');
+      textarea.setSelectionRange(0, 0);
     });
 
-    const pastedText = 'AMC_DUPLICATE_PROBE_0609';
-    const pasteEvent = new Event('paste', { bubbles: true, cancelable: true });
+    const pasteEvent = new Event('paste', {
+      bubbles: true,
+      cancelable: true,
+    });
     Object.defineProperty(pasteEvent, 'clipboardData', {
       value: {
         items: [],
-        getData: (type: string) => {
-          if (type === 'text/plain') {
-            return pastedText;
-          }
-          if (type === 'text/html') {
-            return `<strong>${pastedText}</strong>`;
-          }
-          return '';
-        },
+        getData: (type: string) =>
+          type === 'text/html'
+            ? '<p><strong>Hello</strong> <em>world</em></p>'
+            : type === 'text/plain'
+              ? 'Hello world'
+              : '',
       },
     });
 
-    await act(async () => {
-      if (!textarea) {
-        return;
-      }
-
-      textarea.dispatchEvent(pasteEvent);
-      expect(pasteEvent.defaultPrevented).toBe(true);
+    let wasPreventedDuringDispatch = false;
+    act(() => {
+      textarea?.dispatchEvent(pasteEvent);
+      wasPreventedDuringDispatch = pasteEvent.defaultPrevented;
     });
 
+    expect(wasPreventedDuringDispatch).toBe(true);
     await vi.waitFor(() => {
-      expect(textarea?.value).toBe('**AMC\\_DUPLICATE\\_PROBE\\_0609**');
+      expect(textarea?.value).toBe('**Hello** *world*');
     });
   });
 
-  it('leaves ordinary plain text paste to the browser default', async () => {
+  it('leaves regular text paste to the browser default insertion path', async () => {
     const providerValue = createProviderValue(null);
     providerValue.input.isEditing = false;
     providerValue.input.editMode = 'resend';
@@ -298,9 +296,13 @@ describe('ChatInput composer actions', () => {
       }
 
       setTextareaValue(textarea, '');
+      textarea.setSelectionRange(0, 0);
     });
 
-    const pasteEvent = new Event('paste', { bubbles: true, cancelable: true });
+    const pasteEvent = new Event('paste', {
+      bubbles: true,
+      cancelable: true,
+    });
     Object.defineProperty(pasteEvent, 'clipboardData', {
       value: {
         items: [],
@@ -308,16 +310,11 @@ describe('ChatInput composer actions', () => {
       },
     });
 
-    await act(async () => {
-      if (!textarea) {
-        return;
-      }
-
-      textarea.dispatchEvent(pasteEvent);
-      expect(pasteEvent.defaultPrevented).toBe(false);
-      await Promise.resolve();
+    act(() => {
+      textarea?.dispatchEvent(pasteEvent);
     });
 
+    expect(pasteEvent.defaultPrevented).toBe(false);
     expect(textarea?.value).toBe('');
   });
 

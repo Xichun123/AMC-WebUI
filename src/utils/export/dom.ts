@@ -1,5 +1,6 @@
 import { logService } from '@/services/logService';
 import { sanitizeCssColorFunctionsForPngExport } from './cssColorSanitizer';
+import { isDarkThemeId } from '@/utils/themeMode';
 
 const DEFAULT_EXPORT_WIDTH = '800px';
 
@@ -99,7 +100,7 @@ export const createSnapshotContainer = async (
 
   let rootBgColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-bg-primary').trim();
   if (!rootBgColor) {
-    rootBgColor = themeId === 'onyx' ? '#09090b' : '#FFFFFF';
+    rootBgColor = isDarkThemeId(themeId) ? '#09090b' : '#FFFFFF';
   }
 
   tempContainer.innerHTML = `

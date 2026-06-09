@@ -42,6 +42,22 @@ describe('ArtifactFrame', () => {
     expect(iframe?.getAttribute('srcdoc')).toContain('--amc-live-artifact-font-size:18px');
   });
 
+  it('injects transparent Live Artifact theme tokens into static artifact documents', () => {
+    act(() => {
+      renderer.root.render(<ArtifactFrame html="<section><p>Artifact text</p></section>" themeId="onyx" />);
+    });
+
+    const iframe = renderer.container.querySelector('iframe');
+    const srcDoc = iframe?.getAttribute('srcdoc') ?? '';
+
+    expect(srcDoc).toContain('data-amc-live-artifact-theme="true"');
+    expect(srcDoc).toContain('html,body{margin:0;padding:0;background:transparent');
+    expect(srcDoc).toContain('--amc-live-artifact-text:#f4f4f5');
+    expect(srcDoc).toContain('--amc-live-artifact-surface:#18181b');
+    expect(srcDoc).toContain('--amc-live-artifact-border:#27272a');
+    expect(srcDoc).toContain('--amc-live-artifact-accent:#38bdf8');
+  });
+
   it('injects the configured base font size into streaming artifact documents', () => {
     act(() => {
       renderer.root.render(
@@ -54,6 +70,25 @@ describe('ArtifactFrame', () => {
     expect(iframe?.getAttribute('srcdoc')).toContain('data-amc-live-artifact-base-font-size="true"');
     expect(iframe?.getAttribute('srcdoc')).toContain('--amc-live-artifact-font-size:20px');
     expect(iframe?.getAttribute('srcdoc')).toContain('data-amc-stream-preview-root');
+  });
+
+  it('injects transparent Live Artifact theme tokens into streaming artifact documents', () => {
+    act(() => {
+      renderer.root.render(
+        <ArtifactFrame html="<section><p>Artifact text</p></section>" themeId="graphite" isLoading />,
+      );
+    });
+
+    const iframe = renderer.container.querySelector('iframe');
+    const srcDoc = iframe?.getAttribute('srcdoc') ?? '';
+
+    expect(srcDoc).toContain('data-amc-live-artifact-theme="true"');
+    expect(srcDoc).toContain('html,body{margin:0;padding:0;background:transparent');
+    expect(srcDoc).toContain('--amc-live-artifact-text:#f3f3f3');
+    expect(srcDoc).toContain('--amc-live-artifact-surface:#474747');
+    expect(srcDoc).toContain('--amc-live-artifact-border:#626262');
+    expect(srcDoc).toContain('--amc-live-artifact-accent:#e5e5e5');
+    expect(srcDoc).toContain('data-amc-stream-preview-root');
   });
 
   it('relays iframe text selections to the parent selection toolbar event', () => {

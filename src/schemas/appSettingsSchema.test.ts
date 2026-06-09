@@ -45,6 +45,14 @@ describe('appSettingsSchema', () => {
     expect(settings.liveArtifactsPromptMode).toBe('inline');
   });
 
+  it('preserves the graphite theme from imported settings', () => {
+    const settings = sanitizeImportedAppSettings({
+      themeId: 'graphite',
+    });
+
+    expect(settings.themeId).toBe('graphite');
+  });
+
   it('falls back to inline when importing retired Live Artifacts prompt modes', () => {
     const fullSettings = sanitizeImportedAppSettings({
       liveArtifactsPromptMode: 'full',

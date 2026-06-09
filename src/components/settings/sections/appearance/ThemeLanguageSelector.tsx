@@ -1,6 +1,6 @@
 import React from 'react';
 import { useI18n } from '@/contexts/I18nContext';
-import { IconThemeSystem, IconThemeDark, IconThemeLight } from '@/components/icons';
+import { IconThemeSystem, IconThemeDark, IconThemeGray, IconThemeLight } from '@/components/icons';
 import { type AppSettings } from '@/types';
 import { Select } from '@/components/shared/Select';
 
@@ -14,6 +14,7 @@ export const ThemeLanguageSelector: React.FC<ThemeLanguageSelectorProps> = ({ se
   const themeOptions = [
     { id: 'system', labelKey: 'settingsThemeSystem', icon: <IconThemeSystem size={16} strokeWidth={1.5} /> },
     { id: 'onyx', labelKey: 'settingsThemeDark', icon: <IconThemeDark size={16} strokeWidth={1.5} /> },
+    { id: 'graphite', labelKey: 'settingsThemeGray', icon: <IconThemeGray size={16} strokeWidth={1.5} /> },
     { id: 'pearl', labelKey: 'settingsThemeLight', icon: <IconThemeLight size={16} strokeWidth={1.5} /> },
   ] as const;
 

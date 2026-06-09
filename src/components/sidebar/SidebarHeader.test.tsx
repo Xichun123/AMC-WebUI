@@ -34,6 +34,16 @@ describe('SidebarHeader', () => {
     expect(logo?.getAttribute('src')).toBe('/sidebar-logo-dark.png');
   });
 
+  it('uses the dark sidebar logo for the graphite theme', () => {
+    act(() => {
+      renderer.root.render(<SidebarHeader isOpen={true} onToggle={vi.fn()} themeId="graphite" />);
+    });
+
+    const logo = getLogoButton()?.querySelector('img[alt="AMC WebUI"]');
+
+    expect(logo?.getAttribute('src')).toBe('/sidebar-logo-dark.png');
+  });
+
   it('toggles the sidebar when the logo is clicked', () => {
     const onToggle = vi.fn();
 

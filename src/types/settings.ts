@@ -89,7 +89,7 @@ export interface ChatSettings {
 export type ChatSettingsUpdater = (updater: (prevSettings: ChatSettings) => ChatSettings) => void;
 
 export interface AppSettings extends ChatSettings {
-  themeId: 'system' | 'onyx' | 'pearl';
+  themeId: 'system' | 'onyx' | 'graphite' | 'pearl';
   baseFontSize: number;
   apiMode: ApiMode;
   isOpenAICompatibleApiEnabled?: boolean;

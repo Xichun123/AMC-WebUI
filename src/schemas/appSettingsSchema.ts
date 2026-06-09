@@ -20,8 +20,8 @@ import {
   sanitizeStringArray,
   sanitizeStringRecord,
 } from '../../shared/mcpServerConfig';
+import { THEME_IDS } from '@/utils/themeMode';
 
-const THEME_IDS = ['system', 'onyx', 'pearl'] as const;
 const LANGUAGE_IDS = ['en', 'zh', 'system'] as const;
 const THINKING_LEVELS = ['MINIMAL', 'LOW', 'MEDIUM', 'HIGH'] as const;
 const API_MODES = ['gemini-native', 'openai-compatible'] as const;

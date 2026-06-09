@@ -7,9 +7,11 @@ import {
   getLiveArtifactInteractionDefaultValue,
   getLiveArtifactInteractionFields,
   type LiveArtifactInteractionField,
+  type LiveArtifactInteractionArrayValue,
   type LiveArtifactInteractionPrimitive,
   type LiveArtifactInteractionProperty,
   type LiveArtifactInteractionSpec,
+  type LiveArtifactInteractionValue,
 } from '@/utils/liveArtifactInteraction';
 
 interface LiveArtifactInteractionFrameProps {
@@ -22,7 +24,7 @@ interface LiveArtifactInteractionFormProps extends LiveArtifactInteractionFrameP
   fields: LiveArtifactInteractionField[];
 }
 
-type FormState = Record<string, LiveArtifactInteractionPrimitive | ''>;
+type FormState = Record<string, LiveArtifactInteractionValue | ''>;
 type FormErrors = Record<string, string>;
 
 interface ValidationMessages {
@@ -41,7 +43,7 @@ const createInitialState = (fields: LiveArtifactInteractionField[]): FormState =
 };
 
 const coerceNumberValue = (
-  value: LiveArtifactInteractionPrimitive | '',
+  value: LiveArtifactInteractionValue | '',
 ): { value: number | ''; error?: 'invalidNumber' } => {
   if (typeof value === 'number') {
     return Number.isFinite(value) ? { value } : { value: '', error: 'invalidNumber' };
@@ -57,10 +59,24 @@ const coerceNumberValue = (
 
 const validateSubmittedValue = (
   property: LiveArtifactInteractionProperty,
-  value: LiveArtifactInteractionPrimitive | '',
+  value: LiveArtifactInteractionValue | '',
   messages: ValidationMessages,
-): { value: LiveArtifactInteractionPrimitive | ''; error?: string } => {
-  let submittedValue: LiveArtifactInteractionPrimitive | '' = value;
+): { value: LiveArtifactInteractionValue | ''; error?: string } => {
+  let submittedValue: LiveArtifactInteractionValue | '' = value;
+
+  if (property.type === 'array') {
+    if (!Array.isArray(submittedValue)) {
+      return { value: [], error: messages.enum };
+    }
+
+    const items = property.items;
+    const selectedValues = submittedValue;
+    if (!items || selectedValues.some((item) => !items.enum.some((option) => option === item))) {
+      return { value: selectedValues, error: messages.enum };
+    }
+
+    return { value: selectedValues };
+  }
 
   if (property.type === 'string' && typeof submittedValue === 'string') {
     submittedValue = submittedValue.trim();
@@ -95,6 +111,9 @@ const validateSubmittedValue = (
   return { value: submittedValue };
 };
 
+const isEmptySubmittedValue = (value: LiveArtifactInteractionValue | ''): boolean =>
+  value === '' || value === undefined || (Array.isArray(value) && value.length === 0);
+
 const validateState = (
   fields: LiveArtifactInteractionField[],
   state: FormState,
@@ -107,7 +126,7 @@ const validateState = (
     const { value, error } = validateSubmittedValue(field.property, state[field.key], messages);
     submittedState[field.key] = value;
 
-    if (field.required && (value === '' || value === undefined)) {
+    if (field.required && isEmptySubmittedValue(value)) {
       errors[field.key] = messages.required;
       return;
     }
@@ -141,7 +160,7 @@ const LiveArtifactInteractionForm: React.FC<LiveArtifactInteractionFormProps> = 
   const [errors, setErrors] = useState<FormErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
 
-  const updateValue = (key: string, value: LiveArtifactInteractionPrimitive | '') => {
+  const updateValue = (key: string, value: LiveArtifactInteractionValue | '') => {
     setState((currentState) => ({ ...currentState, [key]: value }));
     setFormError(null);
     setErrors((currentErrors) => {
@@ -188,6 +207,57 @@ const LiveArtifactInteractionForm: React.FC<LiveArtifactInteractionFormProps> = 
     const describedBy = [field.description ? descriptionId : null, error ? errorId : null].filter(Boolean).join(' ');
     const commonControlClassName =
       'mt-1.5 w-full rounded-md border border-[var(--theme-border-primary)] bg-[var(--theme-bg-input)] px-3 py-2 text-[0.875em] text-[var(--theme-text-primary)] outline-none transition focus:border-[var(--theme-border-focus)] focus:ring-2 focus:ring-[var(--theme-border-focus)]/20';
+
+    if (field.property.type === 'array' && field.property.items) {
+      const selectedValues: LiveArtifactInteractionArrayValue = Array.isArray(value) ? value : [];
+      const updateArrayValue = (option: LiveArtifactInteractionPrimitive, checked: boolean) => {
+        updateValue(
+          field.key,
+          checked ? [...selectedValues, option] : selectedValues.filter((selectedValue) => selectedValue !== option),
+        );
+      };
+
+      return (
+        <fieldset key={field.key} className="block">
+          <legend className="text-[0.875em] font-medium text-[var(--theme-text-primary)]">
+            {field.label}
+            {field.required && <span className="ml-1 text-[var(--theme-text-danger)]">*</span>}
+          </legend>
+          {field.description && (
+            <p id={descriptionId} className="mt-0.5 text-[0.75em] leading-relaxed text-[var(--theme-text-secondary)]">
+              {field.description}
+            </p>
+          )}
+          <div className="mt-1.5 grid gap-2">
+            {field.property.items.enum.map((option, index) => (
+              <label
+                key={String(option)}
+                className="flex items-center gap-2 rounded-md border border-[var(--theme-border-secondary)] bg-[var(--theme-bg-primary)] px-3 py-2"
+              >
+                <input
+                  name={field.key}
+                  type="checkbox"
+                  value={String(option)}
+                  checked={selectedValues.some((selectedValue) => selectedValue === option)}
+                  onChange={(event) => updateArrayValue(option, event.currentTarget.checked)}
+                  aria-describedby={describedBy || undefined}
+                  aria-invalid={Boolean(error)}
+                  className="h-4 w-4 rounded border-[var(--theme-border-primary)] accent-[var(--theme-bg-accent)]"
+                />
+                <span className="text-[0.875em] text-[var(--theme-text-primary)]">
+                  {field.property.items?.enumNames?.[index] ?? String(option)}
+                </span>
+              </label>
+            ))}
+          </div>
+          {error && (
+            <span id={errorId} className="mt-1 block text-[0.75em] text-[var(--theme-text-danger)]">
+              {error}
+            </span>
+          )}
+        </fieldset>
+      );
+    }
 
     if (field.property.type === 'boolean') {
       return (
@@ -271,7 +341,15 @@ const LiveArtifactInteractionForm: React.FC<LiveArtifactInteractionFormProps> = 
         ) : (
           <input
             name={field.key}
-            type={field.property.type === 'string' ? 'text' : 'number'}
+            type={
+              field.property.format === 'date'
+                ? 'date'
+                : field.property.format === 'range'
+                  ? 'range'
+                  : field.property.type === 'string'
+                    ? 'text'
+                    : 'number'
+            }
             step={field.property.type === 'integer' ? 1 : undefined}
             min={field.property.minimum}
             max={field.property.maximum}

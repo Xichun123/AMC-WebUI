@@ -189,6 +189,65 @@ describe('LiveArtifactInteractionFrame', () => {
     });
   });
 
+  it('submits date, range, and multi-select array values', () => {
+    const handleFollowUp = vi.fn();
+    const spec = {
+      version: 1,
+      title: 'Campaign setup',
+      instruction: 'Continue with these campaign settings.',
+      schema: {
+        type: 'object',
+        required: ['channels'],
+        properties: {
+          dueDate: { type: 'string', title: 'Due date', format: 'date', default: '2026-07-01' },
+          priority: { type: 'integer', title: 'Priority', format: 'range', minimum: 1, maximum: 5, default: 3 },
+          channels: {
+            type: 'array',
+            title: 'Channels',
+            items: {
+              type: 'string',
+              enum: ['email', 'social', 'blog'],
+              enumNames: ['Email', 'Social', 'Blog'],
+            },
+            default: ['email'],
+          },
+        },
+      },
+    } satisfies LiveArtifactInteractionSpec;
+
+    act(() => {
+      renderer.root.render(<LiveArtifactInteractionFrame spec={spec} onFollowUp={handleFollowUp} />);
+    });
+
+    const dueDateInput = renderer.container.querySelector<HTMLInputElement>('input[name="dueDate"]');
+    const priorityInput = renderer.container.querySelector<HTMLInputElement>('input[name="priority"]');
+    const socialInput = renderer.container.querySelector<HTMLInputElement>('input[name="channels"][value="social"]');
+    const blogInput = renderer.container.querySelector<HTMLInputElement>('input[name="channels"][value="blog"]');
+
+    expect(dueDateInput?.type).toBe('date');
+    expect(priorityInput?.type).toBe('range');
+    expect(renderer.container.querySelector<HTMLInputElement>('input[name="channels"][value="email"]')?.checked).toBe(
+      true,
+    );
+
+    fireEvent.change(dueDateInput!, { target: { value: '2026-08-15' } });
+    fireEvent.change(priorityInput!, { target: { value: '5' } });
+    fireEvent.click(socialInput!);
+    fireEvent.click(blogInput!);
+    fireEvent.submit(renderer.container.querySelector<HTMLFormElement>('[data-live-artifact-interaction="true"]')!);
+
+    expect(handleFollowUp).toHaveBeenCalledWith({
+      instruction: 'Continue with these campaign settings.',
+      title: 'Campaign setup',
+      source: 'amc-live-artifact-interaction:v1',
+      state: {
+        dueDate: '2026-08-15',
+        priority: 5,
+        channels: ['email', 'social', 'blog'],
+      },
+    });
+  });
+
   it('shows validation errors for boolean enum submissions', () => {
     const handleFollowUp = vi.fn();
     const spec = {

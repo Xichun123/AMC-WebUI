@@ -36,8 +36,10 @@ describe('AppearanceSection', () => {
     await renderAppearanceSection({ language: 'en' });
 
     expect(renderer.container.textContent).toContain('Theme');
+    expect(renderer.container.textContent).toContain('Gray');
     expect(renderer.container.textContent).toContain('Reading Size');
-    expect(renderer.container.textContent).toContain('Live Artifacts Size');
+    expect(renderer.container.textContent).toContain('Live Artifacts Base Size');
+    expect(renderer.container.textContent).toContain('default font size for inline Live Artifacts in chat');
     expect(renderer.container.textContent).toContain('Input Toolbar');
     expect(renderer.container.textContent).toContain('Streaming Responses');
     expect(renderer.container.textContent).toContain('Show Translate Button');
@@ -51,8 +53,10 @@ describe('AppearanceSection', () => {
     });
 
     expect(renderer.container.textContent).toContain('主题');
+    expect(renderer.container.textContent).toContain('灰色');
     expect(renderer.container.textContent).toContain('阅读字号');
-    expect(renderer.container.textContent).toContain('Live Artifacts 字号');
+    expect(renderer.container.textContent).toContain('Live Artifacts 基础字号');
+    expect(renderer.container.textContent).toContain('聊天内嵌 Live Artifacts 的默认字号');
     expect(renderer.container.textContent).toContain('输入框工具栏');
     expect(renderer.container.textContent).toContain('流式输出');
     expect(renderer.container.textContent).toContain('显示翻译按钮');

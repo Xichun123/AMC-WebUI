@@ -6,13 +6,11 @@ import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import { I18nProvider } from '@/contexts/I18nContext';
 import { MessageContent } from '@/components/message/MessageContent';
 import { getVisibleChatMessages } from '@/utils/chat/visibility';
+import { normalizeThemeId } from '@/utils/themeMode';
 
 const CHAT_EXPORT_RENDER_SETTLE_DELAY_MS = 100;
 
 const noop = () => {};
-
-const normalizeThemeId = (themeId: string): AppSettings['themeId'] =>
-  themeId === 'system' || themeId === 'onyx' || themeId === 'pearl' ? themeId : DEFAULT_APP_SETTINGS.themeId;
 
 const createExportAppSettings = (session: SavedChatSession, themeId: string): AppSettings => ({
   ...DEFAULT_APP_SETTINGS,

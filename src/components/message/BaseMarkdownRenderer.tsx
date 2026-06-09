@@ -296,6 +296,7 @@ export const BaseMarkdownRenderer: React.FC<BaseMarkdownRendererProps> = React.m
               isLoading={isLoading}
               onOpenSidePanel={onOpenSidePanel}
               liveArtifactFontSize={liveArtifactFontSize}
+              themeId={themeId}
             >
               {codeElement || children}
             </CodeBlock>
@@ -354,6 +355,7 @@ export const BaseMarkdownRenderer: React.FC<BaseMarkdownRendererProps> = React.m
             isLoading={isLoading}
             onOpenSidePanel={onOpenSidePanel}
             liveArtifactFontSize={liveArtifactFontSize}
+            themeId={themeId}
           >
             <code className={`language-${singleLiveArtifact.language}`}>{singleLiveArtifact.code}</code>
           </CodeBlock>

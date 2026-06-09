@@ -4,6 +4,7 @@ import { type UploadedFile } from '@/types';
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard';
 import { MESSAGE_BLOCK_BUTTON_CLASS } from '@/constants/buttonClasses';
 import { useI18n } from '@/contexts/I18nContext';
+import { isDarkThemeId } from '@/utils/themeMode';
 
 interface DiagramWrapperProps {
   title: string;
@@ -48,7 +49,7 @@ export const DiagramWrapper: React.FC<DiagramWrapperProps> = ({
   const containerClasses =
     'p-2 sm:p-4 overflow-auto custom-scrollbar flex items-center justify-center min-h-[100px] sm:min-h-[150px] transition-colors duration-300';
   const headerButtonClass = `${MESSAGE_BLOCK_BUTTON_CLASS} !min-h-10 !min-w-10 !rounded-md !p-0 !opacity-90 hover:!opacity-100 hover:bg-[var(--theme-bg-tertiary)]/40`;
-  const bgClass = themeId === 'onyx' ? 'bg-[var(--theme-bg-secondary)]' : 'bg-white';
+  const bgClass = isDarkThemeId(themeId) ? 'bg-[var(--theme-bg-secondary)]' : 'bg-white';
 
   if (isRendering) {
     return (

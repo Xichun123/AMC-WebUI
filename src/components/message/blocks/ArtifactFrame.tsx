@@ -23,6 +23,7 @@ interface ArtifactFrameProps {
   cacheKey?: string;
   isLoading?: boolean;
   baseFontSize?: number;
+  themeId?: string;
   onFollowUp?: (payload: LiveArtifactFollowupPayload) => void;
 }
 
@@ -88,6 +89,7 @@ export const ArtifactFrame: React.FC<ArtifactFrameProps> = ({
   cacheKey,
   isLoading = false,
   baseFontSize,
+  themeId,
   onFollowUp,
 }) => {
   const { t } = useI18n();
@@ -99,7 +101,10 @@ export const ArtifactFrame: React.FC<ArtifactFrameProps> = ({
   const contentHeightCacheKey = useMemo(() => getContentFrameHeightCacheKey(html, cacheKey), [cacheKey, html]);
   const streamingHeightCacheKey = useMemo(() => getStreamingFrameHeightCacheKey(cacheKey), [cacheKey]);
   const heightCacheKey = isLoading && streamingHeightCacheKey ? streamingHeightCacheKey : contentHeightCacheKey;
-  const streamingSrcDoc = useMemo(() => buildStreamingHtmlPreviewSrcDoc({ baseFontSize }), [baseFontSize]);
+  const streamingSrcDoc = useMemo(
+    () => buildStreamingHtmlPreviewSrcDoc({ baseFontSize, themeId }),
+    [baseFontSize, themeId],
+  );
   const [frameHeightState, setFrameHeightState] = useState(() => ({
     heightCacheKey,
     height: readCachedFrameHeight(heightCacheKey, streamingHeightCacheKey),
@@ -108,7 +113,10 @@ export const ArtifactFrame: React.FC<ArtifactFrameProps> = ({
     frameHeightState.heightCacheKey === heightCacheKey
       ? frameHeightState.height
       : readCachedFrameHeight(heightCacheKey, streamingHeightCacheKey);
-  const finalSrcDoc = useMemo(() => buildHtmlPreviewSrcDoc(html, { baseFontSize }), [baseFontSize, html]);
+  const finalSrcDoc = useMemo(
+    () => buildHtmlPreviewSrcDoc(html, { baseFontSize, themeId }),
+    [baseFontSize, html, themeId],
+  );
   const srcDoc = isLoading ? streamingSrcDoc : finalSrcDoc;
 
   useLayoutEffect(() => {

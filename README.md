@@ -175,7 +175,7 @@
 
 ### 方式一：标准开发模式
 
-本地开发必须使用 Node.js 26（仓库提供 `.nvmrc`，CI 与 Docker 镜像也使用同一主版本）。仓库启用了 `engine-strict`，如果你使用 Node 27+ 或 25 及以下版本，`npm install` 会直接失败；建议先执行 `nvm use`。
+本地开发推荐使用 Node.js 26（仓库提供 `.nvmrc`，CI 主流程与 Docker 镜像也使用同一主版本），最低支持 Node.js 24。仓库启用了 `engine-strict`，如果你使用 Node 27+ 或 23 及以下版本，`npm install` 会直接失败；建议先执行 `nvm use` 使用推荐版本。
 
 ```bash
 # 克隆仓库

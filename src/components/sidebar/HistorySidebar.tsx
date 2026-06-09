@@ -11,6 +11,7 @@ import { IconNewChat, IconSidebarToggle } from '@/components/icons';
 import { useHistorySidebarLogic } from './useHistorySidebarLogic';
 import { SIDEBAR_CLICKABLE_ICON_BUTTON_CLASS, SIDEBAR_ICON_LINK_BUTTON_CLASS } from './sidebarStyles';
 import { LimitedSessionList } from './LimitedSessionList';
+import { isDarkThemeId } from '@/utils/themeMode';
 
 interface HistorySidebarProps {
   isOpen: boolean;
@@ -223,7 +224,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = (props) => {
   return (
     <aside
       data-history-sidebar-root="true"
-      className={`h-full flex flex-col ${themeId === 'onyx' ? 'bg-[var(--theme-bg-primary)]' : 'bg-[var(--theme-bg-secondary)]'} flex-shrink-0
+      className={`h-full flex flex-col ${isDarkThemeId(themeId) ? 'bg-[var(--theme-bg-primary)]' : 'bg-[var(--theme-bg-secondary)]'} flex-shrink-0
                  transition-transform duration-300 ease-[cubic-bezier(0.19,1,0.22,1)] md:transition-[width] transform-gpu
                  absolute md:static top-0 left-0 z-50
                  overflow-hidden

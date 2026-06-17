@@ -31,7 +31,7 @@ describe('detail quality boundaries', () => {
     expect(useMessageSenderSource).toContain("from './sendMessageValidation'");
     expect(useMessageSenderSource).toContain('validateMessageBeforeSend({');
     expect(useMessageSenderSource).not.toContain('const imageReferenceCount = filesToUse.filter');
-    expect(useMessageSenderSource).not.toContain('messageSender_imagenTextOnly');
+    expect(useMessageSenderSource).not.toContain('messageSenderImagenTextOnly');
   });
 
   it('keeps API adapters independent of chat-streaming reducer internals', () => {
@@ -84,7 +84,7 @@ describe('detail quality boundaries', () => {
       expect(source).not.toContain('liveArtifactsHelper');
     }
 
-    expect(readProjectFile('src/components/header/Header.tsx')).toContain('liveArtifactsPromptActive_aria');
+    expect(readProjectFile('src/components/header/Header.tsx')).toContain('liveArtifactsPromptActiveAria');
   });
 
   it('uses one named MIME type for directory placeholders', () => {
@@ -288,10 +288,10 @@ describe('detail quality boundaries', () => {
       readProjectFile(relativePath).includes('@/components/'),
     );
 
-    expect(fs.existsSync(path.join(projectRoot, 'src/features/chat-export/chatExportRenderer.tsx'))).toBe(true);
+    expect(fs.existsSync(path.join(projectRoot, 'src/features/chat-export/ChatExportRenderer.tsx'))).toBe(true);
     expect(fs.existsSync(path.join(projectRoot, 'src/utils/export/conversation.ts'))).toBe(false);
     expect(componentImportOffenders).toEqual([]);
-    expect(chatSessionExportSource).toContain("from '@/features/chat-export/chatExportRenderer'");
+    expect(chatSessionExportSource).toContain("from '@/features/chat-export/ChatExportRenderer'");
   });
 
   it('does not pass the virtualized scroll container into full-session export', () => {

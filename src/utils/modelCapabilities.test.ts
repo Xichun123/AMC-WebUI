@@ -4,6 +4,7 @@ import {
   getDefaultThinkingLevelForModel,
   getModelCapabilities,
   isGemini3Model,
+  isLiveTranslateModel,
   normalizeThinkingLevelForModel,
   shouldStripThinkingFromContext,
 } from './modelCapabilities';
@@ -186,5 +187,35 @@ describe('shouldStripThinkingFromContext', () => {
 
   it('honors the explicit strip toggle for non-Gemma models', () => {
     expect(shouldStripThinkingFromContext('gemini-3-flash-preview', true)).toBe(true);
+  });
+});
+
+describe('isLiveTranslateModel', () => {
+  it('returns false for empty string', () => {
+    expect(isLiveTranslateModel('')).toBe(false);
+  });
+
+  it('returns true for the preview model id', () => {
+    expect(isLiveTranslateModel('gemini-3.5-live-translate-preview')).toBe(true);
+    expect(isLiveTranslateModel('models/gemini-3.5-live-translate-preview')).toBe(true);
+  });
+
+  it('returns false for unrelated models', () => {
+    expect(isLiveTranslateModel('gemini-3.1-flash-live-preview')).toBe(false);
+    expect(isLiveTranslateModel('gemini-3.5-flash')).toBe(false);
+  });
+});
+
+describe('Live Translate model capabilities', () => {
+  const capabilities = getModelCapabilities('gemini-3.5-live-translate-preview');
+
+  it('is classified as a native audio model so it reuses the live infra', () => {
+    expect(capabilities.isNativeAudioModel).toBe(true);
+    expect(capabilities.permissions.canUseLiveControls).toBe(true);
+    expect(capabilities.isLiveTranslate).toBe(true);
+  });
+
+  it('does not require a text prompt (audio-first)', () => {
+    expect(capabilities.permissions.requiresTextPrompt).toBe(false);
   });
 });

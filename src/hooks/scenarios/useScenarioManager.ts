@@ -93,12 +93,12 @@ export const useScenarioManager = ({
       const newScenario: SavedScenario = {
         ...scenario,
         id: generateUniqueId(),
-        title: t('scenarios_copy_title').replace('{title}', scenario.title),
+        title: t('scenariosCopyTitle').replace('{title}', scenario.title),
         messages: scenario.messages.map((message) => ({ ...message, id: generateUniqueId() })),
       };
 
       setScenarios((prev) => buildSavedScenarios([newScenario, ...getExportableUserScenarios(prev)]));
-      showFeedback('success', t('scenarios_feedback_duplicated'));
+      showFeedback('success', t('scenariosFeedbackDuplicated'));
     },
     [showFeedback, t],
   );
@@ -111,7 +111,7 @@ export const useScenarioManager = ({
   const handleSaveScenario = useCallback(
     (scenarioToSave: SavedScenario) => {
       if (!scenarioToSave.title.trim()) {
-        showFeedback('error', t('scenarios_title_required'));
+        showFeedback('error', t('scenariosTitleRequired'));
         return;
       }
       setScenarios((prev) => {
@@ -124,7 +124,7 @@ export const useScenarioManager = ({
         }
         return buildSavedScenarios([...nextUserScenarios, scenarioToSave]);
       });
-      showFeedback('success', t('scenarios_feedback_saved'));
+      showFeedback('success', t('scenariosFeedbackSaved'));
       setView('list');
       setEditingScenario(null);
     },
@@ -136,7 +136,7 @@ export const useScenarioManager = ({
       setScenarios((prev) =>
         buildSavedScenarios(getExportableUserScenarios(prev).filter((scenario) => scenario.id !== scenarioId)),
       );
-      showFeedback('info', t('scenarios_feedback_cleared'));
+      showFeedback('info', t('scenariosFeedbackCleared'));
     },
     [showFeedback, t],
   );
@@ -150,7 +150,7 @@ export const useScenarioManager = ({
     const scenariosToExport = getExportableUserScenarios(scenarios);
 
     if (scenariosToExport.length === 0) {
-      showFeedback('info', t('scenarios_feedback_emptyExport'));
+      showFeedback('info', t('scenariosFeedbackEmptyExport'));
       return;
     }
 
@@ -159,7 +159,7 @@ export const useScenarioManager = ({
     const blob = new Blob([jsonString], { type: 'application/json' });
     const date = new Date().toISOString().slice(0, 10);
     triggerDownload(createManagedObjectUrl(blob), `scenarios-export-${date}.json`);
-    showFeedback('success', t('scenarios_feedback_exported'));
+    showFeedback('success', t('scenariosFeedbackExported'));
   }, [scenarios, showFeedback, t]);
 
   const handleExportSingleScenario = useCallback(
@@ -173,7 +173,7 @@ export const useScenarioManager = ({
       const jsonString = JSON.stringify(exportPayload, null, 2);
       const blob = new Blob([jsonString], { type: 'application/json' });
       triggerDownload(createManagedObjectUrl(blob), `scenario-${safeTitle}.json`);
-      showFeedback('success', t('scenarios_feedback_exported'));
+      showFeedback('success', t('scenariosFeedbackExported'));
     },
     [showFeedback, t],
   );
@@ -204,13 +204,13 @@ export const useScenarioManager = ({
                 }),
               ),
             );
-            showFeedback('success', t('scenarios_feedback_imported'));
+            showFeedback('success', t('scenariosFeedbackImported'));
           } else {
             throw new Error('Invalid format');
           }
         } catch (error) {
           logService.error('Import failed', error);
-          showFeedback('error', t('scenarios_feedback_importFailed'));
+          showFeedback('error', t('scenariosFeedbackImportFailed'));
         } finally {
           if (importInputRef.current) importInputRef.current.value = '';
         }

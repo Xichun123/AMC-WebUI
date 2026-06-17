@@ -100,10 +100,10 @@ export const ScenarioEditor: React.FC<ScenarioEditorProps> = ({
         <TextEditorModal
           isOpen={isSystemPromptExpanded}
           onClose={() => setIsSystemPromptExpanded(false)}
-          title={t('scenarios_system_prompt_label')}
+          title={t('scenariosSystemPromptLabel')}
           value={scenario.systemInstruction || ''}
           onChange={(systemInstruction) => setScenario((prev) => ({ ...prev, systemInstruction }))}
-          placeholder={t('scenarios_system_prompt_placeholder')}
+          placeholder={t('scenariosSystemPromptPlaceholder')}
           readOnly={readOnly}
         />
 

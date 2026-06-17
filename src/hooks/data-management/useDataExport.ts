@@ -57,7 +57,7 @@ export const useDataExport = ({ appSettings, savedGroups, savedScenarios, t }: U
       triggerDownload(createManagedObjectUrl(blob), `amc-webui-settings-${date}.json`);
     } catch (error) {
       logService.error('Failed to export settings', { error });
-      alert(t('export_failed_title'));
+      alert(t('exportFailedTitle'));
     }
   }, [appSettings, t]);
 
@@ -83,7 +83,7 @@ export const useDataExport = ({ appSettings, savedGroups, savedScenarios, t }: U
       triggerDownload(createManagedObjectUrl(blob), `amc-webui-history-${date}.json`);
     } catch (error) {
       logService.error('Failed to export history', { error });
-      alert(t('export_failed_title'));
+      alert(t('exportFailedTitle'));
     }
   }, [savedGroups, t]);
 
@@ -97,7 +97,7 @@ export const useDataExport = ({ appSettings, savedGroups, savedScenarios, t }: U
       triggerDownload(createManagedObjectUrl(blob), `amc-webui-scenarios-${date}.json`);
     } catch (error) {
       logService.error('Failed to export scenarios', { error });
-      alert(t('export_failed_title'));
+      alert(t('exportFailedTitle'));
     }
   }, [savedScenarios, t]);
 

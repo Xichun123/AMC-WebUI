@@ -85,6 +85,27 @@ describe('settingsStore', () => {
       expect(useSettingsStore.getState().language).toBe('zh');
     });
 
+    it('preserves third-party API mode when the third-party switch is enabled', () => {
+      useSettingsStore.getState().setAppSettings((prev) => ({
+        ...prev,
+        apiMode: 'third-party',
+        isThirdPartyApiEnabled: true,
+      }));
+
+      expect(useSettingsStore.getState().appSettings.apiMode).toBe('third-party');
+      expect(useSettingsStore.getState().appSettings.isThirdPartyApiEnabled).toBe(true);
+    });
+
+    it('forces Gemini mode when third-party API mode is disabled', () => {
+      useSettingsStore.getState().setAppSettings((prev) => ({
+        ...prev,
+        apiMode: 'third-party',
+        isThirdPartyApiEnabled: false,
+      }));
+
+      expect(useSettingsStore.getState().appSettings.apiMode).toBe('gemini-native');
+    });
+
     it('persists to IndexedDB when settings are loaded', async () => {
       useSettingsStore.setState({ isSettingsLoaded: true });
       useSettingsStore.getState().setAppSettings((prev) => ({

@@ -20,7 +20,7 @@ export const useApiErrorHandler = (updateAndPersistSessions: SessionsUpdater) =>
       partialThoughts?: string,
     ) => {
       const resolvedErrorPrefix =
-        !errorPrefix || errorPrefix === 'Error' ? t('messageSender_apiErrorPrefix') : errorPrefix;
+        !errorPrefix || errorPrefix === 'Error' ? t('messageSenderApiErrorPrefix') : errorPrefix;
       const isAborted = error instanceof Error && (error.name === 'AbortError' || error.message === 'aborted');
       logService.error(`API Error (${resolvedErrorPrefix}) for message ${modelMessageId} in session ${sessionId}`, {
         error,
@@ -42,17 +42,17 @@ export const useApiErrorHandler = (updateAndPersistSessions: SessionsUpdater) =>
         return;
       }
 
-      let errorMessage = t('messageSender_unknownError');
+      let errorMessage = t('messageSenderUnknownError');
       if (error instanceof Error) {
         errorMessage =
           error.name === 'SilentError'
-            ? t('messageSender_apiKeyNotConfigured')
-            : formatMessageSenderText(t('messageSender_errorWithPrefix'), {
+            ? t('messageSenderApiKeyNotConfigured')
+            : formatMessageSenderText(t('messageSenderErrorWithPrefix'), {
                 prefix: resolvedErrorPrefix,
                 message: error.message,
               });
       } else {
-        errorMessage = formatMessageSenderText(t('messageSender_errorWithPrefix'), {
+        errorMessage = formatMessageSenderText(t('messageSenderErrorWithPrefix'), {
           prefix: resolvedErrorPrefix,
           message: String(error),
         });

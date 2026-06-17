@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { setupProviderTestRenderer as setupTestRenderer } from '@/test/render/providerRenderer';
 import { describe, expect, it, vi } from 'vitest';
-import { FOCUS_HISTORY_SEARCH_EVENT } from '@/constants/shortcuts';
+import { FOCUS_HISTORY_SEARCH_EVENT } from '@/constants/layout';
 import { createHistorySidebarProps } from '@/test/sidebar/historySidebar';
 import { HistorySidebar } from './HistorySidebar';
 

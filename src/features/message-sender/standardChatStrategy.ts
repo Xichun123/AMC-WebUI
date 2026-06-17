@@ -3,7 +3,8 @@ import { buildContentParts } from '@/utils/chat/builder';
 import { isServerCodeExecutionMode } from '@/utils/codeExecution';
 import { isAudioMimeType } from '@/utils/fileTypeClassification';
 import { getModelCapabilities, normalizeThinkingLevelForModel } from '@/utils/modelCapabilities';
-import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
+import { isThirdPartyApiActive } from '@/utils/thirdPartyApiActive';
+import { getThirdPartyProviderModelId } from '@/utils/thirdPartyApiProviders';
 import type { UploadedFile } from '@/types';
 import { runOptimisticMessagePipeline, type MessageLifecycleRunner } from './messagePipeline';
 import { resolveStandardChatTurn } from './standardChatTurn';
@@ -57,8 +58,8 @@ export const sendStandardMessage = async ({
     updateAndPersistSessions,
     sessionKeyMapRef,
   } = props;
-  const effectiveActiveModelId = isOpenAICompatibleApiActive(appSettings)
-    ? appSettings.openaiCompatibleModelId
+  const effectiveActiveModelId = isThirdPartyApiActive(appSettings)
+    ? getThirdPartyProviderModelId(appSettings)
     : activeModelId;
   const settingsForPersistence = { ...currentChatSettings };
   const settingsForApi = { ...currentChatSettings };

@@ -1,38 +1,38 @@
 export const headerTranslations = {
   historySidebarClose: { en: 'Close history sidebar', zh: '关闭历史记录侧边栏' },
   historySidebarOpen: { en: 'Open history sidebar', zh: '打开历史记录侧边栏' },
-  historySidebarClose_short: { en: 'Close History', zh: '关闭历史' },
-  historySidebarOpen_short: { en: 'Open History', zh: '打开历史' },
+  historySidebarCloseShort: { en: 'Close History', zh: '关闭历史' },
+  historySidebarOpenShort: { en: 'Open History', zh: '打开历史' },
   headerModelSelectorNoModels: { en: 'No models available.', zh: '无可用模型。' },
-  liveArtifactsPromptActive_aria: {
+  liveArtifactsPromptActiveAria: {
     en: 'Live Artifacts prompt is active. Click to remove.',
     zh: 'Live Artifacts 提示已激活。点击移除。',
   },
-  liveArtifactsPromptInactive_aria: {
+  liveArtifactsPromptInactiveAria: {
     en: 'Load Live Artifacts prompt and save settings',
     zh: '加载 Live Artifacts 提示并保存设置',
   },
-  liveArtifactsPromptActive_title: {
+  liveArtifactsPromptActiveTitle: {
     en: 'Live Artifacts prompt is active. Click to remove.',
     zh: 'Live Artifacts 提示已激活。点击移除。',
   },
-  liveArtifactsPromptInactive_title: {
+  liveArtifactsPromptInactiveTitle: {
     en: 'Load Live Artifacts Prompt and save',
     zh: '加载 Live Artifacts 提示并保存',
   },
-  scenariosManage_aria: { en: 'Preset Scenarios', zh: '预设场景' },
-  scenariosManage_title: { en: 'Preset Scenarios', zh: '预设场景' },
-  settingsOpen_aria: { en: 'Open Chat Settings', zh: '打开聊天设置' },
-  settingsOpen_title: { en: 'Chat Settings', zh: '聊天设置' },
-  headerNewChat_aria: { en: 'Start a new chat session', zh: '开始新聊天会话' },
+  scenariosManageAria: { en: 'Preset Scenarios', zh: '预设场景' },
+  scenariosManageTitle: { en: 'Preset Scenarios', zh: '预设场景' },
+  settingsOpenAria: { en: 'Open Chat Settings', zh: '打开聊天设置' },
+  settingsOpenTitle: { en: 'Chat Settings', zh: '聊天设置' },
+  headerNewChatAria: { en: 'Start a new chat session', zh: '开始新聊天会话' },
   headerStream: { en: 'Streaming Responses', zh: '流式输出' },
-  headerModelSelectorTooltip_current: { en: 'Current Model', zh: '当前模型' },
-  headerModelSelectorTooltip_action: {
+  headerModelSelectorTooltipCurrent: { en: 'Current Model', zh: '当前模型' },
+  headerModelSelectorTooltipAction: {
     en: `Click to change, or press 'Tab' to cycle`,
     zh: `点击更改，或按 'Tab' 键循环切换`,
   },
-  headerModelAriaLabel_current: { en: 'Current AI Model', zh: '当前 AI 模型' },
-  headerModelAriaLabel_action: { en: `Click to change model`, zh: `点击更改模型` },
+  headerModelAriaLabelCurrent: { en: 'Current AI Model', zh: '当前 AI 模型' },
+  headerModelAriaLabelAction: { en: `Click to change model`, zh: `点击更改模型` },
   headerReasoningToggleAria: { en: 'Toggle reasoning mode', zh: '切换推理模式' },
   headerThinkingToggleAria: { en: 'Toggle thinking level', zh: '切换思考等级' },
   headerReasoningHighTitle: { en: 'Reasoning: High', zh: '推理：高' },
@@ -40,5 +40,5 @@ export const headerTranslations = {
   headerThinkingMinimalFastTitle: { en: 'Thinking: Minimal (Fast Mode)', zh: '思考：最低（快速模式）' },
   headerThinkingLowFastTitle: { en: 'Thinking: Low (Fast Mode)', zh: '思考：低（快速模式）' },
   headerThinkingHighTitle: { en: 'Thinking: High (Pro Mode)', zh: '思考：高（专业模式）' },
-  header_model_search_placeholder: { en: 'Search models...', zh: '搜索模型…' },
+  headerModelSearchPlaceholder: { en: 'Search models...', zh: '搜索模型…' },
 };

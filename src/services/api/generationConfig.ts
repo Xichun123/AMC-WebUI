@@ -59,6 +59,7 @@ type GenerationConfigSettings = Pick<
   | 'isUrlContextEnabled'
   | 'thinkingLevel'
   | 'isDeepSearchEnabled'
+  | 'isGoogleMapsEnabled'
   | 'safetySettings'
   | 'mediaResolution'
   | 'isLocalPythonEnabled'
@@ -83,6 +84,7 @@ type InternalBuildGenerationConfigOptions = {
   showThoughts: boolean;
   thinkingBudget: number;
   isGoogleSearchEnabled?: boolean;
+  isGoogleMapsEnabled?: boolean;
   isCodeExecutionEnabled?: boolean;
   isUrlContextEnabled?: boolean;
   thinkingLevel?: ThinkingLevel;
@@ -108,6 +110,8 @@ const buildGoogleSearchToolForModel = (modelId: string): Tool =>
       }
     : { googleSearch: {} };
 
+const buildGoogleMapsTool = (): Tool => ({ googleMaps: {} });
+
 const toSdkThinkingLevel = (
   thinkingLevel: InternalBuildGenerationConfigOptions['thinkingLevel'],
   fallback: keyof typeof THINKING_LEVEL_FOR_SDK,
@@ -130,6 +134,7 @@ const toInternalBuildGenerationConfigOptions = (
     showThoughts: settings.showThoughts,
     thinkingBudget: settings.thinkingBudget,
     isGoogleSearchEnabled: settings.isGoogleSearchEnabled,
+    isGoogleMapsEnabled: settings.isGoogleMapsEnabled,
     isCodeExecutionEnabled: settings.isCodeExecutionEnabled,
     isUrlContextEnabled: settings.isUrlContextEnabled,
     thinkingLevel: settings.thinkingLevel,
@@ -151,6 +156,7 @@ async function buildGenerationConfigFromOptions({
   showThoughts,
   thinkingBudget,
   isGoogleSearchEnabled,
+  isGoogleMapsEnabled,
   isCodeExecutionEnabled,
   isUrlContextEnabled,
   thinkingLevel,
@@ -204,6 +210,7 @@ async function buildGenerationConfigFromOptions({
 
     const tools: NonNullable<GenerationConfig['tools']> = [];
     if (isGoogleSearchEnabled) tools.push(googleSearchTool);
+    if (isGoogleMapsEnabled) tools.push(buildGoogleMapsTool());
     if (tools.length > 0) generationConfig.tools = tools;
 
     if (systemInstruction) generationConfig.systemInstruction = systemInstruction;
@@ -283,6 +290,9 @@ async function buildGenerationConfigFromOptions({
   if (isGoogleSearchEnabled || isDeepSearchEnabled) {
     tools.push(googleSearchTool);
   }
+  if (isGoogleMapsEnabled) {
+    tools.push(buildGoogleMapsTool());
+  }
   if (!isGemma && isServerCodeExecutionMode({ isCodeExecutionEnabled, isLocalPythonEnabled })) {
     tools.push({ codeExecution: {} });
   }
@@ -301,7 +311,9 @@ export const buildGenerationConfig = (options: BuildGenerationConfigOptions): Pr
   buildGenerationConfigFromOptions(toInternalBuildGenerationConfigOptions(options));
 
 const hasBuiltInTools = (tools: GenerationConfig['tools'] | undefined): boolean =>
-  !!tools?.some((tool) => 'googleSearch' in tool || 'codeExecution' in tool || 'urlContext' in tool);
+  !!tools?.some(
+    (tool) => 'googleSearch' in tool || 'googleMaps' in tool || 'codeExecution' in tool || 'urlContext' in tool,
+  );
 
 export const appendFunctionDeclarationsToTools = (
   modelId: string,

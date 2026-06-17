@@ -83,7 +83,7 @@ export const useSessionActions = ({ updateAndPersistSessions, activeJobs }: UseS
         const newSession = createNewSession(
           fullSessionToDuplicate.settings,
           duplicatedMessages,
-          t('history_copy_title').replace('{title}', duplicateTitle),
+          t('historyCopyTitle').replace('{title}', duplicateTitle),
         );
         return [newSession, ...prev];
       });

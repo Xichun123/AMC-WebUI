@@ -74,8 +74,8 @@ vi.mock('@/utils/chat/ids', () => ({
 vi.mock('@/utils/apiKeySelection', () => ({
   getKeyForRequest: vi.fn(() => ({ key: 'api-key', isNewKey: false })),
   formatApiKeyErrorMessage: vi.fn((error: string, translate: (translationKey: string) => string) => {
-    if (error === 'API Key not configured.') return translate('apiRuntime_keyNotConfigured');
-    if (error === 'No valid API keys found.') return translate('apiRuntime_noValidKeysFound');
+    if (error === 'API Key not configured.') return translate('apiRuntimeKeyNotConfigured');
+    if (error === 'No valid API keys found.') return translate('apiRuntimeNoValidKeysFound');
     return error;
   }),
 }));
@@ -99,6 +99,7 @@ vi.mock('@/services/api/fileApi', () => ({
 import { useMessageSender } from './useMessageSender';
 import { createMessageSenderProps, type MessageSenderPropsOverrides } from '@/test/hooks/factories';
 import { createChatSettings, createUploadedFile } from '@/test/data/factories';
+import { createDefaultThirdPartyApiSettings } from '@/utils/thirdPartyApiProviders';
 import { CODE_EXECUTION_TEXT_FILE_LIMIT_BYTES } from '@/utils/codeExecution';
 
 describe('useMessageSender', () => {
@@ -432,9 +433,15 @@ describe('useMessageSender', () => {
 
     const { result, unmount } = renderMessageSender({
       appSettings: {
-        isOpenAICompatibleApiEnabled: true,
-        apiMode: 'openai-compatible',
-        openaiCompatibleModelId: 'gpt-5.5',
+        isThirdPartyApiEnabled: true,
+        apiMode: 'third-party',
+        thirdPartyApi: {
+          activeProvider: 'openai',
+          providers: {
+            ...createDefaultThirdPartyApiSettings().providers,
+            openai: { ...createDefaultThirdPartyApiSettings().providers.openai, modelId: 'gpt-5.5' },
+          },
+        },
       },
       currentChatSettings: {
         modelId: 'gemini-3-pro-image-preview',
@@ -500,9 +507,15 @@ describe('useMessageSender', () => {
 
     const { result, unmount } = renderMessageSender({
       appSettings: {
-        isOpenAICompatibleApiEnabled: true,
-        apiMode: 'openai-compatible',
-        openaiCompatibleModelId: 'gpt-5.5',
+        isThirdPartyApiEnabled: true,
+        apiMode: 'third-party',
+        thirdPartyApi: {
+          activeProvider: 'openai',
+          providers: {
+            ...createDefaultThirdPartyApiSettings().providers,
+            openai: { ...createDefaultThirdPartyApiSettings().providers.openai, modelId: 'gpt-5.5' },
+          },
+        },
       },
       currentChatSettings: {
         modelId: 'gemini-3-pro-image-preview',

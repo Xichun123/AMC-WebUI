@@ -17,7 +17,7 @@ export const ScenarioSystemPrompt: React.FC<ScenarioSystemPromptProps> = ({ valu
       <div className="p-4 border-b border-[var(--theme-border-secondary)]/50">
         <label className="text-xs font-bold uppercase tracking-wider text-[var(--theme-text-tertiary)] flex items-center justify-between mb-2">
           <span className="flex items-center gap-2">
-            <Bot size={14} /> {t('scenarios_system_prompt_label')}
+            <Bot size={14} /> {t('scenariosSystemPromptLabel')}
           </span>
           <button
             onClick={onExpand}
@@ -27,12 +27,12 @@ export const ScenarioSystemPrompt: React.FC<ScenarioSystemPromptProps> = ({ valu
             <Maximize2 size={12} />
           </button>
         </label>
-        <p className="text-[10px] text-[var(--theme-text-tertiary)] mb-3">{t('scenarios_system_prompt_help')}</p>
+        <p className="text-[10px] text-[var(--theme-text-tertiary)] mb-3">{t('scenariosSystemPromptHelp')}</p>
       </div>
       <textarea
         value={value}
         onChange={(e) => !readOnly && onChange(e.target.value)}
-        placeholder={t('scenarios_system_prompt_placeholder')}
+        placeholder={t('scenariosSystemPromptPlaceholder')}
         className="flex-grow w-full bg-transparent border-none outline-none p-4 text-sm text-[var(--theme-text-primary)] placeholder-[var(--theme-text-tertiary)] resize-none font-mono leading-relaxed custom-scrollbar focus:bg-[var(--theme-bg-input)]/50 transition-colors"
         readOnly={readOnly}
       />

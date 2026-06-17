@@ -22,7 +22,7 @@ export const QueuedSubmissionCard: React.FC<QueuedSubmissionCardProps> = ({
   const { t } = useI18n();
   const attachmentLabel =
     fileCount > 0
-      ? `${fileCount} ${t(fileCount > 1 ? 'queuedSubmission_attachments' : 'queuedSubmission_attachment')}`
+      ? `${fileCount} ${t(fileCount > 1 ? 'queuedSubmissionAttachments' : 'queuedSubmissionAttachment')}`
       : null;
 
   return (
@@ -34,8 +34,8 @@ export const QueuedSubmissionCard: React.FC<QueuedSubmissionCardProps> = ({
         type="button"
         onClick={onEdit}
         className={`flex min-w-0 flex-1 items-center gap-2 rounded-full px-1.5 py-1 text-left text-[var(--theme-text-secondary)] transition-colors hover:bg-[var(--theme-bg-tertiary)]/55 ${FOCUS_VISIBLE_RING_INPUT_OFFSET_CLASS}`}
-        aria-label={`${t('queuedSubmission_edit')}: ${title}`}
-        title={t('queuedSubmission_edit')}
+        aria-label={`${t('queuedSubmissionEdit')}: ${title}`}
+        title={t('queuedSubmissionEdit')}
       >
         <CornerDownLeft size={13} strokeWidth={2} className="flex-shrink-0 text-[var(--theme-text-tertiary)]" />
         <span data-testid="queued-submission-preview" className="min-w-0 truncate">
@@ -53,18 +53,18 @@ export const QueuedSubmissionCard: React.FC<QueuedSubmissionCardProps> = ({
           type="button"
           onClick={onEdit}
           className={`inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs font-medium text-[var(--theme-text-tertiary)] transition-colors hover:bg-[var(--theme-bg-tertiary)] hover:text-[var(--theme-text-primary)] ${FOCUS_VISIBLE_RING_INPUT_OFFSET_CLASS}`}
-          aria-label={t('queuedSubmission_edit')}
-          title={t('queuedSubmission_edit')}
+          aria-label={t('queuedSubmissionEdit')}
+          title={t('queuedSubmissionEdit')}
         >
           <CornerDownLeft size={13} strokeWidth={2} />
-          <span>{t('queuedSubmission_action')}</span>
+          <span>{t('queuedSubmissionAction')}</span>
         </button>
         <button
           type="button"
           onClick={onRemove}
           className={`${SMALL_ICON_DANGER_BUTTON_CLASS} rounded-full`}
-          aria-label={t('queuedSubmission_remove')}
-          title={t('queuedSubmission_remove')}
+          aria-label={t('queuedSubmissionRemove')}
+          title={t('queuedSubmissionRemove')}
         >
           <Trash2 size={14} strokeWidth={2} />
         </button>

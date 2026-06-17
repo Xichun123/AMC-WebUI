@@ -57,9 +57,9 @@ export const ScenarioList: React.FC<ScenarioListProps> = ({
   }, [scenarios, searchQuery, activeTab, systemScenarioIds]);
 
   const tabs: { id: TabType; labelKey: string; icon: React.ElementType }[] = [
-    { id: 'all', labelKey: 'scenarios_tab_all', icon: Layers },
-    { id: 'mine', labelKey: 'scenarios_tab_mine', icon: User },
-    { id: 'system', labelKey: 'scenarios_tab_system', icon: Shield },
+    { id: 'all', labelKey: 'scenariosTabAll', icon: Layers },
+    { id: 'mine', labelKey: 'scenariosTabMine', icon: User },
+    { id: 'system', labelKey: 'scenariosTabSystem', icon: Shield },
   ];
 
   return (
@@ -71,7 +71,7 @@ export const ScenarioList: React.FC<ScenarioListProps> = ({
           </div>
           <input
             type="text"
-            placeholder={t('history_search_placeholder')}
+            placeholder={t('historySearchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-11 pr-4 py-2.5 sm:py-3 bg-[var(--theme-bg-input)] border border-[var(--theme-border-secondary)] rounded-xl text-sm font-medium text-[var(--theme-text-primary)] placeholder-[var(--theme-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-border-focus)] focus:border-transparent transition-all shadow-sm"
@@ -113,13 +113,13 @@ export const ScenarioList: React.FC<ScenarioListProps> = ({
             <div className="p-4 rounded-full bg-[var(--theme-bg-input)] mb-4">
               <Inbox size={48} className="opacity-30" strokeWidth={1} />
             </div>
-            <p className="text-base font-medium text-[var(--theme-text-secondary)]">{t('scenarios_empty_search')}</p>
+            <p className="text-base font-medium text-[var(--theme-text-secondary)]">{t('scenariosEmptySearch')}</p>
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
                 className="mt-2 text-[var(--theme-text-link)] hover:underline text-sm"
               >
-                {t('scenarios_clear_search')}
+                {t('scenariosClearSearch')}
               </button>
             )}
           </div>

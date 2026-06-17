@@ -69,7 +69,7 @@ export const MarkdownFileViewer: React.FC<MarkdownFileViewerProps> = ({
         .catch((error) => {
           if (cancelled) return;
           logService.error('Failed to load markdown content', error);
-          setLocalContent(t('filePreview_failed_text_content'));
+          setLocalContent(t('filePreviewFailedTextContent'));
           setIsLoading(false);
         });
     }
@@ -101,7 +101,7 @@ export const MarkdownFileViewer: React.FC<MarkdownFileViewerProps> = ({
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center text-[var(--theme-text-tertiary)]">
-        <Loader2 className="mr-2 animate-spin" /> {t('filePreview_loading_text_content')}
+        <Loader2 className="mr-2 animate-spin" /> {t('filePreviewLoadingTextContent')}
       </div>
     );
   }
@@ -119,19 +119,19 @@ export const MarkdownFileViewer: React.FC<MarkdownFileViewerProps> = ({
             }}
             disabled={isEditable}
           >
-            {t('markdownPreview_preview')}
+            {t('markdownPreviewPreview')}
           </button>
           <button
             type="button"
             className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${showSource ? 'bg-[var(--theme-bg-accent)] text-white shadow-sm' : 'text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-primary)]'}`}
             onClick={() => updateMode('source')}
           >
-            {t('markdownPreview_source')}
+            {t('markdownPreviewSource')}
           </button>
         </div>
 
         {shouldDefer && !forcePreview && !isEditable && (
-          <p className="text-sm text-[var(--theme-text-secondary)]">{t('filePreview_large_markdown_notice')}</p>
+          <p className="text-sm text-[var(--theme-text-secondary)]">{t('filePreviewLargeMarkdownNotice')}</p>
         )}
       </div>
 

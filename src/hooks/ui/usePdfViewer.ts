@@ -86,7 +86,7 @@ export const usePdfViewer = (_file: UploadedFile) => {
 
   const onDocumentLoadError = (error: Error) => {
     setIsLoading(false);
-    setError(t('pdf_load_failed_with_message').replace('{message}', error.message));
+    setError(t('pdfLoadFailedWithMessage').replace('{message}', error.message));
     logService.error('PDF Load Error:', error);
   };
 

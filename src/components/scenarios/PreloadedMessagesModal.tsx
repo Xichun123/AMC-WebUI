@@ -76,11 +76,11 @@ export const PreloadedMessagesModal: React.FC<PreloadedMessagesModalProps> = ({
 
   const handleLoadAndClose = (scenario: SavedScenario) => {
     if (scenario.messages.length === 0 && !scenario.systemInstruction?.trim()) {
-      showFeedback('error', t('scenarios_feedback_empty'));
+      showFeedback('error', t('scenariosFeedbackEmpty'));
       return;
     }
     onLoadScenario(scenario);
-    showFeedback('success', t('scenarios_feedback_loaded'));
+    showFeedback('success', t('scenariosFeedbackLoaded'));
     clearDelayedCloseTimeout();
     delayedCloseTimeoutRef.current = setTimeout(() => {
       delayedCloseTimeoutRef.current = null;
@@ -114,13 +114,13 @@ export const PreloadedMessagesModal: React.FC<PreloadedMessagesModalProps> = ({
               id="scenarios-title"
               className="text-xl sm:text-2xl font-bold text-[var(--theme-text-primary)] tracking-tight truncate"
             >
-              {view === 'editor' ? editingScenario?.title || t('scenarios_title_create') : t('scenarios_title')}
+              {view === 'editor' ? editingScenario?.title || t('scenariosTitleCreate') : t('scenariosTitle')}
             </h2>
             {view === 'editor' && (
               <span
                 className={`hidden sm:inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide border ${isSystemScenario ? 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20' : 'bg-[var(--theme-bg-accent)]/10 text-[var(--theme-bg-accent)] border-[var(--theme-bg-accent)]/20'}`}
               >
-                {isSystemScenario ? t('scenarios_system_preset_readonly_badge') : t('scenarios_editor_badge')}
+                {isSystemScenario ? t('scenariosSystemPresetReadonlyBadge') : t('scenariosEditorBadge')}
               </span>
             )}
           </div>
@@ -133,7 +133,7 @@ export const PreloadedMessagesModal: React.FC<PreloadedMessagesModalProps> = ({
                   className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold bg-[var(--theme-bg-accent)] hover:bg-[var(--theme-bg-accent-hover)] text-[var(--theme-text-accent)] rounded-xl transition-colors flex items-center gap-1.5 sm:gap-2 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
                 >
                   <Plus size={16} strokeWidth={2.5} />
-                  <span className="hidden sm:inline">{t('scenarios_create_button')}</span>
+                  <span className="hidden sm:inline">{t('scenariosCreateButton')}</span>
                   <span className="sm:hidden">{t('add')}</span>
                 </button>
 
@@ -144,7 +144,7 @@ export const PreloadedMessagesModal: React.FC<PreloadedMessagesModalProps> = ({
                   disabled={!hasUnsavedChanges}
                   className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold bg-[var(--theme-bg-primary)] border border-[var(--theme-border-secondary)] text-[var(--theme-text-primary)] rounded-xl transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--theme-bg-tertiary)]"
                 >
-                  {t('scenarios_save_and_close')}
+                  {t('scenariosSaveAndClose')}
                 </button>
 
                 <div className="hidden sm:block h-6 w-px bg-[var(--theme-border-secondary)] mx-1"></div>
@@ -180,7 +180,7 @@ export const PreloadedMessagesModal: React.FC<PreloadedMessagesModalProps> = ({
               ref={closeButtonRef}
               onClick={handleClose}
               className={`${MODAL_CLOSE_BUTTON_DANGER_HOVER_CLASS} rounded-xl`}
-              aria-label={t('scenarios_close_aria')}
+              aria-label={t('scenariosCloseAria')}
             >
               <X size={22} />
             </button>

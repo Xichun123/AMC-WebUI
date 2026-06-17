@@ -43,7 +43,7 @@ export const THINKING_BUDGET_RANGES: { [key: string]: { min: number; max: number
 
 export const DEFAULT_TEMPERATURE = 1.0;
 export const DEFAULT_TOP_P = 0.95;
-export const DEFAULT_TOP_K = 64; // Recommended by Gemma 4 model card
+export const DEFAULT_TOP_K = 64;
 export const DEFAULT_SHOW_THOUGHTS = true;
 export const DEFAULT_THINKING_BUDGET = -1; // -1 for auto/unlimited budget
 export const DEFAULT_TTS_VOICE = 'Zephyr';

@@ -8,15 +8,15 @@ describe('chat tool registry', () => {
       expect.arrayContaining([
         expect.objectContaining({
           id: 'googleSearch',
-          labelKey: 'web_search_label',
-          shortLabelKey: 'web_search_short',
+          labelKey: 'webSearchLabel',
+          shortLabelKey: 'webSearchShort',
           settingKey: 'isGoogleSearchEnabled',
-          slashCommand: expect.objectContaining({ name: 'online', descriptionKey: 'help_cmd_search' }),
+          slashCommand: expect.objectContaining({ name: 'online', descriptionKey: 'helpCmdSearch' }),
         }),
         expect.objectContaining({
           id: 'codeExecution',
           settingKey: 'isCodeExecutionEnabled',
-          slashCommand: expect.objectContaining({ name: 'code', descriptionKey: 'help_cmd_code' }),
+          slashCommand: expect.objectContaining({ name: 'code', descriptionKey: 'helpCmdCode' }),
         }),
       ]),
     );
@@ -26,6 +26,7 @@ describe('chat tool registry', () => {
     expect(getSlashCommandToolDefinitions().map((tool) => tool.slashCommand?.name)).toEqual([
       'deep',
       'online',
+      'maps',
       'code',
       'url',
     ]);
@@ -50,7 +51,7 @@ describe('chat tool registry', () => {
         capabilities: geminiImageCapabilities,
         hasLocalPythonHandler: true,
       }).map((tool) => tool.id),
-    ).toEqual(['googleSearch', 'tokenCount']);
+    ).toEqual(['googleSearch', 'googleMaps', 'tokenCount']);
 
     expect(
       getChatToolsForSurface({
@@ -58,6 +59,6 @@ describe('chat tool registry', () => {
         capabilities: gemmaCapabilities,
         hasLocalPythonHandler: true,
       }).map((tool) => tool.id),
-    ).toEqual(['deepSearch', 'googleSearch', 'localPython', 'tokenCount']);
+    ).toEqual(['deepSearch', 'googleSearch', 'googleMaps', 'localPython', 'tokenCount']);
   });
 });

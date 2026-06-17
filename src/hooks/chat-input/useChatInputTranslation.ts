@@ -51,7 +51,7 @@ export const useChatInputTranslation = ({
     } catch (error) {
       logService.error('Input translation failed:', error);
       const message = error instanceof Error ? error.message : String(error);
-      setAppFileError(t('translate_failed_with_message').replace('{message}', message));
+      setAppFileError(t('translateFailedWithMessage').replace('{message}', message));
     } finally {
       setTranslating(false);
     }

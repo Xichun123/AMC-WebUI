@@ -31,10 +31,10 @@ export const LiveStatusBanner: React.FC<LiveStatusBannerProps> = ({
 
           <div className="flex flex-col min-w-0">
             <span className="text-xs font-bold text-[var(--theme-text-primary)]">
-              {error || t('liveStatus_refreshing')}
+              {error || t('liveStatusRefreshing')}
             </span>
             <span className="text-[10px] text-[var(--theme-text-secondary)] truncate">
-              {t('liveStatus_reconnecting_automatically')}
+              {t('liveStatusReconnectingAutomatically')}
             </span>
           </div>
         </div>
@@ -43,7 +43,7 @@ export const LiveStatusBanner: React.FC<LiveStatusBannerProps> = ({
           onClick={onDisconnect}
           className="px-3 py-1.5 text-xs font-medium bg-[var(--theme-bg-input)] hover:bg-[var(--theme-bg-danger)]/10 text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-danger)] border border-[var(--theme-border-secondary)] rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--theme-bg-accent)]/10"
         >
-          {t('liveStatus_end_call')}
+          {t('liveStatusEndCall')}
         </button>
       </div>
     );
@@ -84,9 +84,9 @@ export const LiveStatusBanner: React.FC<LiveStatusBannerProps> = ({
 
         <div className="flex flex-col min-w-0">
           <span className="text-xs font-bold text-[var(--theme-text-primary)]">
-            {isSpeaking ? t('liveStatus_speaking') : t('liveStatus_listening')}
+            {isSpeaking ? t('liveStatusSpeaking') : t('liveStatusListening')}
           </span>
-          <span className="text-[10px] text-[var(--theme-text-secondary)] truncate">{t('liveStatus_active_hint')}</span>
+          <span className="text-[10px] text-[var(--theme-text-secondary)] truncate">{t('liveStatusActiveHint')}</span>
         </div>
       </div>
 
@@ -94,7 +94,7 @@ export const LiveStatusBanner: React.FC<LiveStatusBannerProps> = ({
         onClick={onDisconnect}
         className="px-3 py-1.5 text-xs font-medium bg-[var(--theme-bg-input)] hover:bg-[var(--theme-bg-danger)]/10 text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-danger)] border border-[var(--theme-border-secondary)] rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--theme-bg-accent)]/10"
       >
-        {t('liveStatus_end_call')}
+        {t('liveStatusEndCall')}
       </button>
     </div>
   );

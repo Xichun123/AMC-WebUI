@@ -206,7 +206,7 @@ export const useCodeBlock = ({
   else if (previewMarkupType === 'svg') finalLanguage = 'svg';
 
   const handleOpenSide = () => {
-    let displayTitle = t('htmlPreview_title');
+    let displayTitle = t('htmlPreviewTitle');
     if (finalLanguage === 'html') {
       const titleMatch = resolvedCodeText.match(/<title[^>]*>([^<]+)<\/title>/i);
       if (titleMatch && titleMatch[1]) {

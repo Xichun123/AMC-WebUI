@@ -3,9 +3,8 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { type SavedChatSession, type ChatGroup } from '@/types';
 import { useWindowContext } from '@/contexts/WindowContext';
 import { useI18n } from '@/contexts/I18nContext';
-import { DESKTOP_BREAKPOINT_PX } from '@/constants/layout';
+import { DESKTOP_BREAKPOINT_PX, FOCUS_HISTORY_SEARCH_EVENT } from '@/constants/layout';
 import { dbService } from '@/services/db/dbService';
-import { FOCUS_HISTORY_SEARCH_EVENT } from '@/constants/shortcuts';
 
 type HistoryTranslator = (key: string) => string;
 
@@ -41,10 +40,10 @@ const categorizeSessionsByDate = (
   const categories: { [key: string]: SavedChatSession[] } = {};
 
   const categoryKeys = {
-    today: t('history_today'),
-    yesterday: t('history_yesterday'),
-    sevenDays: t('history_7_days'),
-    thirtyDays: t('history_30_days'),
+    today: t('historyToday'),
+    yesterday: t('historyYesterday'),
+    sevenDays: t('history7Days'),
+    thirtyDays: t('history30Days'),
   };
 
   sessions.forEach((session) => {

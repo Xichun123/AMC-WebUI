@@ -83,7 +83,7 @@ export const LanguageVoiceSection: React.FC<LanguageVoiceSectionProps> = (props)
               layout="horizontal"
               labelContent={
                 <div className="flex items-center gap-2 text-sm font-medium text-[var(--theme-text-primary)]">
-                  {t('settings_inputTranslationModel_label')}
+                  {t('settingsInputTranslationModelLabel')}
                 </div>
               }
               value={inputTranslationModelId}
@@ -108,7 +108,7 @@ export const LanguageVoiceSection: React.FC<LanguageVoiceSectionProps> = (props)
               layout="horizontal"
               labelContent={
                 <div className="flex items-center gap-2 text-sm font-medium text-[var(--theme-text-primary)]">
-                  {t('settings_thoughtTranslationTargetLanguage_label')}
+                  {t('settingsThoughtTranslationTargetLanguageLabel')}
                 </div>
               }
               value={thoughtTranslationTargetLanguage}
@@ -129,7 +129,7 @@ export const LanguageVoiceSection: React.FC<LanguageVoiceSectionProps> = (props)
               layout="horizontal"
               labelContent={
                 <div className="flex items-center gap-2 text-sm font-medium text-[var(--theme-text-primary)]">
-                  {t('settings_thoughtTranslationModel_label')}
+                  {t('settingsThoughtTranslationModelLabel')}
                 </div>
               }
               value={thoughtTranslationModelId}

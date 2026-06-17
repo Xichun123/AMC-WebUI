@@ -90,8 +90,8 @@ describe('BasicMarkdownRenderer Live Artifacts', () => {
     });
 
     expect(renderer.container.querySelector('[title="Open in Side Panel"]')).toBeNull();
-    expect(renderer.container.querySelector('[title="code_fullscreen_monitor"]')).toBeNull();
-    expect(renderer.container.querySelector('[title="code_fullscreen_modal"]')).toBeNull();
+    expect(renderer.container.querySelector('[title="codeFullscreenMonitor"]')).toBeNull();
+    expect(renderer.container.querySelector('[title="codeFullscreenModal"]')).toBeNull();
   });
 
   it('keeps explicit html code blocks in code block chrome instead of artifact frames', () => {

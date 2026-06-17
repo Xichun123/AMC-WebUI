@@ -11,6 +11,12 @@ export interface GroundingChunkLike {
     title?: string;
     domain?: string;
   };
+  maps?: {
+    placeId?: string;
+    title?: string;
+    uri?: string;
+    text?: string;
+  };
 }
 
 export const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -29,6 +35,13 @@ export const getGroundingChunkSource = (chunk: GroundingChunkLike): GroundingSou
     return {
       uri: chunk.image.sourceUri,
       title: chunk.image.title || chunk.image.domain,
+    };
+  }
+
+  if (chunk.maps?.uri) {
+    return {
+      uri: chunk.maps.uri,
+      title: chunk.maps.title,
     };
   }
 
@@ -121,4 +134,48 @@ export const mergeGroundingMetadata = (
   }
 
   return Object.keys(merged).length > 0 ? merged : undefined;
+};
+
+export interface MapsPlace {
+  uri: string;
+  title: string;
+  /** Original index in groundingChunks array — used to align with citation [N] markers. */
+  chunkIndex: number;
+}
+
+/**
+ * Extracts Maps grounding chunks as structured place entries.
+ * Returns an empty array when the metadata has no Maps chunks.
+ *
+ * `chunkIndex` preserves the position in the original groundingChunks array so
+ * that the place list numbering matches the [N] citation markers inserted by
+ * insertCitations (which uses raw chunk indices).
+ */
+export const extractMapsPlaces = (metadata: unknown): MapsPlace[] => {
+  if (!isRecord(metadata) || !Array.isArray(metadata.groundingChunks)) {
+    return [];
+  }
+
+  const places: MapsPlace[] = [];
+  const seen = new Set<string>();
+
+  metadata.groundingChunks.forEach((chunk, index) => {
+    if (!isRecord(chunk) || !isRecord(chunk.maps)) return;
+    const maps = chunk.maps as GroundingChunkLike['maps'];
+    if (!maps?.uri || seen.has(maps.uri)) return;
+    seen.add(maps.uri);
+    places.push({ uri: maps.uri, title: maps.title || maps.uri, chunkIndex: index });
+  });
+
+  return places;
+};
+
+/**
+ * Builds a keyless Google Maps embed URL for a place.
+ * Uses the place title as the query (most reliable for the keyless embed),
+ * falling back to the chunk URI.
+ */
+export const buildMapsEmbedUrl = (place: MapsPlace): string => {
+  const query = place.title && place.title !== place.uri ? place.title : place.uri;
+  return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=15&output=embed`;
 };

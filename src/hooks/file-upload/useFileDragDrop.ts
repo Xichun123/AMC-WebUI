@@ -79,7 +79,7 @@ export const useFileDragDrop = ({ onFilesDropped, onAddTempFile, onRemoveTempFil
           onAddTempFile(
             createProcessingPlaceholderFile({
               id: tempId,
-              name: t('fileProcessing_dropped'),
+              name: t('fileProcessingDropped'),
               type: DIRECTORY_PLACEHOLDER_MIME_TYPE,
               size: 0,
             }),

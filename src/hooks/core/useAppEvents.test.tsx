@@ -1,9 +1,10 @@
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AppSettings, ModelOption } from '@/types';
-import { FOCUS_HISTORY_SEARCH_EVENT } from '@/constants/shortcuts';
+import { FOCUS_HISTORY_SEARCH_EVENT } from '@/constants/layout';
 import { useAppEvents } from './useAppEvents';
 import { createAppSettings, createChatSettings } from '@/test/data/factories';
+import { createDefaultThirdPartyApiSettings } from '@/utils/thirdPartyApiProviders';
 import { setTestMatchMedia } from '@/test/browser/environment';
 import { renderHook } from '@/test/render/renderer';
 
@@ -206,11 +207,17 @@ describe('useAppEvents PWA lifecycle', () => {
   it('starts the Tab cycle from the configured Gemini list when a GPT-compatible model is active', async () => {
     const handleSelectModelInHeader = vi.fn();
     const setAppSettings = vi.fn();
-    const openaiCompatibleSettings = createAppSettings({
+    const openaiProviderSettings = createAppSettings({
       ...appSettings,
-      apiMode: 'openai-compatible',
-      isOpenAICompatibleApiEnabled: true,
-      openaiCompatibleModelId: 'gpt-5.5',
+      apiMode: 'third-party',
+      isThirdPartyApiEnabled: true,
+      thirdPartyApi: {
+        activeProvider: 'openai',
+        providers: {
+          ...createDefaultThirdPartyApiSettings().providers,
+          openai: { ...createDefaultThirdPartyApiSettings().providers.openai, modelId: 'gpt-5.5' },
+        },
+      },
     });
     const textarea = document.createElement('textarea');
     textarea.dataset.chatInputTextarea = 'true';
@@ -219,7 +226,7 @@ describe('useAppEvents PWA lifecycle', () => {
 
     const { unmount } = renderHook(() =>
       useAppEvents({
-        appSettings: openaiCompatibleSettings,
+        appSettings: openaiProviderSettings,
         setAppSettings,
         startNewChat: vi.fn(),
         currentChatSettings: createChatSettings({
@@ -247,12 +254,79 @@ describe('useAppEvents PWA lifecycle', () => {
     expect(setAppSettings).toHaveBeenCalledWith(expect.any(Function));
 
     const updateSettings = setAppSettings.mock.calls[0][0] as (prev: AppSettings) => AppSettings;
-    expect(updateSettings(openaiCompatibleSettings)).toEqual(
+    expect(updateSettings(openaiProviderSettings)).toEqual(
       expect.objectContaining({
         apiMode: 'gemini-native',
-        openaiCompatibleModelId: 'gpt-5.5',
       }),
     );
+
+    textarea.remove();
+    unmount();
+  });
+
+  it('switches active third-party provider when Tab cycles to another provider model', async () => {
+    const handleSelectModelInHeader = vi.fn();
+    const setAppSettings = vi.fn();
+    const defaults = createDefaultThirdPartyApiSettings();
+    const thirdPartySettings = createAppSettings({
+      ...appSettings,
+      apiMode: 'third-party',
+      isThirdPartyApiEnabled: true,
+      tabModelCycleIds: ['gpt-5.5', 'claude-test'],
+      thirdPartyApi: {
+        activeProvider: 'openai',
+        providers: {
+          ...defaults.providers,
+          openai: {
+            ...defaults.providers.openai,
+            modelId: 'gpt-5.5',
+            models: [{ id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true }],
+            enabled: true,
+          },
+          anthropic: {
+            ...defaults.providers.anthropic,
+            modelId: 'claude-test',
+            models: [{ id: 'claude-test', name: 'Claude Test', isPinned: true }],
+            enabled: true,
+          },
+        },
+      },
+    });
+    const textarea = document.createElement('textarea');
+    textarea.dataset.chatInputTextarea = 'true';
+    document.body.appendChild(textarea);
+    textarea.focus();
+
+    const { unmount } = renderHook(() =>
+      useAppEvents({
+        appSettings: thirdPartySettings,
+        setAppSettings,
+        startNewChat: vi.fn(),
+        currentChatSettings,
+        availableModels,
+        handleSelectModelInHeader,
+        setIsLogViewerOpen: vi.fn(),
+        onTogglePip: vi.fn(),
+        isPipSupported: false,
+        pipWindow: null,
+        isLoading: false,
+        onStopGenerating: vi.fn(),
+      }),
+    );
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+    });
+
+    expect(handleSelectModelInHeader).not.toHaveBeenCalled();
+    expect(setAppSettings).toHaveBeenCalledWith(expect.any(Function));
+
+    const updateSettings = setAppSettings.mock.calls[0][0] as (prev: AppSettings) => AppSettings;
+    const updatedSettings = updateSettings(thirdPartySettings);
+    expect(updatedSettings.apiMode).toBe('third-party');
+    expect(updatedSettings.thirdPartyApi.activeProvider).toBe('anthropic');
+    expect(updatedSettings.thirdPartyApi.providers.anthropic.modelId).toBe('claude-test');
+    expect(updatedSettings.thirdPartyApi.providers.openai.modelId).toBe('gpt-5.5');
 
     textarea.remove();
     unmount();

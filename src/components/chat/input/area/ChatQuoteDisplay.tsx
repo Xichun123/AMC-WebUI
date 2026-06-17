@@ -28,7 +28,7 @@ export const ChatQuoteDisplay: React.FC<ChatQuoteDisplayProps> = ({ quotes, onRe
           <div className="flex-grow min-w-0 pr-6">
             {quotes.length > 1 && (
               <div className="text-[10px] font-bold text-[var(--theme-text-tertiary)] uppercase tracking-wider mb-1">
-                {t('quote_number_label').replace('{number}', String(index + 1))}
+                {t('quoteNumberLabel').replace('{number}', String(index + 1))}
               </div>
             )}
             <div className="max-h-[160px] overflow-y-auto custom-scrollbar">
@@ -52,7 +52,7 @@ export const ChatQuoteDisplay: React.FC<ChatQuoteDisplayProps> = ({ quotes, onRe
             type="button"
             onClick={() => onRemoveQuote(index)}
             className="absolute top-2 right-2 p-1 text-[var(--theme-text-tertiary)] hover:text-[var(--theme-text-danger)] hover:bg-[var(--theme-bg-danger)]/10 rounded-full transition-colors"
-            aria-label={t('remove_quote_aria')}
+            aria-label={t('removeQuoteAria')}
           >
             <Trash2 size={14} />
           </button>

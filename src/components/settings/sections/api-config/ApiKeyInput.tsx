@@ -51,7 +51,7 @@ export const ApiKeyInput: React.FC<ApiKeyInputProps> = ({
           }}
           onBlur={() => setIsFocused(false)}
           className={`${inputBaseClasses} ${SETTINGS_INPUT_CLASS} resize-y min-h-[80px] ${apiKeyBlurClass}`}
-          placeholder={placeholder || t('apiConfig_key_placeholder')}
+          placeholder={placeholder || t('apiConfigKeyPlaceholder')}
           spellCheck={false}
         />
         {!isFocused && apiKey && (

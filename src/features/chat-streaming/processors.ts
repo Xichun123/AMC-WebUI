@@ -86,7 +86,7 @@ export const finalizeMessages = ({
 
       if (isEmpty && !isAborted) {
         completedMessage.role = 'error';
-        completedMessage.content = t('empty_response_error');
+        completedMessage.content = t('emptyResponseError');
       }
 
       if (isLastMessageOfRun) {

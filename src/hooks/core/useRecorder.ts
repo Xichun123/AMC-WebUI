@@ -150,7 +150,7 @@ export const useRecorder = (options: UseRecorderOptions = {}) => {
         );
       } catch (recorderError) {
         logService.error('Recorder error:', recorderError);
-        const errorMessage = permissionErrorMessage ?? getTranslator('en')('voiceInput_permission_error');
+        const errorMessage = permissionErrorMessage ?? getTranslator('en')('voiceInputPermissionError');
         setError(errorMessage);
         if (onError) onError(errorMessage);
         setStatus('idle');

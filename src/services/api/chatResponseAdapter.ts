@@ -70,8 +70,8 @@ const mergeFunctionCallUrlContextMetadata = (
 };
 
 const adaptPart = (part: Part): { parts: Part[]; thoughts?: string } => {
-  const pAsThoughtSupporting = part as ThoughtSupportingPart;
-  if (pAsThoughtSupporting.thought) {
+  const thoughtSupportingPart = part as ThoughtSupportingPart;
+  if (thoughtSupportingPart.thought) {
     const signaturePart = createThoughtSignatureContextPart(part);
     return {
       parts: signaturePart ? [signaturePart] : [],

@@ -39,8 +39,8 @@ export const ScenarioMessageList: React.FC<ScenarioMessageListProps> = ({
           <div className="p-4 rounded-full bg-[var(--theme-bg-secondary)] mb-4">
             <MessageSquare size={32} className="opacity-50" />
           </div>
-          <p className="text-sm font-medium">{t('scenarios_editor_no_messages')}</p>
-          <p className="text-xs mt-1">{t('scenarios_editor_no_messages_hint')}</p>
+          <p className="text-sm font-medium">{t('scenariosEditorNoMessages')}</p>
+          <p className="text-xs mt-1">{t('scenariosEditorNoMessagesHint')}</p>
         </div>
       ) : (
         messages.map((message, index) => {
@@ -92,7 +92,7 @@ export const ScenarioMessageList: React.FC<ScenarioMessageListProps> = ({
                         }}
                       />
                       <div className="text-[10px] opacity-60 text-right font-medium uppercase tracking-wide">
-                        {t('scenarios_editor_press_enter_save')}
+                        {t('scenariosEditorPressEnterSave')}
                       </div>
                     </div>
                   ) : (

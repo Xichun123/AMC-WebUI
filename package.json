@@ -1,7 +1,7 @@
 {
   "name": "amc-webui",
   "private": true,
-  "version": "1.8.15",
+  "version": "1.9.0",
   "type": "module",
   "engines": {
     "node": ">=24 <27"
@@ -104,8 +104,11 @@
     "workbox-strategies": "^7.4.0"
   },
   "overrides": {
-    "dompurify": "^3.4.1",
-    "protobufjs": "7.5.8",
+    "dompurify": "^3.4.11",
+    "form-data": "2.5.6",
+    "hono": "4.12.25",
+    "protobufjs": "7.6.4",
+    "ws": "8.21.0",
     "uuid": "14.0.0",
     "serialize-javascript": "7.0.5",
     "postcss": "8.5.12"

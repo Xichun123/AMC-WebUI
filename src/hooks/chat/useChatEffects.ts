@@ -92,8 +92,8 @@ export const useChatEffects = ({
   useEffect(() => {
     const isFileProcessing = selectedFiles.some((file) => file.isProcessing);
     const waitForFilesMessages = [
-      getTranslator('en')('messageSender_waitForFiles'),
-      getTranslator('zh')('messageSender_waitForFiles'),
+      getTranslator('en')('messageSenderWaitForFiles'),
+      getTranslator('zh')('messageSenderWaitForFiles'),
     ];
     if (appFileError && waitForFilesMessages.includes(appFileError) && !isFileProcessing) {
       setAppFileError(null);

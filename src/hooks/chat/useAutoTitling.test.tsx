@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import type { SavedChatSession } from '@/types';
 import { useAutoTitling } from './useAutoTitling';
+import { createDefaultThirdPartyApiSettings } from '@/utils/thirdPartyApiProviders';
 
 const { generateTitleApiMock, getGeminiKeyForRequestMock } = vi.hoisted(() => ({
   generateTitleApiMock: vi.fn(),
@@ -65,10 +66,16 @@ describe('useAutoTitling', () => {
       useAutoTitling({
         appSettings: {
           ...DEFAULT_APP_SETTINGS,
-          isOpenAICompatibleApiEnabled: true,
-          apiMode: 'openai-compatible',
+          isThirdPartyApiEnabled: true,
+          apiMode: 'third-party',
           apiKey: 'gemini-key',
-          openaiCompatibleApiKey: 'openai-key',
+          thirdPartyApi: {
+            activeProvider: 'openai',
+            providers: {
+              ...createDefaultThirdPartyApiSettings().providers,
+              openai: { ...createDefaultThirdPartyApiSettings().providers.openai, apiKey: 'openai-key' },
+            },
+          },
         },
         activeChat: createSession(),
         updateAndPersistSessions,

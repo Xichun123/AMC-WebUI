@@ -27,17 +27,17 @@ export const AddFileByIdInput: React.FC<AddFileByIdInputProps> = ({
       onChange={setFileIdInput}
       onSubmit={onAddFileByIdSubmit}
       onCancel={onCancel}
-      placeholder={t('addById_placeholder')}
+      placeholder={t('addByIdPlaceholder')}
       icon={<Link size={16} strokeWidth={2} />}
       isLoading={isLoading}
       disabled={isAddingById}
       submitLabel={t('add')}
-      ariaLabel={t('addById_aria')}
+      ariaLabel={t('addByIdAria')}
       footer={
         <div className="px-2 mt-1.5">
           <p className="text-[10px] text-[var(--theme-text-tertiary)] flex items-center gap-1.5 ml-1">
             <span className="inline-block w-1 h-1 rounded-full bg-[var(--theme-text-tertiary)]" />
-            {t('addById_hint')}
+            {t('addByIdHint')}
           </p>
         </div>
       }

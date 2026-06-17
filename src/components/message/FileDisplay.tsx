@@ -128,8 +128,8 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
                 }}
                 title={
                   file.mediaResolution
-                    ? t('filePreview_configure_resolution').replace('{resolution}', file.mediaResolution)
-                    : t('selectedFile_configureFile')
+                    ? t('filePreviewConfigureResolution').replace('{resolution}', file.mediaResolution)
+                    : t('selectedFileConfigureFile')
                 }
                 className={`p-1.5 rounded-full bg-black/75 hover:bg-black/90 transition-colors ${getResolutionColor(file.mediaResolution)}`}
               >
@@ -138,7 +138,7 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
             ) : file.mediaResolution ? (
               <div
                 className={`p-1.5 rounded-full bg-black/75 ${getResolutionColor(file.mediaResolution)}`}
-                title={t('filePreview_resolution_label').replace('{resolution}', file.mediaResolution)}
+                title={t('filePreviewResolutionLabel').replace('{resolution}', file.mediaResolution)}
               >
                 <SlidersHorizontal size={14} strokeWidth={2} />
               </div>
@@ -148,7 +148,7 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
               <button
                 type="button"
                 onClick={handleDownloadFile}
-                title={t('filePreview_download_image')}
+                title={t('filePreviewDownloadImage')}
                 className="p-1.5 rounded-full bg-black/75 hover:bg-black/90 text-white transition-colors"
               >
                 <Download size={14} strokeWidth={2} />
@@ -158,7 +158,7 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
               <button
                 type="button"
                 onClick={handleCopyId}
-                title={idCopied ? t('selectedFile_idCopied') : t('selectedFile_copyFileId')}
+                title={idCopied ? t('selectedFileIdCopied') : t('selectedFileCopyFileId')}
                 className={`p-1.5 rounded-full bg-black/75 hover:bg-black/90 transition-colors ${idCopied ? 'text-green-400' : 'text-white'}`}
               >
                 {idCopied ? <Check size={14} strokeWidth={2} /> : <Copy size={14} strokeWidth={2} />}
@@ -196,7 +196,7 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
           {file.videoMetadata && (
             <span
               className="flex items-center gap-0.5 text-[var(--theme-text-link)] ml-1 flex-shrink-0"
-              title={t('filePreview_video_clipped')}
+              title={t('filePreviewVideoClipped')}
             >
               <Scissors size={10} />
             </span>
@@ -204,15 +204,13 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
           {file.mediaResolution && (
             <span
               className="flex items-center gap-0.5 text-[var(--theme-text-link)] ml-1 flex-shrink-0"
-              title={t('filePreview_resolution_label').replace('{resolution}', file.mediaResolution)}
+              title={t('filePreviewResolutionLabel').replace('{resolution}', file.mediaResolution)}
             >
               <SlidersHorizontal size={10} />
             </span>
           )}
           {file.error && (
-            <span className="text-[var(--theme-text-danger)] ml-1 flex-shrink-0">
-              {t('selectedFile_errorFallback')}
-            </span>
+            <span className="text-[var(--theme-text-danger)] ml-1 flex-shrink-0">{t('selectedFileErrorFallback')}</span>
           )}
         </div>
       </div>
@@ -227,7 +225,7 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
                 onConfigure();
               }
             }}
-            title={t('selectedFile_configureFile')}
+            title={t('selectedFileConfigureFile')}
             className="p-1.5 rounded-lg hover:bg-[var(--theme-bg-tertiary)] text-[var(--theme-text-tertiary)] hover:text-[var(--theme-text-primary)] transition-colors opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto focus:opacity-100 focus:pointer-events-auto"
           >
             <ConfigIcon size={16} strokeWidth={2} />
@@ -238,7 +236,7 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
           <button
             type="button"
             onClick={handleDownloadFile}
-            title={t('filePreview_download_file')}
+            title={t('filePreviewDownloadFile')}
             className="p-1.5 rounded-lg hover:bg-[var(--theme-bg-tertiary)] text-[var(--theme-text-tertiary)] hover:text-[var(--theme-text-primary)] transition-colors opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto focus:opacity-100 focus:pointer-events-auto"
           >
             <Download size={16} strokeWidth={2} />
@@ -249,7 +247,7 @@ export const FileDisplay: React.FC<FileDisplayProps> = ({
           <button
             type="button"
             onClick={handleCopyId}
-            title={idCopied ? t('copied') : t('selectedFile_copyFileId')}
+            title={idCopied ? t('copied') : t('selectedFileCopyFileId')}
             className={`p-1.5 rounded-lg hover:bg-[var(--theme-bg-tertiary)] text-[var(--theme-text-tertiary)] hover:text-[var(--theme-text-primary)] transition-colors opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto focus:opacity-100 focus:pointer-events-auto ${idCopied ? 'text-[var(--theme-text-success)]' : ''}`}
           >
             {idCopied ? <Check size={16} strokeWidth={2} /> : <Copy size={16} strokeWidth={2} />}

@@ -27,13 +27,13 @@ export const AddUrlInput: React.FC<AddUrlInputProps> = ({
       onChange={setUrlInput}
       onSubmit={onAddUrlSubmit}
       onCancel={onCancel}
-      placeholder={t('addByUrl_placeholder')}
+      placeholder={t('addByUrlPlaceholder')}
       icon={<IconYoutube size={18} strokeWidth={2} />}
       isLoading={isLoading}
       disabled={isAddingByUrl}
       submitLabel={t('add')}
       type="url"
-      ariaLabel={t('addByUrl_aria')}
+      ariaLabel={t('addByUrlAria')}
     />
   );
 };

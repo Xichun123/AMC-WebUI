@@ -38,17 +38,17 @@ export const SessionItemMenu: React.FC<SessionItemMenuProps> = ({
       </button>
       <button onClick={onTogglePin} className={`${MENU_ITEM_BUTTON_CLASS} ${MENU_ITEM_DEFAULT_STATE_CLASS}`}>
         {session.isPinned ? <PinOff size={14} /> : <Pin size={14} />}{' '}
-        <span>{session.isPinned ? t('history_unpin') : t('history_pin')}</span>
+        <span>{session.isPinned ? t('historyUnpin') : t('historyPin')}</span>
       </button>
       <button onClick={onDuplicate} className={`${MENU_ITEM_BUTTON_CLASS} ${MENU_ITEM_DEFAULT_STATE_CLASS}`}>
-        <Copy size={14} /> <span>{t('history_duplicate')}</span>
+        <Copy size={14} /> <span>{t('historyDuplicate')}</span>
       </button>
       <button
         onClick={onExport}
         className={`${MENU_ITEM_BUTTON_CLASS} ${MENU_ITEM_DEFAULT_STATE_CLASS}`}
-        title={t('export_chat')}
+        title={t('exportChat')}
       >
-        <Download size={14} /> <span>{t('export_chat')}</span>
+        <Download size={14} /> <span>{t('exportChat')}</span>
       </button>
       <button onClick={onDelete} className={`${MENU_ITEM_BUTTON_CLASS} ${MENU_ITEM_DANGER_STATE_CLASS}`}>
         <Trash2 size={14} /> <span>{t('delete')}</span>

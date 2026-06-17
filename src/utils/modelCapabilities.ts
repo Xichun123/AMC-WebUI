@@ -16,9 +16,12 @@ export const isGemmaModel = (modelId: string): boolean => !!modelId && modelId.t
 export const isGeminiRoboticsModel = (modelId: string): boolean =>
   !!modelId && modelId.toLowerCase().includes('gemini-robotics-er');
 
+export const isLiveTranslateModel = (modelId: string): boolean =>
+  !!modelId && modelId.toLowerCase().includes('live-translate');
+
 const isNativeAudioModel = (modelId: string): boolean => {
   const lowerId = modelId.toLowerCase();
-  return lowerId.includes('native-audio') || lowerId.includes('-live-');
+  return lowerId.includes('native-audio') || lowerId.includes('-live-') || lowerId.includes('live-translate');
 };
 
 const isGemini31FlashLiveModel = (modelId: string): boolean => modelId.toLowerCase().includes('gemini-3.1-flash-live');
@@ -28,8 +31,14 @@ const isGemini31FlashImageModel = (modelId: string): boolean =>
 
 const isTtsModel = (modelId: string): boolean => modelId.toLowerCase().includes('tts');
 
-const supportsThinkingLevel = (modelId: string): boolean =>
-  !isTtsModel(modelId) && (isGemini3Model(modelId) || isGeminiRoboticsModel(modelId));
+const supportsThinkingLevel = (modelId: string): boolean => {
+  const lowerId = modelId.toLowerCase();
+  // GLM-5 series supports thinking via the OpenAI-compatible thinking parameter.
+  if (lowerId.startsWith('glm-')) {
+    return true;
+  }
+  return !isTtsModel(modelId) && (isGemini3Model(modelId) || isGeminiRoboticsModel(modelId));
+};
 
 const isGemini3ImageModel = (modelId: string): boolean =>
   modelId === 'gemini-3-pro-image-preview' || modelId === 'gemini-3.1-flash-image-preview';
@@ -48,6 +57,7 @@ export interface ModelInteractionPermissions {
   canAcceptAttachments: boolean;
   canUseTools: boolean;
   canUseGoogleSearch: boolean;
+  canUseGoogleMaps: boolean;
   canUseDeepSearch: boolean;
   canUseCodeExecution: boolean;
   canUseLocalPython: boolean;
@@ -78,6 +88,7 @@ export interface ModelCapabilities {
   isImageGenerationModel: boolean;
   isTtsModel: boolean;
   isNativeAudioModel: boolean;
+  isLiveTranslate: boolean;
   supportsBuiltInCustomToolCombination: boolean;
   permissions: ModelInteractionPermissions;
   supportedAspectRatios?: string[];
@@ -104,6 +115,7 @@ export const getModelCapabilities = (modelId: string): ModelCapabilities => {
     canAcceptAttachments: !realImagenModel && !ttsModel && !nativeAudioModel,
     canUseTools: canUseTextChatTools || nativeAudioModel || gemini3ImageModel || imageGenerationModel,
     canUseGoogleSearch: canUseTextChatTools || nativeAudioModel || gemini3ImageModel,
+    canUseGoogleMaps: canUseTextChatTools || nativeAudioModel || gemini3ImageModel,
     canUseDeepSearch: canUseTextChatTools,
     canUseCodeExecution: canUseTextChatTools && !isGemmaModel(modelId),
     canUseLocalPython: canUseTextChatTools || nativeAudioModel,
@@ -168,6 +180,7 @@ export const getModelCapabilities = (modelId: string): ModelCapabilities => {
     isImageGenerationModel: imageGenerationModel,
     isTtsModel: ttsModel,
     isNativeAudioModel: nativeAudioModel,
+    isLiveTranslate: isLiveTranslateModel(modelId),
     supportsBuiltInCustomToolCombination: isGemini3,
     permissions,
     supportedAspectRatios,

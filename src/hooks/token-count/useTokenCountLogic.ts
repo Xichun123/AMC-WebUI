@@ -129,7 +129,7 @@ export const useTokenCountLogic = ({
       } catch (tokenCountError) {
         logService.error('Token calculation failed', tokenCountError);
         const message = tokenCountError instanceof Error ? tokenCountError.message : String(tokenCountError);
-        setError(t('token_count_error_with_message').replace('{message}', message));
+        setError(t('tokenCountErrorWithMessage').replace('{message}', message));
       } finally {
         setIsLoading(false);
       }

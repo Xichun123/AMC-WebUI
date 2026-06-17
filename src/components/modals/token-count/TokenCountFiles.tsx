@@ -24,7 +24,7 @@ export const TokenCountFiles: React.FC<TokenCountFilesProps> = ({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="text-xs font-bold uppercase text-[var(--theme-text-tertiary)] tracking-wider">
-          {t('tokenModal_files')}
+          {t('tokenModalFiles')}
         </label>
         <button
           onClick={() => fileInputRef.current?.click()}

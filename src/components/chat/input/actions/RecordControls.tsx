@@ -24,8 +24,8 @@ export const RecordControls: React.FC = () => {
             onCancelRecording();
           }}
           className="px-3 py-1.5 text-xs sm:text-sm bg-transparent hover:bg-[var(--theme-bg-tertiary)] text-[var(--theme-text-secondary)] rounded-md transition-colors"
-          aria-label={t('cancelRecording_aria')}
-          title={t('cancelRecording_aria')}
+          aria-label={t('cancelRecordingAria')}
+          title={t('cancelRecordingAria')}
         >
           {t('cancel')}
         </button>
@@ -38,21 +38,21 @@ export const RecordControls: React.FC = () => {
         className={`${CHAT_INPUT_BUTTON_CLASS} ${isRecording ? 'relative z-10 mic-recording-animate' : 'bg-transparent text-[var(--theme-icon-settings)] hover:bg-[var(--theme-bg-tertiary)]'}`}
         aria-label={
           isRecording
-            ? t('voiceInput_stop_aria')
+            ? t('voiceInputStopAria')
             : isTranscribing
-              ? t('voiceInput_transcribing_aria')
+              ? t('voiceInputTranscribingAria')
               : isMicInitializing
-                ? t('mic_initializing')
-                : t('voiceInput_start_aria')
+                ? t('micInitializing')
+                : t('voiceInputStartAria')
         }
         title={
           isRecording
-            ? t('voiceInput_stop_aria')
+            ? t('voiceInputStopAria')
             : isTranscribing
-              ? t('voiceInput_transcribing_aria')
+              ? t('voiceInputTranscribingAria')
               : isMicInitializing
-                ? t('mic_initializing')
-                : t('voiceInput_start_aria')
+                ? t('micInitializing')
+                : t('voiceInputStartAria')
         }
       >
         {isTranscribing || isMicInitializing ? (

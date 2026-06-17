@@ -79,7 +79,7 @@ export const FilePreviewHeader = React.forwardRef<FilePreviewHeaderHandle, FileP
         showCopyFeedback();
       } catch (copyError) {
         logService.error('Failed to copy content:', copyError);
-        alert(t('filePreview_copy_failed'));
+        alert(t('filePreviewCopyFailed'));
       }
     }, [file, isCopied, showCopyFeedback, t]);
 
@@ -126,7 +126,7 @@ export const FilePreviewHeader = React.forwardRef<FilePreviewHeaderHandle, FileP
                 value={editedName}
                 onChange={(e) => onNameChange(e.target.value)}
                 className="bg-transparent border-b border-white/20 text-xs sm:text-sm font-medium text-white/90 focus:border-white/50 outline-none w-full"
-                placeholder={t('filePreview_filename_placeholder')}
+                placeholder={t('filePreviewFilenamePlaceholder')}
                 autoFocus
               />
             ) : (
@@ -150,21 +150,21 @@ export const FilePreviewHeader = React.forwardRef<FilePreviewHeaderHandle, FileP
             <ToolbarButton
               onClick={onSave}
               className="!text-green-400 hover:!bg-green-500/20"
-              title={t('filePreview_save_changes')}
+              title={t('filePreviewSaveChanges')}
             >
               <Save size={18} strokeWidth={2} />
             </ToolbarButton>
           ) : (
             <>
               {isText && onToggleEdit && (
-                <ToolbarButton onClick={onToggleEdit} title={t('filePreview_edit_file')}>
+                <ToolbarButton onClick={onToggleEdit} title={t('filePreviewEditFile')}>
                   <Edit3 size={18} strokeWidth={1.5} />
                 </ToolbarButton>
               )}
               <ToolbarButton
                 onClick={handleCopy}
                 disabled={isCopied}
-                title={isCopied ? t('copied_button_title') : t('filePreview_copy_content')}
+                title={isCopied ? t('copiedButtonTitle') : t('filePreviewCopyContent')}
               >
                 {isCopied ? (
                   <Check size={18} className="text-green-400" strokeWidth={2} />
@@ -175,7 +175,7 @@ export const FilePreviewHeader = React.forwardRef<FilePreviewHeaderHandle, FileP
               <ToolbarButton
                 onClick={handleDownload}
                 disabled={isDownloading}
-                title={isMermaidDiagram ? t('filePreview_download_svg') : t('filePreview_download_file')}
+                title={isMermaidDiagram ? t('filePreviewDownloadSvg') : t('filePreviewDownloadFile')}
               >
                 {isDownloading ? (
                   <Loader2 size={18} className="animate-spin" strokeWidth={1.5} />
@@ -191,8 +191,8 @@ export const FilePreviewHeader = React.forwardRef<FilePreviewHeaderHandle, FileP
           <ToolbarButton
             onClick={isEditable && onToggleEdit ? onToggleEdit : onClose}
             danger
-            aria-label={isEditable ? t('filePreview_cancel_edit') : t('imageZoom_close_aria')}
-            title={isEditable ? t('filePreview_cancel_edit') : t('imageZoom_close_title')}
+            aria-label={isEditable ? t('filePreviewCancelEdit') : t('imageZoomCloseAria')}
+            title={isEditable ? t('filePreviewCancelEdit') : t('imageZoomCloseTitle')}
           >
             <X size={18} strokeWidth={1.5} />
           </ToolbarButton>

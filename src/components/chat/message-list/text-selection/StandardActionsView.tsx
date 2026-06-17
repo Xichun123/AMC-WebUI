@@ -24,7 +24,7 @@ export const StandardActionsView: React.FC<StandardActionsViewProps> = ({
 }) => {
   const { t } = useI18n();
   const quoteLabel = t ? t('quote') : 'Quote';
-  const insertLabel = t ? t('fill_input') : 'Insert';
+  const insertLabel = t ? t('fillInput') : 'Insert';
   const copyLabel = isCopied ? (t ? t('copied') : 'Copied') : t ? t('copy') : 'Copy';
   const searchLabel = t ? t('search') : 'Search';
   const actionButtonClass =
@@ -71,8 +71,8 @@ export const StandardActionsView: React.FC<StandardActionsViewProps> = ({
           <button
             onMouseDown={onTTS}
             className={actionButtonClass}
-            title={t('tts_read_aloud')}
-            aria-label={t('tts_read_aloud')}
+            title={t('ttsReadAloud')}
+            aria-label={t('ttsReadAloud')}
           >
             <Volume2 size={14} className="text-purple-500" />
             <span>TTS</span>

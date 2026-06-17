@@ -18,6 +18,7 @@ import {
   Bookmark,
   Telescope,
   Zap,
+  MapPin,
 } from 'lucide-react';
 import { IconStop } from './groups/GeneralIcons';
 
@@ -38,6 +39,8 @@ export const CommandIcon: React.FC<{ icon: string }> = ({ icon }) => {
       return <IconStop size={14} color="currentColor" />;
     case 'search':
       return <Globe {...iconProps} />;
+    case 'maps':
+      return <MapPin {...iconProps} />;
     case 'deep':
       return <Telescope {...iconProps} />;
     case 'code':

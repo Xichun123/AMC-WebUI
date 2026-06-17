@@ -21,13 +21,13 @@ export const TokenUsageTab: React.FC<TokenUsageTabProps> = ({ tokenUsage }) => {
   return (
     <div className="p-4 overflow-y-auto custom-scrollbar h-full">
       <h4 className="font-semibold text-lg text-[var(--theme-text-primary)] mb-4 flex items-center gap-2">
-        <Coins size={20} /> {t('logViewer_token_usage_title')}
+        <Coins size={20} /> {t('logViewerTokenUsageTitle')}
       </h4>
 
       {tokenUsageArray.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 text-[var(--theme-text-tertiary)] border-2 border-dashed border-[var(--theme-border-secondary)] rounded-xl bg-[var(--theme-bg-primary)]/50">
           <Coins size={48} className="mb-4 opacity-20" />
-          <p className="text-sm">{t('logViewer_token_usage_empty')}</p>
+          <p className="text-sm">{t('logViewerTokenUsageEmpty')}</p>
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-[var(--theme-border-secondary)] shadow-sm">
@@ -79,7 +79,7 @@ export const TokenUsageTab: React.FC<TokenUsageTabProps> = ({ tokenUsage }) => {
               ))}
               <tr className="bg-[var(--theme-bg-tertiary)]/20 font-semibold">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--theme-text-primary)]">
-                  {t('logViewer_total_row')}
+                  {t('logViewerTotalRow')}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-[var(--theme-text-primary)] font-mono">
                   {tokenUsageArray.reduce((sum, item) => sum + item.input, 0).toLocaleString()}

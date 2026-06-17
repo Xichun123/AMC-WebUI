@@ -21,7 +21,7 @@ describe('i18n doubles', () => {
   it('can use the real translation table when a test asserts visible English copy', () => {
     const { useI18n } = createRealI18nMock('en');
 
-    expect(useI18n().t('liveStatus_end_call')).toBe('End Call');
+    expect(useI18n().t('liveStatusEndCall')).toBe('End Call');
   });
 
   it('exposes the key translator for direct overrides', () => {

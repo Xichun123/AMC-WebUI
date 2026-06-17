@@ -97,7 +97,7 @@ export const ModelListView: React.FC<ModelListViewProps> = ({
         ))}
         {availableModels.length === 0 && (
           <div className="p-4 text-center text-xs text-[var(--theme-text-tertiary)] italic">
-            {t('chatBehavior_model_noModels')}
+            {t('chatBehaviorModelNoModels')}
           </div>
         )}
         {availableModels.length > 0 && sections.length === 0 && (

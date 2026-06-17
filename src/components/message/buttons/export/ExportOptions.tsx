@@ -15,16 +15,16 @@ export const ExportOptions: React.FC<ExportOptionsProps> = ({ onExport, variant 
 
   const descriptions = {
     message: {
-      png: t('export_option_message_png_desc'),
-      html: t('export_option_message_html_desc'),
-      txt: t('export_option_message_txt_desc'),
-      json: t('export_option_message_json_desc'),
+      png: t('exportOptionMessagePngDesc'),
+      html: t('exportOptionMessageHtmlDesc'),
+      txt: t('exportOptionMessageTxtDesc'),
+      json: t('exportOptionMessageJsonDesc'),
     },
     chat: {
-      png: t('export_option_chat_png_desc'),
-      html: t('export_option_chat_html_desc'),
-      txt: t('export_option_chat_txt_desc'),
-      json: t('export_option_chat_json_desc'),
+      png: t('exportOptionChatPngDesc'),
+      html: t('exportOptionChatHtmlDesc'),
+      txt: t('exportOptionChatTxtDesc'),
+      json: t('exportOptionChatJsonDesc'),
     },
   };
 
@@ -34,28 +34,28 @@ export const ExportOptions: React.FC<ExportOptionsProps> = ({ onExport, variant 
     {
       id: 'png' as const,
       icon: ImageIcon,
-      label: t('export_option_png_label'),
+      label: t('exportOptionPngLabel'),
       desc: currentDesc.png,
       colorClass: 'text-[var(--theme-text-link)]',
     },
     {
       id: 'html' as const,
       icon: FileCode2,
-      label: t('export_option_html_label'),
+      label: t('exportOptionHtmlLabel'),
       desc: currentDesc.html,
       colorClass: 'text-green-500',
     },
     {
       id: 'txt' as const,
       icon: FileText,
-      label: t('export_option_txt_label'),
+      label: t('exportOptionTxtLabel'),
       desc: currentDesc.txt,
       colorClass: 'text-blue-500',
     },
     {
       id: 'json' as const,
       icon: FileJson,
-      label: t('export_option_json_label'),
+      label: t('exportOptionJsonLabel'),
       desc: currentDesc.json,
       colorClass: 'text-orange-500',
     },

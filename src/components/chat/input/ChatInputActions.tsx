@@ -58,6 +58,12 @@ const ChatInputActionsComponent: React.FC = () => {
           ? () => onToggleToolAndFocus(toolStates.deepSearch!.onToggle!)
           : undefined,
       },
+      googleMaps: {
+        isEnabled: !!toolStates.googleMaps?.isEnabled,
+        onToggle: toolStates.googleMaps?.onToggle
+          ? () => onToggleToolAndFocus(toolStates.googleMaps!.onToggle!)
+          : undefined,
+      },
     }),
     [onToggleToolAndFocus, toolStates],
   );

@@ -47,7 +47,7 @@ export const CodeHeader: React.FC<CodeHeaderProps> = ({
 
       <div data-code-header-toolbar className="flex flex-shrink-0 items-center gap-0.5">
         {canRun && onRun && (
-          <button className={runButtonClass} title={t('code_run_python')} onClick={onRun} disabled={isRunning}>
+          <button className={runButtonClass} title={t('codeRunPython')} onClick={onRun} disabled={isRunning}>
             {isRunning ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
@@ -58,35 +58,27 @@ export const CodeHeader: React.FC<CodeHeaderProps> = ({
 
         {showPreview && (
           <>
-            <button className={headerButtonClass} title={t('diagram_open_side_panel')} onClick={onOpenSide}>
+            <button className={headerButtonClass} title={t('diagramOpenSidePanel')} onClick={onOpenSide}>
               <Sidebar size={16} strokeWidth={2} />
             </button>
-            <button
-              className={headerButtonClass}
-              title={t('code_fullscreen_monitor')}
-              onClick={() => onFullscreen(true)}
-            >
+            <button className={headerButtonClass} title={t('codeFullscreenMonitor')} onClick={() => onFullscreen(true)}>
               <Expand size={16} strokeWidth={2} />
             </button>
-            <button
-              className={headerButtonClass}
-              title={t('code_fullscreen_modal')}
-              onClick={() => onFullscreen(false)}
-            >
+            <button className={headerButtonClass} title={t('codeFullscreenModal')} onClick={() => onFullscreen(false)}>
               <Maximize2 size={16} strokeWidth={2} />
             </button>
           </>
         )}
         <button
           className={headerButtonClass}
-          title={t('code_download_language').replace('{language}', language.toUpperCase())}
+          title={t('codeDownloadLanguage').replace('{language}', language.toUpperCase())}
           onClick={onDownload}
         >
           <Download size={16} strokeWidth={2} />
         </button>
         <button
           className={headerButtonClass}
-          title={isCopied ? t('copied_button_title') : t('copy_button_title')}
+          title={isCopied ? t('copiedButtonTitle') : t('copyButtonTitle')}
           onClick={onCopy}
         >
           {isCopied ? (

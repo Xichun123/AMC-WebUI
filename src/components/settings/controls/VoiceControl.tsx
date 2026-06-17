@@ -35,8 +35,8 @@ export const VoiceControl: React.FC<VoiceControlProps> = ({
           layout="horizontal"
           labelContent={
             <span className="flex items-center">
-              {t('chatBehavior_voiceModel_label')}
-              <Tooltip text={t('chatBehavior_voiceModel_tooltip')}>
+              {t('chatBehaviorVoiceModelLabel')}
+              <Tooltip text={t('chatBehaviorVoiceModelTooltip')}>
                 <Info size={14} className="ml-2 text-[var(--theme-text-tertiary)] cursor-help" strokeWidth={1.5} />
               </Tooltip>
             </span>

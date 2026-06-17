@@ -183,7 +183,7 @@ export const GraphvizBlock: React.FC<GraphvizBlockProps> = ({
       if (isMessageLoading) {
         setIsRendering(true);
       } else {
-        const errorMessage = error instanceof Error ? error.message : t('diagram_render_graphviz_failed');
+        const errorMessage = error instanceof Error ? error.message : t('diagramRenderGraphvizFailed');
         setError(errorMessage.replace(/.*error:\s*/, ''));
         setSvgContent('');
         setIsRendering(false);
@@ -217,7 +217,7 @@ export const GraphvizBlock: React.FC<GraphvizBlockProps> = ({
       const { exportSvgAsImage } = await import('@/utils/export/image');
       await exportSvgAsImage(svgContent, `graphviz-diagram-${Date.now()}.jpg`, 5, 'image/jpeg');
     } catch (error) {
-      setError(error instanceof Error ? error.message : t('diagram_export_failed'));
+      setError(error instanceof Error ? error.message : t('diagramExportFailed'));
     } finally {
       setIsDownloading(false);
     }
@@ -228,7 +228,7 @@ export const GraphvizBlock: React.FC<GraphvizBlockProps> = ({
       onClick={handleToggleLayout}
       disabled={isRendering}
       className={MESSAGE_BLOCK_BUTTON_CLASS}
-      title={t('diagram_toggle_layout').replace('{layout}', effectiveLayout)}
+      title={t('diagramToggleLayout').replace('{layout}', effectiveLayout)}
     >
       {isRendering ? <Loader2 size={14} className="animate-spin" /> : <Repeat size={14} />}
     </button>
@@ -246,7 +246,7 @@ export const GraphvizBlock: React.FC<GraphvizBlockProps> = ({
       setShowSource={setShowSource}
       onImageClick={onImageClick}
       onDownloadJpg={handleDownloadJpg}
-      onOpenSidePanel={() => onOpenSidePanel({ type: 'graphviz', content: code, title: t('diagram_graphviz_title') })}
+      onOpenSidePanel={() => onOpenSidePanel({ type: 'graphviz', content: code, title: t('diagramGraphvizTitle') })}
       themeId={themeId}
       containerRef={diagramContainerRef}
       extraActions={layoutToggleBtn}

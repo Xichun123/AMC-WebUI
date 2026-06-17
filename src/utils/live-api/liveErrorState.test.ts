@@ -9,7 +9,7 @@ describe('resolveLiveErrorText', () => {
     const text = resolveLiveErrorText(
       {
         kind: 'translation',
-        key: 'liveStatus_reconnecting_attempt',
+        key: 'liveStatusReconnectingAttempt',
         values: {
           attempt: 2,
           maxRetries: 5,

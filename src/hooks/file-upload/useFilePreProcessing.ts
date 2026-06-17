@@ -41,7 +41,7 @@ export const useFilePreProcessing = ({ appSettings, setSelectedFiles }: UseFileP
             ...prev,
             createProcessingPlaceholderFile({
               id: tempId,
-              name: t('fileProcessing_zip').replace('{filename}', file.name),
+              name: t('fileProcessingZip').replace('{filename}', file.name),
               type: 'application/zip',
               size: file.size,
             }),
@@ -64,7 +64,7 @@ export const useFilePreProcessing = ({ appSettings, setSelectedFiles }: UseFileP
             ...prev,
             createProcessingPlaceholderFile({
               id: tempId,
-              name: t('fileProcessing_docx').replace('{filename}', file.name),
+              name: t('fileProcessingDocx').replace('{filename}', file.name),
               type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
               size: file.size,
             }),
@@ -97,7 +97,7 @@ export const useFilePreProcessing = ({ appSettings, setSelectedFiles }: UseFileP
               ...prev,
               createProcessingPlaceholderFile({
                 id: tempId,
-                name: t('fileProcessing_audio').replace('{filename}', file.name),
+                name: t('fileProcessingAudio').replace('{filename}', file.name),
                 type: file.type || 'audio/mpeg',
                 size: file.size,
                 abortController,

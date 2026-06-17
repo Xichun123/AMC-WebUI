@@ -22,11 +22,11 @@ export const LiveControls: React.FC = () => {
   const { t } = useI18n();
   const micIconSize = 20;
   const handleSessionClick = isLiveConnected ? onDisconnectLiveSession : onStartLiveSession;
-  const cameraLabel = t('live_start_camera');
-  const screenShareLabel = t('live_start_screen_share');
-  const stopVideoLabel = t('live_stop_video');
-  const muteLabel = isLiveMuted ? t('live_unmute_microphone') : t('live_mute_microphone');
-  const sessionLabel = isLiveConnected ? t('live_end_session') : t('live_start_session');
+  const cameraLabel = t('liveStartCamera');
+  const screenShareLabel = t('liveStartScreenShare');
+  const stopVideoLabel = t('liveStopVideo');
+  const muteLabel = isLiveMuted ? t('liveUnmuteMicrophone') : t('liveMuteMicrophone');
+  const sessionLabel = isLiveConnected ? t('liveEndSession') : t('liveStartSession');
 
   return (
     <>

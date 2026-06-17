@@ -149,7 +149,7 @@ export const PdfMainContent: React.FC<PdfMainContentProps> = ({
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-black/80 p-4 rounded-xl flex flex-col items-center gap-2 text-white">
               <Loader2 size={32} className="animate-spin" />
-              <span className="text-sm font-medium">{t('pdf_loading')}</span>
+              <span className="text-sm font-medium">{t('pdfLoading')}</span>
             </div>
           </div>
         )}

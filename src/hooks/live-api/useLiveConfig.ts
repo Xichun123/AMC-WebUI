@@ -3,14 +3,19 @@ import { type ChatSettings, type LiveClientFunctions, type ThinkingLevel } from 
 import type { Tool } from '@google/genai';
 import { LOCAL_PYTHON_SYSTEM_PROMPT } from '@/features/prompts/localPython';
 import { getCachedModelCapabilities } from '@/stores/modelCapabilitiesStore';
+import { buildLiveTranslateConfig } from './useLiveTranslateConfig';
 
 interface UseLiveConfigProps {
   chatSettings: ChatSettings;
   sessionHandle: string | null;
   clientFunctions?: LiveClientFunctions;
+  liveTranslateConfig?: {
+    targetLanguageCode: string;
+    echoTargetLanguage: boolean;
+  };
 }
 
-interface LiveConfig {
+export interface LiveConfig {
   responseModalities: ['AUDIO'];
   speechConfig: {
     voiceConfig: {
@@ -35,9 +40,28 @@ interface LiveConfig {
   };
 }
 
-export const useLiveConfig = ({ chatSettings, sessionHandle, clientFunctions }: UseLiveConfigProps) => {
+export const useLiveConfig = ({
+  chatSettings,
+  sessionHandle,
+  clientFunctions,
+  liveTranslateConfig,
+}: UseLiveConfigProps) => {
   return useMemo(() => {
     const capabilities = getCachedModelCapabilities(chatSettings.modelId);
+
+    // Live Translate 模型走专用 config：translationConfig + transcription，
+    // 无 voiceConfig / tools / compression / thinking
+    if (capabilities.isLiveTranslate) {
+      const { targetLanguageCode, echoTargetLanguage } = liveTranslateConfig ?? {
+        targetLanguageCode: 'en',
+        echoTargetLanguage: false,
+      };
+      return {
+        liveConfig: buildLiveTranslateConfig({ targetLanguageCode, echoTargetLanguage }),
+        tools: [] as Tool[],
+      };
+    }
+
     const isGemini31FlashLive = capabilities.isGemini31FlashLiveModel;
 
     // Construct Tools Configuration
@@ -97,5 +121,5 @@ export const useLiveConfig = ({ chatSettings, sessionHandle, clientFunctions }: 
     }
 
     return { liveConfig, tools };
-  }, [chatSettings, sessionHandle, clientFunctions]);
+  }, [chatSettings, sessionHandle, clientFunctions, liveTranslateConfig]);
 };

@@ -50,8 +50,8 @@ export const MessageFooter: React.FC<MessageFooterProps> = ({ message, onSuggest
                                     group-focus-within/suggestion:opacity-100 group-focus-within/suggestion:pointer-events-auto
                                     focus:opacity-100 focus:pointer-events-auto focus:outline-none focus:ring-2 focus:ring-[var(--theme-border-focus)]
                                 "
-                  aria-label={t('suggestion_fill_input')}
-                  title={t('suggestion_fill_input')}
+                  aria-label={t('suggestionFillInput')}
+                  title={t('suggestionFillInput')}
                 >
                   <PencilLine size={12} strokeWidth={2} />
                 </button>
@@ -83,7 +83,7 @@ export const MessageFooter: React.FC<MessageFooterProps> = ({ message, onSuggest
       {isGeneratingSuggestions && (
         <div className="mt-3 flex items-center gap-2 text-xs text-[var(--theme-text-tertiary)] animate-pulse opacity-70 px-1">
           <Loader2 size={12} className="animate-spin" strokeWidth={1.5} />
-          <span>{t('generating_suggestions')}</span>
+          <span>{t('generatingSuggestions')}</span>
         </div>
       )}
     </>

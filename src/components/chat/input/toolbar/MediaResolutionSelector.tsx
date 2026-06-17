@@ -17,11 +17,11 @@ export const MediaResolutionSelector: React.FC<MediaResolutionSelectorProps> = (
 }) => {
   const { t } = useI18n();
   const standardOptions = [
-    { value: MediaResolution.MEDIA_RESOLUTION_UNSPECIFIED, label: t('mediaResolution_unspecified') },
-    { value: MediaResolution.MEDIA_RESOLUTION_LOW, label: t('mediaResolution_low') },
-    { value: MediaResolution.MEDIA_RESOLUTION_MEDIUM, label: t('mediaResolution_medium') },
-    { value: MediaResolution.MEDIA_RESOLUTION_HIGH, label: t('mediaResolution_high') },
-    { value: MediaResolution.MEDIA_RESOLUTION_ULTRA_HIGH, label: t('mediaResolution_ultra_high') },
+    { value: MediaResolution.MEDIA_RESOLUTION_UNSPECIFIED, label: t('mediaResolutionUnspecified') },
+    { value: MediaResolution.MEDIA_RESOLUTION_LOW, label: t('mediaResolutionLow') },
+    { value: MediaResolution.MEDIA_RESOLUTION_MEDIUM, label: t('mediaResolutionMedium') },
+    { value: MediaResolution.MEDIA_RESOLUTION_HIGH, label: t('mediaResolutionHigh') },
+    { value: MediaResolution.MEDIA_RESOLUTION_ULTRA_HIGH, label: t('mediaResolutionUltraHigh') },
   ];
 
   const liveOptions = [

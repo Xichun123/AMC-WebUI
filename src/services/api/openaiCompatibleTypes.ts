@@ -1,10 +1,12 @@
 import type { UsageMetadata } from '@google/genai';
+import type { ThinkingLevel } from '@/types';
 
 export interface OpenAICompatibleChatConfig {
   baseUrl?: string | null;
   systemInstruction?: string;
   temperature?: number;
   topP?: number;
+  thinkingLevel?: ThinkingLevel;
 }
 
 export type OpenAIMessageContent =

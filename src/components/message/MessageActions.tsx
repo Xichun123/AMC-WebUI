@@ -152,7 +152,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
                 showEditOverlay={true}
                 label={t('edit')}
               >
-                <BotIcon alt={t('assistant_avatar_alt')} />
+                <BotIcon alt={t('assistantAvatarAlt')} />
               </AvatarWrapper>
             )}
             {message.role === 'error' && <ErrorMsgIcon />}
@@ -177,8 +177,8 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
         {showRetryButton && (
           <button
             onClick={() => onRetryMessage(message.id)}
-            title={message.isLoading ? t('retry_and_stop_button_title') : t('retry_button_title')}
-            aria-label={message.isLoading ? t('retry_and_stop_button_title') : t('retry_button_title')}
+            title={message.isLoading ? t('retryAndStopButtonTitle') : t('retryButtonTitle')}
+            aria-label={message.isLoading ? t('retryAndStopButtonTitle') : t('retryButtonTitle')}
             className={actionButtonClasses}
           >
             <RotateCw size={actionIconSize} strokeWidth={2} />
@@ -190,8 +190,8 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
             <button
               type="button"
               onClick={() => setIsOverflowOpen((value) => !value)}
-              title={t('message_more_actions')}
-              aria-label={t('message_more_actions')}
+              title={t('messageMoreActions')}
+              aria-label={t('messageMoreActions')}
               aria-haspopup="menu"
               aria-expanded={isOverflowOpen}
               className={actionButtonClasses}
@@ -212,12 +212,12 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
                       setIsOverflowOpen(false);
                       onContinueGeneration(message.id);
                     }}
-                    title={t('continue_generation_title')}
-                    aria-label={t('continue_generation_title')}
+                    title={t('continueGenerationTitle')}
+                    aria-label={t('continueGenerationTitle')}
                     className={menuItemClasses}
                   >
                     <CirclePlay size={14} strokeWidth={2} />
-                    <span>{t('continue_generation_title')}</span>
+                    <span>{t('continueGenerationTitle')}</span>
                   </button>
                 )}
 
@@ -229,12 +229,12 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
                       setIsOverflowOpen(false);
                       onForkMessage(message.id);
                     }}
-                    title={t('fork_message_title')}
-                    aria-label={t('fork_message_title')}
+                    title={t('forkMessageTitle')}
+                    aria-label={t('forkMessageTitle')}
                     className={menuItemClasses}
                   >
                     <GitBranch size={14} strokeWidth={2} />
-                    <span>{t('fork_message_title')}</span>
+                    <span>{t('forkMessageTitle')}</span>
                   </button>
                 )}
               </div>

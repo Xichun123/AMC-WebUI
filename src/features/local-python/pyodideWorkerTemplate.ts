@@ -12,7 +12,6 @@ async function loadPyodideAndPackages() {
     pyodide = await loadPyodide({
       indexURL: PYODIDE_BASE_URL,
     });
-    // Pre-load common data packages for speed
     await pyodide.loadPackage(['micropip', 'pandas', 'numpy', 'matplotlib', 'pillow']);
   }
   return pyodide;
@@ -21,8 +20,7 @@ async function loadPyodideAndPackages() {
 function arrayBufferToBase64(buffer) {
   let binary = '';
   const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
+  for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
@@ -195,9 +193,10 @@ self.onmessage = async (event) => {
       try {
           const fsFiles = listFilesRecursively(runDir);
           for (const file of fsFiles) initialFiles.add(file);
-      } catch { /* ignore */ }
+      } catch (initialListError) {
+        // Listing the starting file set is best-effort; an empty dir is fine.
+      }
 
-      // Reset stdout/stderr capture
       let stdout = [];
       pyodide.setStdout({ batched: (msg) => stdout.push(msg) });
       pyodide.setStderr({ batched: (msg) => stdout.push(msg) });
@@ -216,10 +215,8 @@ self.onmessage = async (event) => {
           pass
       \`);
 
-      // Execute User Code
       const result = await pyodide.runPythonAsync(code);
       
-      // Check for generated plots via matplotlib
       let image = null;
       const hasPlot = pyodide.runPython(\`
         try:
@@ -232,24 +229,23 @@ self.onmessage = async (event) => {
       if (hasPlot) {
          pyodide.runPython(\`
            import io, base64
-           buf = io.BytesIO()
-           plt.savefig(buf, format='png', bbox_inches='tight')
-           buf.seek(0)
-           img_str = base64.b64encode(buf.read()).decode('utf-8')
+           plotBuffer = io.BytesIO()
+           plt.savefig(plotBuffer, format='png', bbox_inches='tight')
+           plotBuffer.seek(0)
+           plotImageBase64 = base64.b64encode(plotBuffer.read()).decode('utf-8')
            plt.clf()
          \`);
-         image = pyodide.globals.get('img_str');
-         pyodide.runPython("del img_str"); // Cleanup
+         image = pyodide.globals.get('plotImageBase64');
+         pyodide.runPython("del plotImageBase64");
       }
 
-      // Check for new files generated in the execution workspace
-      const generatedFiles = [];
+      const generatedOutputFiles = [];
       try {
           const finalFiles = listFilesRecursively(runDir);
           for (const filePath of finalFiles) {
               if (!initialFiles.has(filePath)) {
                    const content = pyodide.FS.readFile(filePath);
-                   generatedFiles.push({
+                   generatedOutputFiles.push({
                        name: filePath,
                        data: arrayBufferToBase64(content),
                        type: getMimeType(filePath)
@@ -260,7 +256,7 @@ self.onmessage = async (event) => {
           console.error("Error reading output files", outputError);
       }
 
-      if (image && generatedFiles.some((file) => file.type.startsWith('image/'))) {
+      if (image && generatedOutputFiles.some((file) => file.type.startsWith('image/'))) {
           image = null;
       }
 
@@ -269,7 +265,7 @@ self.onmessage = async (event) => {
         status: 'success', 
         output: stdout.join('\\n'), 
         image,
-        files: generatedFiles,
+        files: generatedOutputFiles,
         result: result !== undefined ? String(result) : undefined
       });
     } finally {

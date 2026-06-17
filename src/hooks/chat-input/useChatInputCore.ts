@@ -12,7 +12,7 @@ import { useLiveApi } from '@/hooks/live-api/useLiveApi';
 import { useTextAreaInsert } from '@/hooks/useTextAreaInsert';
 import { useChatInputState } from './useChatInputState';
 import { useChatInputToolStates } from './useChatInputToolStates';
-import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
+import { isThirdPartyApiActive } from '@/utils/thirdPartyApiActive';
 
 export const useChatInputCore = () => {
   const { t } = useI18n();
@@ -69,7 +69,7 @@ export const useChatInputCore = () => {
   const { document: targetDocument } = useWindowContext();
   const insertText = useTextAreaInsert(inputState.textareaRef, inputState.setInputText);
 
-  const isOpenAICompatibleMode = isOpenAICompatibleApiActive(appSettings);
+  const isOpenAICompatibleMode = isThirdPartyApiActive(appSettings);
   const toolStates = useChatInputToolStates({
     currentChatSettings,
     isLoading,
@@ -137,6 +137,10 @@ export const useChatInputCore = () => {
       ? (files) => onLiveTranscript?.('', 'model', false, 'content', undefined, files)
       : undefined,
     clientFunctions: liveClientFunctions,
+    liveTranslateConfig: {
+      targetLanguageCode: appSettings.liveTranslateTargetLanguageCode,
+      echoTargetLanguage: appSettings.liveTranslateEchoTargetLanguage,
+    },
   });
 
   return {

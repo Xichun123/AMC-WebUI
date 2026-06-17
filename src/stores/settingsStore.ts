@@ -56,6 +56,7 @@ function sanitizeAppSettings(settings: AppSettings): AppSettings {
   const defaultSettings = getDefaultAppSettings();
   const isOpenAICompatibleApiEnabled =
     settings.isOpenAICompatibleApiEnabled ?? defaultSettings.isOpenAICompatibleApiEnabled;
+  const isThirdPartyApiEnabled = settings.isThirdPartyApiEnabled ?? defaultSettings.isThirdPartyApiEnabled ?? false;
   const sanitizedOpenAICompatibleModels = sanitizeModelOptions(
     settings.openaiCompatibleModels ?? defaultSettings.openaiCompatibleModels,
   );
@@ -81,8 +82,20 @@ function sanitizeAppSettings(settings: AppSettings): AppSettings {
 
   return {
     ...settings,
-    apiMode: isOpenAICompatibleApiEnabled ? settings.apiMode : 'gemini-native',
+    apiMode: (() => {
+      const rawMode =
+        settings.apiMode === 'third-party'
+          ? isThirdPartyApiEnabled
+            ? 'third-party'
+            : 'gemini-native'
+          : isOpenAICompatibleApiEnabled
+            ? settings.apiMode
+            : 'gemini-native';
+      // Legacy 'openai-compatible' apiMode is replaced by 'third-party'. Normalize stale data.
+      return rawMode === 'openai-compatible' ? 'gemini-native' : rawMode;
+    })(),
     isOpenAICompatibleApiEnabled,
+    isThirdPartyApiEnabled,
     modelId: resolveSupportedModelId(settings.modelId, defaultSettings.modelId),
     openaiCompatibleModelId: resolveSupportedModelId(
       settings.openaiCompatibleModelId,
@@ -100,6 +113,10 @@ function sanitizeAppSettings(settings: AppSettings): AppSettings {
     ),
     liveArtifactsSystemPrompts: normalizeLiveArtifactsSystemPrompts(settings),
     ...vertexOverrides,
+    liveTranslateTargetLanguageCode:
+      settings.liveTranslateTargetLanguageCode ?? defaultSettings.liveTranslateTargetLanguageCode,
+    liveTranslateEchoTargetLanguage:
+      settings.liveTranslateEchoTargetLanguage ?? defaultSettings.liveTranslateEchoTargetLanguage,
   };
 }
 

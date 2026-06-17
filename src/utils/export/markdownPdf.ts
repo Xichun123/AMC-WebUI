@@ -3,7 +3,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
-import { MarkdownPdfRenderer } from './MarkdownPdfRenderer';
+import { MarkdownPdfRenderer } from './markdownPdfRenderer';
 import { CJK_TEXT_PATTERN } from './markdownPdfFonts';
 import type { MarkdownNode, MarkdownPdfOptions } from './markdownPdfTypes';
 

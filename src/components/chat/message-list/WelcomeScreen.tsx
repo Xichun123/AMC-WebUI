@@ -130,7 +130,7 @@ export const WelcomeScreen: React.FC = () => {
     <div className="flex flex-col items-center justify-center min-h-full w-full max-w-4xl mx-auto px-4 pb-16">
       <div className="w-full">
         <h1 className="text-3xl md:text-4xl font-medium text-center text-[var(--theme-text-primary)] mb-6 sm:mb-12 welcome-message-animate tracking-tight min-h-[3rem] flex items-center justify-center">
-          <WelcomeEasterEggText text={t('welcome_greeting')} />
+          <WelcomeEasterEggText text={t('welcomeGreeting')} />
         </h1>
       </div>
     </div>

@@ -56,12 +56,12 @@ export const validateMessageBeforeSend = ({
 
   if (files.some((file) => file.isProcessing || (file.uploadState !== 'active' && !file.error))) {
     logService.warn('Send message blocked: files are still processing.');
-    return { ok: false, fileError: t('messageSender_waitForFiles') };
+    return { ok: false, fileError: t('messageSenderWaitForFiles') };
   }
 
   if (files.some((file) => file.uploadState === 'failed' || file.uploadState === 'cancelled' || !!file.error)) {
     logService.warn('Send message blocked: failed or cancelled attachments are still selected.');
-    return { ok: false, fileError: t('messageSender_fileUploadFailedBeforeSend') };
+    return { ok: false, fileError: t('messageSenderFileUploadFailedBeforeSend') };
   }
 
   if (isServerCodeExecutionEnabled) {
@@ -74,7 +74,7 @@ export const validateMessageBeforeSend = ({
         fileName: oversizedTextFile.name,
         fileSize: oversizedTextFile.size,
       });
-      return { ok: false, fileError: t('messageSender_codeExecutionTextFileTooLarge') };
+      return { ok: false, fileError: t('messageSenderCodeExecutionTextFileTooLarge') };
     }
   }
 
@@ -94,8 +94,8 @@ export const validateMessageBeforeSend = ({
       return {
         ok: false,
         fileError: allowsPdfReferences
-          ? t('messageSender_imageModelSupportsImageAndPdfOnly')
-          : t('messageSender_imageModelSupportsImageOnly'),
+          ? t('messageSenderImageModelSupportsImageAndPdfOnly')
+          : t('messageSenderImageModelSupportsImageOnly'),
       };
     }
   }
@@ -106,7 +106,7 @@ export const validateMessageBeforeSend = ({
       imageReferenceCount,
       activeModelId,
     });
-    return { ok: false, fileError: t('messageSender_imageReferenceLimit') };
+    return { ok: false, fileError: t('messageSenderImageReferenceLimit') };
   }
 
   if (isHostedGemma4TextImageModel(activeModelId)) {
@@ -116,13 +116,13 @@ export const validateMessageBeforeSend = ({
         activeModelId,
         attachmentTypes: files.map((file) => file.type),
       });
-      return { ok: false, fileError: t('messageSender_gemma4TextImageOnly') };
+      return { ok: false, fileError: t('messageSenderGemma4TextImageOnly') };
     }
   }
 
   if (!permissions.canAcceptAttachments && files.length > 0) {
     logService.warn('Send message blocked: Imagen models do not support file attachments.');
-    return { ok: false, fileError: t('messageSender_imagenTextOnly') };
+    return { ok: false, fileError: t('messageSenderImagenTextOnly') };
   }
 
   return { ok: true };

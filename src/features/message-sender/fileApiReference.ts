@@ -9,9 +9,9 @@ import { formatMessageSenderText } from './i18nFormat';
 const FILE_API_REFRESH_LEEWAY_MS = 5 * 60 * 1000;
 
 type FileApiReferenceErrorKey =
-  | 'messageSender_waitForFiles'
-  | 'messageSender_fileReferenceExpiredNoBackup'
-  | 'messageSender_fileReferenceRefreshFailed';
+  | 'messageSenderWaitForFiles'
+  | 'messageSenderFileReferenceExpiredNoBackup'
+  | 'messageSenderFileReferenceRefreshFailed';
 
 type FilePatch = Partial<UploadedFile>;
 
@@ -138,7 +138,7 @@ export const ensureFilesApiReferences = async ({
           return {
             ok: false,
             files: nextFiles,
-            errorKey: 'messageSender_waitForFiles',
+            errorKey: 'messageSenderWaitForFiles',
             fileName: currentFile.name,
           };
         }
@@ -163,7 +163,7 @@ export const ensureFilesApiReferences = async ({
       return {
         ok: false,
         files: nextFiles,
-        errorKey: 'messageSender_fileReferenceExpiredNoBackup',
+        errorKey: 'messageSenderFileReferenceExpiredNoBackup',
         fileName: currentFile.name,
       };
     }
@@ -205,7 +205,7 @@ export const ensureFilesApiReferences = async ({
         return {
           ok: false,
           files: nextFiles,
-          errorKey: 'messageSender_waitForFiles',
+          errorKey: 'messageSenderWaitForFiles',
           fileName: currentFile.name,
         };
       }
@@ -228,7 +228,7 @@ export const ensureFilesApiReferences = async ({
       return {
         ok: false,
         files: nextFiles,
-        errorKey: 'messageSender_fileReferenceRefreshFailed',
+        errorKey: 'messageSenderFileReferenceRefreshFailed',
         fileName: currentFile.name,
       };
     }

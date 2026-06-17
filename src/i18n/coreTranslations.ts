@@ -23,12 +23,12 @@ const shellFeatureTranslations: TranslationMap = {
     en: 'When enabled, prompts sent to an Imagen model will generate four independent image variations at once. This will consume more API credits.',
     zh: '启用后，使用 Imagen 模型将一次性生成四张独立的图片变体。这将消耗更多 API 用量。',
   },
-  about_update_ready: { en: 'Update ready to refresh', zh: '发现可用更新' },
-  pwaUpdate_refresh_prompt: {
+  aboutUpdateReady: { en: 'Update ready to refresh', zh: '发现可用更新' },
+  pwaUpdateRefreshPrompt: {
     en: 'Refresh to update the installed shell and latest assets.',
     zh: '刷新以更新已安装的应用外壳和最新资源。',
   },
-  pwaUpdate_later: { en: 'Later', zh: '稍后' },
+  pwaUpdateLater: { en: 'Later', zh: '稍后' },
   ...ttsStyleTranslations,
 };
 

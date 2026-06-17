@@ -111,7 +111,7 @@ export const useCreateFileEditor = ({
         onConfirm(pdfBlob, finalName);
       } catch (error) {
         logService.error('PDF generation error:', error);
-        alert(t('createText_pdf_error'));
+        alert(t('createTextPdfError'));
       } finally {
         setIsExportingPdf(false);
       }
@@ -129,7 +129,7 @@ export const useCreateFileEditor = ({
       triggerDownload(createManagedObjectUrl(pdfBlob), finalName);
     } catch (error) {
       logService.error('PDF Export failed:', error);
-      alert(t('createText_pdf_error'));
+      alert(t('createTextPdfError'));
     } finally {
       setIsExportingPdf(false);
     }

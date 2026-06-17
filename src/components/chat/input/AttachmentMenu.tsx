@@ -36,18 +36,18 @@ export const AttachmentMenu: React.FC = () => {
   };
 
   const menuItems = [
-    { labelKey: 'attachMenu_upload', icon: <IconUpload size={menuIconSize} />, action: 'upload' },
-    { labelKey: 'attachMenu_importFolder', icon: <FolderUp size={menuIconSize} />, action: 'folder' },
-    { labelKey: 'attachMenu_importZip', icon: <IconZip size={menuIconSize} />, action: 'zip' },
-    { labelKey: 'attachMenu_gallery', icon: <IconGallery size={menuIconSize} />, action: 'gallery' },
-    { labelKey: 'attachMenu_takePhoto', icon: <IconCamera size={menuIconSize} />, action: 'camera' },
-    { labelKey: 'attachMenu_screenshot', icon: <IconScreenshot size={menuIconSize} />, action: 'screenshot' },
-    { labelKey: 'attachMenu_recordAudio', icon: <IconMicrophone size={menuIconSize} />, action: 'recorder' },
-    { labelKey: 'attachMenu_addById', icon: <IconLink size={menuIconSize} />, action: 'id' },
+    { labelKey: 'attachMenuUpload', icon: <IconUpload size={menuIconSize} />, action: 'upload' },
+    { labelKey: 'attachMenuImportFolder', icon: <FolderUp size={menuIconSize} />, action: 'folder' },
+    { labelKey: 'attachMenuImportZip', icon: <IconZip size={menuIconSize} />, action: 'zip' },
+    { labelKey: 'attachMenuGallery', icon: <IconGallery size={menuIconSize} />, action: 'gallery' },
+    { labelKey: 'attachMenuTakePhoto', icon: <IconCamera size={menuIconSize} />, action: 'camera' },
+    { labelKey: 'attachMenuScreenshot', icon: <IconScreenshot size={menuIconSize} />, action: 'screenshot' },
+    { labelKey: 'attachMenuRecordAudio', icon: <IconMicrophone size={menuIconSize} />, action: 'recorder' },
+    { labelKey: 'attachMenuAddById', icon: <IconLink size={menuIconSize} />, action: 'id' },
     ...(canAddYouTubeVideo
-      ? [{ labelKey: 'attachMenu_addByUrl', icon: <IconYoutube size={menuIconSize} />, action: 'url' } as const]
+      ? [{ labelKey: 'attachMenuAddByUrl', icon: <IconYoutube size={menuIconSize} />, action: 'url' } as const]
       : []),
-    { labelKey: 'attachMenu_createText', icon: <IconFileEdit size={menuIconSize} />, action: 'text' },
+    { labelKey: 'attachMenuCreateText', icon: <IconFileEdit size={menuIconSize} />, action: 'text' },
   ] as const;
 
   const filteredMenuItems = isImageGenerationModel
@@ -69,8 +69,8 @@ export const AttachmentMenu: React.FC = () => {
         onClick={toggleMenu}
         disabled={isAttachmentDisabled}
         className={`${CHAT_INPUT_BUTTON_CLASS} text-[var(--theme-icon-attach)] ${isOpen ? 'bg-[var(--theme-bg-accent)] text-[var(--theme-text-accent)] rotate-45' : 'bg-transparent hover:bg-[var(--theme-bg-tertiary)] rotate-0'}`}
-        aria-label={t('attachMenu_aria')}
-        title={t('attachMenu_title')}
+        aria-label={t('attachMenuAria')}
+        title={t('attachMenuTitle')}
         aria-haspopup="true"
         aria-expanded={isOpen}
       >

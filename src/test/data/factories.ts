@@ -8,6 +8,7 @@ import {
   type UploadedFile,
 } from '@/types';
 import { AVAILABLE_THEMES } from '@/constants/themeRegistry';
+import { createDefaultThirdPartyApiSettings } from '@/utils/thirdPartyApiProviders';
 
 export const createChatSettings = (overrides: Partial<ChatSettings> = {}): ChatSettings => ({
   modelId: 'gemini-3.1-pro-preview',
@@ -75,6 +76,9 @@ export const createAppSettings = (overrides: Partial<AppSettings> = {}): AppSett
   isSystemAudioRecordingEnabled: false,
   mcpServers: [],
   customShortcuts: {},
+  liveTranslateTargetLanguageCode: 'en',
+  liveTranslateEchoTargetLanguage: false,
+  thirdPartyApi: createDefaultThirdPartyApiSettings(),
   ...overrides,
 });
 

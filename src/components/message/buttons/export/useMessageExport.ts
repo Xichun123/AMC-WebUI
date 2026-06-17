@@ -62,7 +62,7 @@ export const useMessageExport = ({ message, sessionTitle, messageIndex, themeId 
 
       if (type === 'png' || type === 'html') {
         if (!messageContentNode) {
-          throw new Error(t('export_message_content_missing'));
+          throw new Error(t('exportMessageContentMissing'));
         }
 
         const { exportHtmlStringAsFile, prepareElementForExport, generateSnapshotPng, buildHtmlDocument } =
@@ -78,15 +78,15 @@ export const useMessageExport = ({ message, sessionTitle, messageIndex, themeId 
             `${filenameBase}.png`,
             themeId,
             {
-              title: t('export_message_title'),
+              title: t('exportMessageTitle'),
               metaLeft: dateLabel,
-              metaRight: t('export_message_id').replace('{id}', shortId),
+              metaRight: t('exportMessageId').replace('{id}', shortId),
             },
             {
               scale: MESSAGE_PNG_EXPORT_SCALE,
               messages: {
-                imageTooLarge: t('export_image_too_large'),
-                exportFailed: (message) => t('export_failed_with_message').replace('{message}', message),
+                imageTooLarge: t('exportImageTooLarge'),
+                exportFailed: (message) => t('exportFailedWithMessage').replace('{message}', message),
               },
             },
           );
@@ -100,9 +100,9 @@ export const useMessageExport = ({ message, sessionTitle, messageIndex, themeId 
           const chatHtml = wrapper.outerHTML;
 
           const fullHtml = await buildHtmlDocument({
-            title: t('export_message_html_title').replace('{id}', shortId),
+            title: t('exportMessageHtmlTitle').replace('{id}', shortId),
             date: dateLabel,
-            model: t('export_message_id').replace('{id}', shortId),
+            model: t('exportMessageId').replace('{id}', shortId),
             contentHtml: chatHtml,
             themeId,
             language,
@@ -113,12 +113,12 @@ export const useMessageExport = ({ message, sessionTitle, messageIndex, themeId 
       } else if (type === 'txt') {
         const { exportTextStringAsFile, buildTextDocument } = await loadExportRuntime();
         const txtContent = buildTextDocument({
-          title: t('export_message_text_title').replace('{id}', shortId),
+          title: t('exportMessageTextTitle').replace('{id}', shortId),
           date: dateLabel,
-          model: t('export_not_applicable'),
+          model: t('exportNotApplicable'),
           messages: [
             {
-              role: message.role === 'user' ? t('export_role_user') : t('export_role_assistant'),
+              role: message.role === 'user' ? t('exportRoleUser') : t('exportRoleAssistant'),
               timestamp: new Date(message.timestamp),
               content: markdownContent,
               files: message.files?.map((file) => ({ name: file.name })),
@@ -136,7 +136,7 @@ export const useMessageExport = ({ message, sessionTitle, messageIndex, themeId 
     } catch (exportError) {
       logService.error(`Failed to export message as ${type.toUpperCase()}:`, exportError);
       alert(
-        t('export_failed_with_message').replace(
+        t('exportFailedWithMessage').replace(
           '{message}',
           exportError instanceof Error ? exportError.message : String(exportError),
         ),

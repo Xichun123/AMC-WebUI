@@ -65,6 +65,41 @@ describe('appSettingsSchema', () => {
     expect(fullHtmlSettings.liveArtifactsPromptMode).toBe('inline');
   });
 
+  it('preserves enabled third-party API mode from imported settings', () => {
+    const settings = sanitizeImportedAppSettings({
+      apiMode: 'third-party',
+      isThirdPartyApiEnabled: true,
+      thirdPartyApi: {
+        activeProvider: 'anthropic',
+        providers: {
+          anthropic: {
+            apiKey: 'sk-ant-test',
+            baseUrl: 'https://api.anthropic.com',
+            modelId: 'claude-test',
+            models: [{ id: 'claude-test', name: 'Claude Test', isPinned: true }],
+            protocol: 'anthropic',
+            enabled: true,
+          },
+        },
+      },
+    });
+
+    expect(settings.apiMode).toBe('third-party');
+    expect(settings.isThirdPartyApiEnabled).toBe(true);
+    expect(settings.thirdPartyApi.activeProvider).toBe('anthropic');
+    expect(settings.thirdPartyApi.providers.anthropic.modelId).toBe('claude-test');
+    expect(settings.thirdPartyApi.providers.anthropic.enabled).toBe(true);
+  });
+
+  it('falls back to Gemini mode when imported third-party API mode is disabled', () => {
+    const settings = sanitizeImportedAppSettings({
+      apiMode: 'third-party',
+      isThirdPartyApiEnabled: false,
+    });
+
+    expect(settings.apiMode).toBe('gemini-native');
+  });
+
   it('preserves valid Live Artifacts custom font size settings from imported settings', () => {
     const settings = sanitizeImportedAppSettings({
       liveArtifactsCustomFontSize: 22,

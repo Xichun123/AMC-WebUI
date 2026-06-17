@@ -28,7 +28,7 @@ export const HtmlPreviewContent: React.FC<HtmlPreviewContentProps> = ({ iframeRe
       <iframe
         ref={iframeRef}
         srcDoc={buildHtmlPreviewSrcDoc(htmlContent)}
-        title={t('htmlPreview_iframe_title')}
+        title={t('htmlPreviewIframeTitle')}
         className="border-none bg-white shadow-sm origin-top-left"
         style={{
           width: `${100 / scale}%`,

@@ -30,7 +30,7 @@ export const ThinkingModeSelector: React.FC<ThinkingModeSelectorProps> = ({
         }`}
       >
         <SparklesIcon active={mode === 'auto'} />
-        {isGemini3 ? t('settingsThinkingMode_preset') : t('settingsThinkingMode_auto')}
+        {isGemini3 ? t('settingsThinkingModePreset') : t('settingsThinkingModeAuto')}
       </button>
 
       <button
@@ -42,7 +42,7 @@ export const ThinkingModeSelector: React.FC<ThinkingModeSelectorProps> = ({
         }`}
       >
         <Settings2 size={14} strokeWidth={2} className={mode === 'custom' ? 'text-amber-500' : 'opacity-70'} />
-        {t('settingsThinkingMode_custom')}
+        {t('settingsThinkingModeCustom')}
       </button>
 
       {canDisableThinking && (
@@ -55,7 +55,7 @@ export const ThinkingModeSelector: React.FC<ThinkingModeSelectorProps> = ({
           }`}
         >
           <Ban size={14} strokeWidth={2} className={mode === 'off' ? 'text-red-500' : 'opacity-70'} />
-          {t('settingsThinkingMode_off')}
+          {t('settingsThinkingModeOff')}
         </button>
       )}
     </div>

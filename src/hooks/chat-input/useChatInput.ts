@@ -132,7 +132,7 @@ export const useChatInput = () => {
     selectedFiles,
     setSelectedFiles,
     setAppFileError,
-    uploadFailureMessage: t('messageSender_fileUploadFailedBeforeSend'),
+    uploadFailureMessage: t('messageSenderFileUploadFailedBeforeSend'),
     isLoading,
     isEditing,
     editMode,

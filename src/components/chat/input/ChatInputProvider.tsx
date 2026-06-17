@@ -88,11 +88,11 @@ export const ChatInputProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     () =>
       queuedSubmission
         ? {
-            title: t('queuedSubmission_title'),
+            title: t('queuedSubmissionTitle'),
             previewText:
               queuedSubmission.inputText.trim() ||
               queuedSubmission.textToSend.trim() ||
-              t('queuedSubmission_attachmentOnlyPreview'),
+              t('queuedSubmissionAttachmentOnlyPreview'),
             fileCount: queuedSubmission.files.length,
             onEdit: handlers.restoreQueuedSubmission,
             onRemove: handlers.removeQueuedSubmission,

@@ -27,8 +27,9 @@ export const ConsoleTab: React.FC<ConsoleTabProps> = ({ logs, isLoading, hasMore
     DEBUG: true,
   });
   const toggleLevel = (level: LogLevel) => setVisibleLevels((prev) => ({ ...prev, [level]: !prev[level] }));
-  const categoryLabel = (category: LogCategory | 'ALL') => t(`logCategory_${category}` as const, category);
-  const levelLabel = (level: LogLevel) => t(`logLevel_${level}` as const, level);
+  const toPascal = (value: string) => value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+  const categoryLabel = (category: LogCategory | 'ALL') => t(`logCategory${toPascal(category)}`, category);
+  const levelLabel = (level: LogLevel) => t(`logLevel${toPascal(level)}`, level);
 
   const filteredLogs = logs.filter((log) => {
     if (!visibleLevels[log.level]) return false;
@@ -52,7 +53,7 @@ export const ConsoleTab: React.FC<ConsoleTabProps> = ({ logs, isLoading, hasMore
       <div className="p-3 border-b border-[var(--theme-border-secondary)] bg-[var(--theme-bg-primary)] flex flex-wrap items-center gap-3">
         <input
           type="text"
-          placeholder={t('logViewer_search_placeholder')}
+          placeholder={t('logViewerSearchPlaceholder')}
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
           className="flex-grow min-w-[150px] px-3 py-1.5 text-sm bg-[var(--theme-bg-input)] border border-[var(--theme-border-secondary)] rounded-md focus:ring-1 focus:ring-[var(--theme-border-focus)] text-[var(--theme-text-primary)]"
@@ -67,7 +68,7 @@ export const ConsoleTab: React.FC<ConsoleTabProps> = ({ logs, isLoading, hasMore
             onChange={(e) => setActiveCategory(e.target.value as LogCategory | 'ALL')}
             className="bg-[var(--theme-bg-input)] text-[var(--theme-text-primary)] text-xs rounded border border-[var(--theme-border-secondary)] px-2 py-1 focus:outline-none"
           >
-            <option value="ALL">{t('logViewer_all_categories')}</option>
+            <option value="ALL">{t('logViewerAllCategories')}</option>
             {Object.keys(CATEGORY_COLORS).map((cat) => (
               <option key={cat} value={cat}>
                 {categoryLabel(cat as LogCategory)}
@@ -98,15 +99,15 @@ export const ConsoleTab: React.FC<ConsoleTabProps> = ({ logs, isLoading, hasMore
         <button
           onClick={handleExport}
           className={`flex items-center gap-1.5 text-xs bg-[var(--theme-bg-tertiary)] hover:bg-[var(--theme-bg-input)] text-[var(--theme-text-primary)] px-3 py-1.5 rounded-md transition-colors ${FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS}`}
-          title={t('logViewer_export_json')}
+          title={t('logViewerExportJson')}
         >
-          <Download size={14} /> {t('logViewer_export_json')}
+          <Download size={14} /> {t('logViewerExportJson')}
         </button>
         <button
           onClick={onClear}
           className={`flex items-center gap-1.5 text-xs bg-[var(--theme-bg-danger)]/10 text-[var(--theme-text-danger)] hover:bg-[var(--theme-bg-danger)]/20 px-3 py-1.5 rounded-md transition-colors ${FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS}`}
         >
-          <Trash2 size={14} /> {t('logViewer_clear_button')}
+          <Trash2 size={14} /> {t('logViewerClearButton')}
         </button>
       </div>
 
@@ -114,7 +115,7 @@ export const ConsoleTab: React.FC<ConsoleTabProps> = ({ logs, isLoading, hasMore
         {filteredLogs.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-[var(--theme-text-tertiary)] opacity-50">
             <Terminal size={48} className="mb-2" />
-            <p>{t('logViewer_no_logs')}</p>
+            <p>{t('logViewerNoLogs')}</p>
           </div>
         ) : (
           filteredLogs.map((log) => <LogRow key={log.id || log.timestamp.toISOString()} log={log} />)
@@ -128,7 +129,7 @@ export const ConsoleTab: React.FC<ConsoleTabProps> = ({ logs, isLoading, hasMore
               className={`flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--theme-text-link)] hover:bg-[var(--theme-bg-tertiary)] rounded-lg transition-colors disabled:opacity-50 ${FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS}`}
             >
               {isLoading ? <RefreshCw size={16} className="animate-spin" /> : <Download size={16} />}
-              {t('logViewer_load_older')}
+              {t('logViewerLoadOlder')}
             </button>
           </div>
         )}

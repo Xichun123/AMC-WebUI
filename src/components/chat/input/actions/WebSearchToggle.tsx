@@ -34,8 +34,8 @@ const WebSearchToggleInner: React.FC<WebSearchToggleProps> = ({
       onClick={onToggleGoogleSearch}
       disabled={disabled}
       className={`${CHAT_INPUT_BUTTON_CLASS} ${isGoogleSearchEnabled ? 'bg-[var(--theme-bg-accent)] text-[var(--theme-text-accent)]' : 'bg-transparent text-[var(--theme-icon-settings)] hover:bg-[var(--theme-bg-tertiary)]'}`}
-      aria-label={t('web_search_label')}
-      title={t('web_search_label')}
+      aria-label={t('webSearchLabel')}
+      title={t('webSearchLabel')}
     >
       <Globe size={20} strokeWidth={2} />
     </button>

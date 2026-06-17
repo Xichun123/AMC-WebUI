@@ -40,20 +40,20 @@ export const ScenarioMessageInput: React.FC<ScenarioMessageInputProps> = ({
     <div className="flex-shrink-0 p-3 sm:p-4 bg-[var(--theme-bg-secondary)]/45 border-t border-[var(--theme-border-secondary)]">
       <div className="flex items-center gap-3 mb-3">
         <span className="text-[10px] font-bold text-[var(--theme-text-tertiary)] uppercase tracking-wider">
-          {t('scenarios_editor_add_message_as')}
+          {t('scenariosEditorAddMessageAs')}
         </span>
         <div className="flex bg-[var(--theme-bg-input)] p-0.5 rounded-lg border border-[var(--theme-border-secondary)]">
           <button
             onClick={() => setRole('user')}
             className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${role === 'user' ? 'bg-[var(--theme-bg-primary)] text-[var(--theme-text-primary)] shadow-sm' : 'text-[var(--theme-text-tertiary)] hover:text-[var(--theme-text-primary)]'}`}
           >
-            <User size={12} /> {t('scenarios_editor_role_user')}
+            <User size={12} /> {t('scenariosEditorRoleUser')}
           </button>
           <button
             onClick={() => setRole('model')}
             className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${role === 'model' ? 'bg-[var(--theme-bg-primary)] text-[var(--theme-text-primary)] shadow-sm' : 'text-[var(--theme-text-tertiary)] hover:text-[var(--theme-text-primary)]'}`}
           >
-            <Bot size={12} /> {t('scenarios_editor_role_model')}
+            <Bot size={12} /> {t('scenariosEditorRoleModel')}
           </button>
         </div>
       </div>
@@ -64,7 +64,7 @@ export const ScenarioMessageInput: React.FC<ScenarioMessageInputProps> = ({
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={t('scenarios_editor_content_placeholder')}
+          placeholder={t('scenariosEditorContentPlaceholder')}
           className="w-full p-4 pr-14 bg-[var(--theme-bg-input)] border border-[var(--theme-border-secondary)] rounded-2xl focus:outline-none focus:ring-2 focus:ring-[var(--theme-border-focus)] focus:border-transparent text-sm text-[var(--theme-text-primary)] placeholder-[var(--theme-text-tertiary)] resize-none shadow-sm transition-all"
           rows={2}
         />

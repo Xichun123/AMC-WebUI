@@ -21,42 +21,42 @@ export const FileStrategyControl: React.FC<FileStrategyControlProps> = ({ settin
       <div className="flex items-start justify-between mb-3">
         <label className="text-xs font-semibold uppercase tracking-wider text-[var(--theme-text-tertiary)] flex items-center gap-2">
           <CloudUpload size={14} strokeWidth={1.5} />
-          {t('settings_filesApi_title')}
+          {t('settingsFilesApiTitle')}
         </label>
-        <Tooltip text={t('settings_filesApi_tooltip')}>
+        <Tooltip text={t('settingsFilesApiTooltip')}>
           <Info size={14} className="text-[var(--theme-text-tertiary)] cursor-help" strokeWidth={1.5} />
         </Tooltip>
       </div>
       <p className="text-xs text-[var(--theme-text-secondary)] mb-3 leading-relaxed opacity-80">
-        {t('settings_filesApi_desc')}
+        {t('settingsFilesApiDesc')}
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-0">
         <ToggleItem
-          label={t('settings_filesApi_images')}
+          label={t('settingsFilesApiImages')}
           checked={settings.filesApiConfig.images}
           onChange={(enabled) => updateFileConfig('images', enabled)}
           small
         />
         <ToggleItem
-          label={t('settings_filesApi_pdfs')}
+          label={t('settingsFilesApiPdfs')}
           checked={settings.filesApiConfig.pdfs}
           onChange={(enabled) => updateFileConfig('pdfs', enabled)}
           small
         />
         <ToggleItem
-          label={t('settings_filesApi_audio')}
+          label={t('settingsFilesApiAudio')}
           checked={settings.filesApiConfig.audio}
           onChange={(enabled) => updateFileConfig('audio', enabled)}
           small
         />
         <ToggleItem
-          label={t('settings_filesApi_video')}
+          label={t('settingsFilesApiVideo')}
           checked={settings.filesApiConfig.video}
           onChange={(enabled) => updateFileConfig('video', enabled)}
           small
         />
         <ToggleItem
-          label={t('settings_filesApi_text')}
+          label={t('settingsFilesApiText')}
           checked={settings.filesApiConfig.text}
           onChange={(enabled) => updateFileConfig('text', enabled)}
           small

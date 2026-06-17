@@ -4,7 +4,7 @@ import { logService } from '@/services/logService';
 import { formatApiKeyErrorMessage, getGeminiKeyForRequest } from '@/utils/apiKeySelection';
 import { transcribeAudioApi } from '@/services/api/generation/audioApi';
 import { useI18n } from '@/contexts/I18nContext';
-import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
+import { isThirdPartyApiActive } from '@/utils/thirdPartyApiActive';
 import { usesRemoteFileReference } from '@/utils/chat/fileTransferStrategy';
 
 interface UseAudioActionsProps {
@@ -35,7 +35,7 @@ export const useAudioActions = ({
         return null;
       }
 
-      if (keyResult.isNewKey && !isOpenAICompatibleApiActive(appSettings)) {
+      if (keyResult.isNewKey && !isThirdPartyApiActive(appSettings)) {
         const fileRequiresApi = selectedFiles.some(
           (selectedFile) => usesRemoteFileReference(selectedFile) && selectedFile.fileUri,
         );
@@ -50,8 +50,8 @@ export const useAudioActions = ({
         const transcribedText = await transcribeAudioApi(keyResult.key, audioFile, modelToUse);
         return transcribedText;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : t('transcription_unknown_error');
-        setAppFileError(t('transcription_failedWithMessage').replace('{message}', errorMessage));
+        const errorMessage = error instanceof Error ? error.message : t('transcriptionUnknownError');
+        setAppFileError(t('transcriptionFailedWithMessage').replace('{message}', errorMessage));
         logService.error('Transcription failed in handler', { error });
         return null;
       }

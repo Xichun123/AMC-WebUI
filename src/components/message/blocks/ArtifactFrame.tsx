@@ -267,7 +267,7 @@ export const ArtifactFrame: React.FC<ArtifactFrameProps> = ({
         <iframe
           ref={iframeRef}
           srcDoc={srcDoc}
-          title={t('htmlPreview_title')}
+          title={t('htmlPreviewTitle')}
           className="h-full w-full border-0 bg-transparent"
           sandbox="allow-scripts allow-forms"
           allow="clipboard-write"

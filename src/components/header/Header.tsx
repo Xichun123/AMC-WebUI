@@ -68,11 +68,11 @@ export const Header: React.FC<HeaderProps> = ({
     'text-[var(--theme-text-link)] bg-[var(--theme-bg-accent)]/10 hover:bg-[var(--theme-bg-accent)]/20';
 
   const liveArtifactsPromptAriaLabel = isLiveArtifactsPromptActive
-    ? t('liveArtifactsPromptActive_aria')
-    : t('liveArtifactsPromptInactive_aria');
+    ? t('liveArtifactsPromptActiveAria')
+    : t('liveArtifactsPromptInactiveAria');
   const liveArtifactsPromptTitle = isLiveArtifactsPromptActive
-    ? t('liveArtifactsPromptActive_title')
-    : t('liveArtifactsPromptInactive_title');
+    ? t('liveArtifactsPromptActiveTitle')
+    : t('liveArtifactsPromptInactiveTitle');
 
   const iconSize = 18;
   const strokeWidth = 2;
@@ -91,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={onToggleHistorySidebar}
           className={`${headerButtonBase} ${headerButtonInactive} md:hidden`}
           aria-label={isHistorySidebarOpen ? t('historySidebarClose') : t('historySidebarOpen')}
-          title={isHistorySidebarOpen ? t('historySidebarClose_short') : t('historySidebarOpen_short')}
+          title={isHistorySidebarOpen ? t('historySidebarCloseShort') : t('historySidebarOpenShort')}
         >
           <IconSidebarToggle size={iconSize} strokeWidth={strokeWidth} />
         </button>
@@ -126,8 +126,8 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={onOpenScenariosModal}
           className={`${headerButtonBase} ${headerButtonInactive}`}
-          aria-label={t('scenariosManage_aria')}
-          title={t('scenariosManage_title')}
+          aria-label={t('scenariosManageAria')}
+          title={t('scenariosManageTitle')}
         >
           <IconScenarios size={iconSize} strokeWidth={strokeWidth} />
         </button>
@@ -156,7 +156,7 @@ export const Header: React.FC<HeaderProps> = ({
             }
           }}
           className={`${headerButtonBase} ${headerButtonInactive} md:hidden no-underline`}
-          aria-label={t('headerNewChat_aria')}
+          aria-label={t('headerNewChatAria')}
           title={t('newChat') + (newChatShortcut ? ` (${newChatShortcut})` : '')}
         >
           <IconNewChat size={iconSize} strokeWidth={strokeWidth} />

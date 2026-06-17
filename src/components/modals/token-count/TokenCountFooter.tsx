@@ -24,17 +24,17 @@ export const TokenCountFooter: React.FC<TokenCountFooterProps> = ({
         {tokenCount !== null ? (
           <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2">
             <span className="text-xs text-[var(--theme-text-tertiary)] font-medium uppercase tracking-wide">
-              {t('tokenModal_estimatedTokens')}
+              {t('tokenModalEstimatedTokens')}
             </span>
             <span className="text-2xl font-bold text-[var(--theme-text-link)] font-mono tabular-nums">
               {tokenCount.toLocaleString()}{' '}
               <span className="text-sm font-sans font-normal text-[var(--theme-text-secondary)]">
-                {t('tokens_unit')}
+                {t('tokensUnit')}
               </span>
             </span>
           </div>
         ) : (
-          <span className="text-sm text-[var(--theme-text-tertiary)] italic">{t('tokenModal_ready')}</span>
+          <span className="text-sm text-[var(--theme-text-tertiary)] italic">{t('tokenModalReady')}</span>
         )}
       </div>
 
@@ -42,9 +42,9 @@ export const TokenCountFooter: React.FC<TokenCountFooterProps> = ({
         <button
           onClick={onClear}
           className="px-4 py-2 text-sm font-medium text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-primary)] hover:bg-[var(--theme-bg-tertiary)] rounded-lg transition-colors flex items-center gap-2"
-          title={t('tokenModal_clearAll')}
+          title={t('tokenModalClearAll')}
         >
-          <Trash2 size={16} /> <span className="hidden sm:inline">{t('tokenModal_clear')}</span>
+          <Trash2 size={16} /> <span className="hidden sm:inline">{t('tokenModalClear')}</span>
         </button>
         <button
           onClick={onCalculate}
@@ -52,7 +52,7 @@ export const TokenCountFooter: React.FC<TokenCountFooterProps> = ({
           className="px-5 py-2 text-sm font-bold bg-[var(--theme-bg-accent)] hover:bg-[var(--theme-bg-accent-hover)] text-[var(--theme-text-accent)] rounded-lg shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isLoading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-          {t('tokenModal_count')}
+          {t('tokenModalCount')}
         </button>
       </div>
     </div>

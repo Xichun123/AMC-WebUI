@@ -24,7 +24,7 @@ const ttsVoiceSelectorPath = path.join(projectRoot, 'src/components/chat/input/t
 const markdownPdfExportPath = path.join(projectRoot, 'src/utils/export/markdownPdf.ts');
 const markdownPdfFontsPath = path.join(projectRoot, 'src/utils/export/markdownPdfFonts.ts');
 const markdownPdfImagesPath = path.join(projectRoot, 'src/utils/export/markdownPdfImages.ts');
-const markdownPdfRendererPath = path.join(projectRoot, 'src/utils/export/MarkdownPdfRenderer.ts');
+const markdownPdfRendererPath = path.join(projectRoot, 'src/utils/export/markdownPdfRenderer.ts');
 const chatInputModalsPath = path.join(projectRoot, 'src/components/chat/input/ChatInputModals.tsx');
 const chatInputFileModalsPath = path.join(projectRoot, 'src/components/chat/input/ChatInputFileModals.tsx');
 const useCreateFileEditorPath = path.join(projectRoot, 'src/components/modals/create-file/useCreateFileEditor.ts');
@@ -121,7 +121,7 @@ describe('vite.config runtime ownership', () => {
     const source = fs.readFileSync(interfaceTogglesPath, 'utf8');
 
     expect(source).not.toContain('isSystemAudioRecordingEnabled');
-    expect(source).not.toContain('settings_systemAudioRecording_label');
+    expect(source).not.toContain('settingsSystemAudioRecordingLabel');
   });
 
   it('keeps the service worker precache focused on the app shell instead of eager heavy feature payloads', () => {
@@ -189,7 +189,7 @@ describe('vite.config runtime ownership', () => {
     expect(fs.existsSync(markdownPdfFontsPath)).toBe(true);
     expect(fs.existsSync(markdownPdfImagesPath)).toBe(true);
     expect(fs.existsSync(markdownPdfRendererPath)).toBe(true);
-    expect(markdownPdfSource).toContain("from './MarkdownPdfRenderer'");
+    expect(markdownPdfSource).toContain("from './markdownPdfRenderer'");
     expect(markdownPdfSource).not.toContain('class MarkdownPdfRenderer');
     expect(markdownPdfSource).not.toContain('loadCjkFontBase64');
     expect(markdownPdfSource).not.toContain('fetchImageAsDataUrl');

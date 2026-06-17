@@ -18,7 +18,7 @@ vi.mock('@/utils/apiKeySelection', () => ({
   getKeyForRequest: getKeyForRequestMock,
   getGeminiKeyForRequest: getKeyForRequestMock,
   formatApiKeyErrorMessage: vi.fn((error: string, translate: (translationKey: string) => string) =>
-    error === 'API Key not configured.' ? translate('apiRuntime_keyNotConfigured') : error,
+    error === 'API Key not configured.' ? translate('apiRuntimeKeyNotConfigured') : error,
   ),
 }));
 

@@ -183,7 +183,7 @@ git clone https://github.com/yeahhe365/AMC-WebUI.git
 cd AMC-WebUI
 
 # 安装依赖
-npm install
+npm ci
 
 # 启动开发服务器
 npm run dev

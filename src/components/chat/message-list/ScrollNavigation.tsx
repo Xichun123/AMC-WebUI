@@ -89,8 +89,8 @@ export const ScrollNavigation: React.FC<ScrollNavigationProps> = ({
                         pointer-events-auto
                         shadow-md
                     "
-          aria-label={t('scroll_previous_turn')}
-          title={t('scroll_previous_turn')}
+          aria-label={t('scrollPreviousTurn')}
+          title={t('scrollPreviousTurn')}
         >
           <ArrowUp size={18} strokeWidth={2.5} />
         </button>
@@ -110,8 +110,8 @@ export const ScrollNavigation: React.FC<ScrollNavigationProps> = ({
                         pointer-events-auto
                         shadow-md
                     "
-          aria-label={t('scroll_next_turn')}
-          title={t('scroll_next_turn')}
+          aria-label={t('scrollNextTurn')}
+          title={t('scrollNextTurn')}
         >
           <ArrowDown size={18} strokeWidth={2.5} />
         </button>

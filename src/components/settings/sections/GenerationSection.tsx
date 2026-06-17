@@ -141,7 +141,7 @@ export const GenerationSection: React.FC<GenerationSectionProps> = ({
           }}
           rows={3}
           className={`${inputBaseClasses} ${SETTINGS_INPUT_CLASS} resize-y min-h-[112px] custom-scrollbar`}
-          placeholder={t('chatBehavior_systemPrompt_placeholder')}
+          placeholder={t('chatBehaviorSystemPromptPlaceholder')}
           aria-label={t('settingsSystemPromptAria')}
         />
       </div>
@@ -152,7 +152,7 @@ export const GenerationSection: React.FC<GenerationSectionProps> = ({
         title={t('settingsSystemPrompt')}
         value={systemInstruction}
         onChange={(value) => onUpdateSetting('systemInstruction', value)}
-        placeholder={t('chatBehavior_systemPrompt_placeholder')}
+        placeholder={t('chatBehaviorSystemPromptPlaceholder')}
         confirmLabel={t('settingsSaveAndClose')}
       />
 
@@ -164,7 +164,7 @@ export const GenerationSection: React.FC<GenerationSectionProps> = ({
               className="text-sm font-medium text-[var(--theme-text-primary)] flex items-center"
             >
               {t('settingsTemperature')}
-              <Tooltip text={t('chatBehavior_temp_tooltip')}>
+              <Tooltip text={t('chatBehaviorTempTooltip')}>
                 <Info size={14} className="ml-2 text-[var(--theme-text-tertiary)] cursor-help" strokeWidth={1.5} />
               </Tooltip>
             </label>
@@ -189,7 +189,7 @@ export const GenerationSection: React.FC<GenerationSectionProps> = ({
               className="text-sm font-medium text-[var(--theme-text-primary)] flex items-center"
             >
               {t('settingsTopP')}
-              <Tooltip text={t('chatBehavior_topP_tooltip')}>
+              <Tooltip text={t('chatBehaviorTopPTooltip')}>
                 <Info size={14} className="ml-2 text-[var(--theme-text-tertiary)] cursor-help" strokeWidth={1.5} />
               </Tooltip>
             </label>
@@ -215,7 +215,7 @@ export const GenerationSection: React.FC<GenerationSectionProps> = ({
                 className="text-sm font-medium text-[var(--theme-text-primary)] flex items-center"
               >
                 Top K
-                <Tooltip text={t('settingsTopK_tooltip')}>
+                <Tooltip text={t('settingsTopKTooltip')}>
                   <Info size={14} className="ml-2 text-[var(--theme-text-tertiary)] cursor-help" strokeWidth={1.5} />
                 </Tooltip>
               </label>
@@ -244,9 +244,7 @@ export const GenerationSection: React.FC<GenerationSectionProps> = ({
                 <ImageIcon size={14} className="mr-2 text-[var(--theme-text-secondary)]" />
                 {t('settingsMediaResolution')}
                 <Tooltip
-                  text={
-                    isNativeAudio ? t('settingsMediaResolution_live_tooltip') : t('settingsMediaResolution_tooltip')
-                  }
+                  text={isNativeAudio ? t('settingsMediaResolutionLiveTooltip') : t('settingsMediaResolutionTooltip')}
                 >
                   <Info size={14} className="ml-2 text-[var(--theme-text-tertiary)] cursor-help" strokeWidth={1.5} />
                 </Tooltip>
@@ -255,13 +253,13 @@ export const GenerationSection: React.FC<GenerationSectionProps> = ({
             value={mediaResolution}
             onChange={(event) => onUpdateSetting('mediaResolution', event.target.value as MediaResolution)}
           >
-            <option value={MediaResolution.MEDIA_RESOLUTION_UNSPECIFIED}>{t('mediaResolution_unspecified')}</option>
-            <option value={MediaResolution.MEDIA_RESOLUTION_LOW}>{t('mediaResolution_low')}</option>
+            <option value={MediaResolution.MEDIA_RESOLUTION_UNSPECIFIED}>{t('mediaResolutionUnspecified')}</option>
+            <option value={MediaResolution.MEDIA_RESOLUTION_LOW}>{t('mediaResolutionLow')}</option>
             {!isNativeAudio && (
-              <option value={MediaResolution.MEDIA_RESOLUTION_MEDIUM}>{t('mediaResolution_medium')}</option>
+              <option value={MediaResolution.MEDIA_RESOLUTION_MEDIUM}>{t('mediaResolutionMedium')}</option>
             )}
             {!isNativeAudio && (
-              <option value={MediaResolution.MEDIA_RESOLUTION_HIGH}>{t('mediaResolution_high')}</option>
+              <option value={MediaResolution.MEDIA_RESOLUTION_HIGH}>{t('mediaResolutionHigh')}</option>
             )}
           </Select>
         )}
@@ -291,16 +289,16 @@ export const GenerationSection: React.FC<GenerationSectionProps> = ({
           </Select>
 
           <ToggleItem
-            label={t('settings_rawMode_label')}
+            label={t('settingsRawModeLabel')}
             checked={isRawModeEnabled}
             onChange={(value) => onUpdateSetting('isRawModeEnabled', value)}
-            tooltip={t('settings_rawMode_tooltip')}
+            tooltip={t('settingsRawModeTooltip')}
           />
           <ToggleItem
-            label={t('settings_hideThinkingInContext_label')}
+            label={t('settingsHideThinkingInContextLabel')}
             checked={hideThinkingInContext}
             onChange={(value) => onUpdateSetting('hideThinkingInContext', value)}
-            tooltip={t('settings_hideThinkingInContext_tooltip')}
+            tooltip={t('settingsHideThinkingInContextTooltip')}
           />
         </div>
       )}

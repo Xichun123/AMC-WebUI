@@ -95,10 +95,10 @@ export const AboutSection: React.FC = () => {
   const isUpdateAvailable = comparison === 1;
   const isBeta = comparison === -1;
   const isReleaseStatusUnavailable = !isLoading && !hasReleaseData;
-  const starStatusText = stars !== null ? stars.toLocaleString() : t(isLoading ? 'loading' : 'about_unavailable');
+  const starStatusText = stars !== null ? stars.toLocaleString() : t(isLoading ? 'loading' : 'aboutUnavailable');
   const statusSeparator = language === 'zh' ? '：' : ': ';
   const versionTooltip =
-    isUpdateAvailable && latestVersion ? `${t('about_update_available')}${statusSeparator}${latestVersion}` : undefined;
+    isUpdateAvailable && latestVersion ? `${t('aboutUpdateAvailable')}${statusSeparator}${latestVersion}` : undefined;
 
   const getStatusColor = () => {
     if (isLoading) return 'bg-sky-500';
@@ -109,11 +109,11 @@ export const AboutSection: React.FC = () => {
   };
 
   const getStatusText = () => {
-    if (isLoading) return t('about_version_checking');
-    if (isUpdateAvailable) return t('about_update_available');
-    if (isBeta) return t('about_beta');
-    if (isReleaseStatusUnavailable) return t('about_unavailable');
-    return t('about_latest_version');
+    if (isLoading) return t('aboutVersionChecking');
+    if (isUpdateAvailable) return t('aboutUpdateAvailable');
+    if (isBeta) return t('aboutBeta');
+    if (isReleaseStatusUnavailable) return t('aboutUnavailable');
+    return t('aboutLatestVersion');
   };
 
   return (
@@ -125,7 +125,7 @@ export const AboutSection: React.FC = () => {
         <div className="relative">
           <img
             src={isDarkThemeId(themeId) ? '/about-logo-dark.png' : '/about-logo.png'}
-            alt={t('about_logo_alt')}
+            alt={t('aboutLogoAlt')}
             className={`h-auto drop-shadow-2xl ${isCompactViewport ? 'w-40' : 'w-48 sm:w-56 md:w-64'}`}
           />
         </div>
@@ -191,7 +191,7 @@ export const AboutSection: React.FC = () => {
         <p
           className={`max-w-md text-sm text-[var(--theme-text-secondary)] ${isCompactViewport ? 'leading-5' : 'leading-6'}`}
         >
-          {t('about_description')}
+          {t('aboutDescription')}
         </p>
       </div>
 
@@ -205,7 +205,7 @@ export const AboutSection: React.FC = () => {
           className={`inline-flex w-full items-center justify-center gap-2.5 rounded-xl bg-[#24292F] text-sm font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-[#24292F]/90 hover:shadow-xl active:translate-y-0 dark:bg-white dark:text-black dark:hover:bg-gray-200 sm:min-w-[10.5rem] sm:w-auto ${isCompactViewport ? 'px-4 py-2' : 'px-5 py-2.5'}`}
         >
           <Github size={iconSize} />
-          <span>{t('about_view_on_github')}</span>
+          <span>{t('aboutViewOnGithub')}</span>
         </a>
 
         <a
@@ -219,7 +219,7 @@ export const AboutSection: React.FC = () => {
             className="text-yellow-500 fill-yellow-500 transition-transform duration-300 group-hover:scale-110"
           />
           <span className="tabular-nums">{stars !== null ? stars.toLocaleString() : '—'}</span>
-          <span className="text-[var(--theme-text-tertiary)]">{t('about_stars_label')}</span>
+          <span className="text-[var(--theme-text-tertiary)]">{t('aboutStarsLabel')}</span>
           {stars === null && <span className="text-[var(--theme-text-tertiary)]">{starStatusText}</span>}
         </a>
       </div>

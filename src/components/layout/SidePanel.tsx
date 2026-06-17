@@ -115,7 +115,7 @@ export const SidePanel: React.FC<SidePanelProps> = ({ content, onClose, themeId 
 
   const previewFallback = (
     <div className="w-full h-full flex items-center justify-center text-[var(--theme-text-secondary)]">
-      {t('sidePanel_loading_preview')}
+      {t('sidePanelLoadingPreview')}
     </div>
   );
 
@@ -129,7 +129,7 @@ export const SidePanel: React.FC<SidePanelProps> = ({ content, onClose, themeId 
             // SECURITY: Keep allow-same-origin off to prevent access to localStorage/parent DOM.
             // Allow downloads from rendered HTML previews.
             sandbox="allow-scripts allow-forms allow-popups allow-modals allow-downloads"
-            title={t('sidePanel_live_preview')}
+            title={t('sidePanelLivePreview')}
             srcDoc={debouncedCode}
           />
         </div>
@@ -171,7 +171,7 @@ export const SidePanel: React.FC<SidePanelProps> = ({ content, onClose, themeId 
     }
     return (
       <div className="p-4 text-[var(--theme-text-tertiary)] flex items-center justify-center h-full">
-        {t('sidePanel_preview_unsupported')}
+        {t('sidePanelPreviewUnsupported')}
       </div>
     );
   };
@@ -215,7 +215,7 @@ export const SidePanel: React.FC<SidePanelProps> = ({ content, onClose, themeId 
                             flex items-center justify-center group transition-colors hover:bg-[var(--theme-bg-accent)]
                             ${isResizing ? 'bg-[var(--theme-bg-accent)]' : 'bg-transparent'}
                         `}
-            title={t('sidePanel_drag_resize')}
+            title={t('sidePanelDragResize')}
           />
         )}
 
@@ -232,7 +232,7 @@ export const SidePanel: React.FC<SidePanelProps> = ({ content, onClose, themeId 
               activeTab={activeTab}
               id="code"
               icon={Code}
-              label={t('sidePanel_code_tab')}
+              label={t('sidePanelCodeTab')}
               onSelect={setActiveTab}
             />
           </div>
@@ -241,14 +241,14 @@ export const SidePanel: React.FC<SidePanelProps> = ({ content, onClose, themeId 
             <button
               onClick={handleDownload}
               className={`p-2 text-[var(--theme-text-tertiary)] hover:text-[var(--theme-text-primary)] hover:bg-[var(--theme-bg-tertiary)] rounded-lg transition-colors ${FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS}`}
-              title={t('sidePanel_download_code')}
+              title={t('sidePanelDownloadCode')}
             >
               <Download size={16} strokeWidth={1.5} />
             </button>
             <button
               onClick={onClose}
               className={`p-2 text-[var(--theme-text-tertiary)] hover:text-[var(--theme-text-primary)] hover:bg-[var(--theme-bg-tertiary)] rounded-lg transition-colors ${FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS}`}
-              title={t('sidePanel_close')}
+              title={t('sidePanelClose')}
             >
               <X size={18} strokeWidth={1.5} />
             </button>

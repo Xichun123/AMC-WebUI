@@ -167,13 +167,13 @@ export const SelectedFileDisplay: React.FC<SelectedFileDisplayProps> = ({
             {file.videoMetadata ? <Scissors size={8} className="text-[var(--theme-text-link)]" /> : null}
             {file.mediaResolution && <SlidersHorizontal size={8} className="text-[var(--theme-text-link)]" />}
             {isFailed
-              ? file.error || t('selectedFile_errorFallback')
+              ? file.error || t('selectedFileErrorFallback')
               : isUploading
-                ? t('selectedFile_uploading').replace('{percent}', String(uploadPercent))
+                ? t('selectedFileUploading').replace('{percent}', String(uploadPercent))
                 : isProcessing
-                  ? t('selectedFile_processingGemini')
+                  ? t('selectedFileProcessingGemini')
                   : isCancelled
-                    ? t('selectedFile_cancelled')
+                    ? t('selectedFileCancelled')
                     : formatFileSize(file.size)}
           </p>
           {isUploading && file.uploadSpeed && (
@@ -196,8 +196,8 @@ export const SelectedFileDisplay: React.FC<SelectedFileDisplayProps> = ({
                 onConfigure(file);
               }
             }}
-            title={isText ? t('selectedFile_editFile') : t('selectedFile_configureFile')}
-            aria-label={isText ? t('selectedFile_editFile') : t('selectedFile_configureFile')}
+            title={isText ? t('selectedFileEditFile') : t('selectedFileConfigureFile')}
+            aria-label={isText ? t('selectedFileEditFile') : t('selectedFileConfigureFile')}
             className={`${actionButtonClass} ${configureButtonColorClass}`}
           >
             <ConfigIcon size={14} strokeWidth={2} />
@@ -212,8 +212,8 @@ export const SelectedFileDisplay: React.FC<SelectedFileDisplayProps> = ({
               setIsOverflowOpen(false);
               void onMoveTextToInput?.(file);
             }}
-            title={t('selectedFile_moveTextToInput')}
-            aria-label={t('selectedFile_moveTextToInput')}
+            title={t('selectedFileMoveTextToInput')}
+            aria-label={t('selectedFileMoveTextToInput')}
             className={actionButtonClass}
           >
             <FileText size={14} strokeWidth={2} />
@@ -228,8 +228,8 @@ export const SelectedFileDisplay: React.FC<SelectedFileDisplayProps> = ({
                 event.stopPropagation();
                 setIsOverflowOpen((value) => !value);
               }}
-              title={t('selectedFile_moreActions')}
-              aria-label={t('selectedFile_moreActions')}
+              title={t('selectedFileMoreActions')}
+              aria-label={t('selectedFileMoreActions')}
               aria-haspopup="menu"
               aria-expanded={isOverflowOpen}
               className={actionButtonClass}
@@ -245,7 +245,7 @@ export const SelectedFileDisplay: React.FC<SelectedFileDisplayProps> = ({
                 {canCopyFileId && (
                   <button type="button" role="menuitem" onClick={handleCopyId} className={menuItemClass}>
                     {idCopied ? <Check size={12} strokeWidth={3} /> : <Copy size={12} strokeWidth={2} />}
-                    <span>{idCopied ? t('selectedFile_idCopied') : t('selectedFile_copyFileId')}</span>
+                    <span>{idCopied ? t('selectedFileIdCopied') : t('selectedFileCopyFileId')}</span>
                   </button>
                 )}
               </div>
@@ -266,8 +266,8 @@ export const SelectedFileDisplay: React.FC<SelectedFileDisplayProps> = ({
               }
             }}
             className={`${actionButtonClass} hover:text-[var(--theme-text-danger)]`}
-            title={isCancellable ? t('selectedFile_cancelUpload') : t('selectedFile_removeFile')}
-            aria-label={isCancellable ? t('selectedFile_cancelUpload') : t('selectedFile_removeFile')}
+            title={isCancellable ? t('selectedFileCancelUpload') : t('selectedFileRemoveFile')}
+            aria-label={isCancellable ? t('selectedFileCancelUpload') : t('selectedFileRemoveFile')}
           >
             {isCancellable ? <Ban size={15} /> : <Trash2 size={15} />}
           </button>

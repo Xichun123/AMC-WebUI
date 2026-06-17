@@ -24,7 +24,7 @@ export const ThinkingTimer: React.FC<ThinkingTimerProps> = ({ startTime }) => {
 
   return (
     <span>
-      {t('thinking_text')} ({formatDuration(seconds)})
+      {t('thinkingText')} ({formatDuration(seconds)})
     </span>
   );
 };

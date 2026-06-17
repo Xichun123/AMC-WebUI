@@ -26,6 +26,22 @@ export const sanitizeModelOptions = (models: ModelOption[]): ModelOption[] => {
 export const resolveSupportedModelId = (modelId: string | null | undefined, fallback: string): string =>
   modelId || fallback;
 
+/**
+ * De-duplicate a model list by id, preserving the first occurrence of each id.
+ * Unlike {@link sanitizeModelOptions}, this does not trim/normalize — use it to
+ * merge already-sanitized lists (e.g. built-in + third-party + OpenAI-compatible).
+ */
+export const deduplicateModelsById = (models: ModelOption[]): ModelOption[] => {
+  const seenIds = new Set<string>();
+  return models.filter((model) => {
+    if (seenIds.has(model.id)) {
+      return false;
+    }
+    seenIds.add(model.id);
+    return true;
+  });
+};
+
 export const sortModels = (models: ModelOption[]): ModelOption[] => {
   const pinnedPriorityOrder: Record<string, number> = {
     'gemini-3.1-pro-preview': 0,

@@ -1,4 +1,4 @@
-import { CHAT_INPUT_TEXTAREA_SELECTOR } from '@/constants/storageKeys';
+import { CHAT_INPUT_TEXTAREA_SELECTOR } from '@/constants/layout';
 
 export const focusChatInput = (delayMs = 50) => {
   setTimeout(() => {

@@ -289,6 +289,10 @@ const uploadFileBytes = async (
     return uploadChunkWithClient(chunk, uploadCommand, chunkOffset);
   };
 
+  if (file.size === 0) {
+    throw new Error('Cannot upload an empty file (size is 0 bytes).');
+  }
+
   while (offset < file.size) {
     const chunkSize = Math.min(MAX_UPLOAD_CHUNK_SIZE, file.size - offset);
     const chunk = file.slice(offset, offset + chunkSize);

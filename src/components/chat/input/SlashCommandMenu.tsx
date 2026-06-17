@@ -52,14 +52,14 @@ export const SlashCommandMenu: React.FC<SlashCommandMenuProps> = ({
         >
           <div className="sticky top-0 z-10 bg-[var(--theme-bg-secondary)] border-b border-[var(--theme-border-secondary)] px-3 py-2 flex justify-between items-center">
             <span className="text-[10px] font-bold text-[var(--theme-text-tertiary)] uppercase tracking-widest">
-              {t('slashCommands_title')}
+              {t('slashCommandsTitle')}
             </span>
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-[var(--theme-text-tertiary)] bg-[var(--theme-bg-primary)] px-1.5 py-0.5 rounded border border-[var(--theme-border-secondary)]">
-                {t('slashCommands_navigate_hint')}
+                {t('slashCommandsNavigateHint')}
               </span>
               <span className="text-[10px] text-[var(--theme-text-tertiary)] bg-[var(--theme-bg-primary)] px-1.5 py-0.5 rounded border border-[var(--theme-border-secondary)]">
-                {t('slashCommands_select_hint')}
+                {t('slashCommandsSelectHint')}
               </span>
             </div>
           </div>

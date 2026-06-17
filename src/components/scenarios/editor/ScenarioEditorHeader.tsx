@@ -31,7 +31,7 @@ export const ScenarioEditorHeader: React.FC<ScenarioEditorHeaderProps> = ({
           onClick={onCancel}
           className={`hidden md:flex items-center gap-1.5 text-sm font-medium text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-primary)] hover:bg-[var(--theme-bg-tertiary)] px-3 py-1.5 rounded-lg transition-colors ${FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS}`}
         >
-          <ChevronLeft size={16} /> {t('scenarios_editor_back')}
+          <ChevronLeft size={16} /> {t('scenariosEditorBack')}
         </button>
         <div className="hidden md:block h-6 w-px bg-[var(--theme-border-secondary)]"></div>
 
@@ -39,7 +39,7 @@ export const ScenarioEditorHeader: React.FC<ScenarioEditorHeaderProps> = ({
           type="text"
           value={title}
           onChange={(e) => !readOnly && setTitle(e.target.value)}
-          placeholder={t('scenarios_editor_title_placeholder')}
+          placeholder={t('scenariosEditorTitlePlaceholder')}
           className="flex-1 bg-transparent text-lg sm:text-xl font-bold text-[var(--theme-text-primary)] placeholder-[var(--theme-text-tertiary)] outline-none min-w-0"
           readOnly={readOnly}
         />
@@ -47,7 +47,7 @@ export const ScenarioEditorHeader: React.FC<ScenarioEditorHeaderProps> = ({
         <button
           onClick={onOpenSystemPrompt}
           className={`md:hidden ${ICON_BUTTON_CLASS}`}
-          title={t('scenarios_system_prompt_label')}
+          title={t('scenariosSystemPromptLabel')}
         >
           <Settings2 size={20} />
         </button>

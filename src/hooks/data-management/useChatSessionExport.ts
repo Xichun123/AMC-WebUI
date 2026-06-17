@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { type SavedChatSession, type Theme } from '@/types';
 import { logService } from '@/services/logService';
 import { createManagedObjectUrl } from '@/services/objectUrlManager';
-import { createChatExportElement } from '@/features/chat-export/chatExportRenderer';
+import { createChatExportElement } from '@/features/chat-export/ChatExportRenderer';
 import { serializeSessionForPortableExport } from '@/utils/chat/session';
 import { triggerDownload } from '@/utils/export/core';
 import { buildChatExportFilename, createExportDateMeta, loadExportRuntime } from '@/utils/export/runtime';
@@ -46,8 +46,8 @@ export const useChatSessionExport = ({ activeChat, currentTheme, language, t }: 
               {
                 scale: 2,
                 messages: {
-                  imageTooLarge: t('export_image_too_large'),
-                  exportFailed: (message) => t('export_failed_with_message').replace('{message}', message),
+                  imageTooLarge: t('exportImageTooLarge'),
+                  exportFailed: (message) => t('exportFailedWithMessage').replace('{message}', message),
                 },
               },
             );
@@ -78,7 +78,7 @@ export const useChatSessionExport = ({ activeChat, currentTheme, language, t }: 
           date: dateStr,
           model: activeChat.settings.modelId,
           messages: activeChat.messages.map((message) => ({
-            role: message.role === 'user' ? t('export_role_user') : t('export_role_assistant'),
+            role: message.role === 'user' ? t('exportRoleUser') : t('exportRoleAssistant'),
             timestamp: message.timestamp,
             content: message.content,
             files: message.files?.map((file) => ({ name: file.name })),
@@ -102,7 +102,7 @@ export const useChatSessionExport = ({ activeChat, currentTheme, language, t }: 
           triggerDownload(createManagedObjectUrl(blob), filename);
         } catch (error) {
           logService.error('Failed to export chat as JSON', { error });
-          alert(t('export_failed_title'));
+          alert(t('exportFailedTitle'));
           return false;
         }
       }

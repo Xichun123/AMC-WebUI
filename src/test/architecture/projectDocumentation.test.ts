@@ -4,12 +4,13 @@ import path from 'path';
 import { projectRoot, readProjectFile } from './projectFiles';
 
 describe('project documentation structure', () => {
-  it('keeps the shared chat input selector in the focused storage constants module', () => {
-    const settingsDefaults = readProjectFile('src/constants/settingsDefaults.ts');
+  it('keeps DOM selectors and event names in layout constants, not storage keys', () => {
     const storageKeys = readProjectFile('src/constants/storageKeys.ts');
+    const layout = readProjectFile('src/constants/layout.ts');
 
-    expect(settingsDefaults).not.toContain("export * from './storageKeys';");
-    expect(storageKeys).toContain('export const CHAT_INPUT_TEXTAREA_SELECTOR');
+    expect(storageKeys).not.toContain('CHAT_INPUT_TEXTAREA_SELECTOR');
+    expect(layout).toContain('export const CHAT_INPUT_TEXTAREA_SELECTOR');
+    expect(layout).toContain('export const FOCUS_HISTORY_SEARCH_EVENT');
     expect(fs.existsSync(path.join(projectRoot, 'src/constants/domSelectors.ts'))).toBe(false);
   });
 

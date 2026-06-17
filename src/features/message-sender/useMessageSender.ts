@@ -12,7 +12,8 @@ import { logService } from '@/services/logService';
 import { formatApiKeyErrorMessage } from '@/utils/apiKeySelection';
 import { isServerCodeExecutionMode } from '@/utils/codeExecution';
 import { getModelCapabilities } from '@/utils/modelCapabilities';
-import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
+import { isThirdPartyApiActive } from '@/utils/thirdPartyApiActive';
+import { getThirdPartyProviderModelId } from '@/utils/thirdPartyApiProviders';
 
 import { ensureFilesApiReferences, formatFileReferenceErrorMessage } from './fileApiReference';
 import { sendImageGenerationMessage } from './imageGenerationStrategy';
@@ -105,8 +106,10 @@ export const useMessageSender = (props: MessageSenderProps) => {
       const isFastMode = overrideOptions?.isFastMode ?? false;
 
       const sessionToUpdate = overrideOptions?.settingsOverride ?? currentChatSettings;
-      const isOpenAICompatibleMode = isOpenAICompatibleApiActive(appSettings);
-      const activeModelId = isOpenAICompatibleMode ? appSettings.openaiCompatibleModelId : sessionToUpdate.modelId;
+      const isOpenAICompatibleMode = isThirdPartyApiActive(appSettings);
+      const activeModelId = isOpenAICompatibleMode
+        ? getThirdPartyProviderModelId(appSettings)
+        : sessionToUpdate.modelId;
       const capabilities = getModelCapabilities(activeModelId);
       const isTtsModel = capabilities.isTtsModel;
       const isRealImagenModel = capabilities.isRealImagenModel;
@@ -156,9 +159,9 @@ export const useMessageSender = (props: MessageSenderProps) => {
         generationId: continueTargetMessage ? (effectiveEditingId ?? undefined) : undefined,
         generationStartTime: continueTargetMessage?.generationStartTime,
         messages: {
-          noModelSelected: t('messageSender_noModelSelected'),
-          noModelTitle: t('messageSender_errorSessionTitle'),
-          apiKeyTitle: t('messageSender_apiKeyErrorSessionTitle'),
+          noModelSelected: t('messageSenderNoModelSelected'),
+          noModelTitle: t('messageSenderErrorSessionTitle'),
+          apiKeyTitle: t('messageSenderApiKeyErrorSessionTitle'),
         },
       });
 

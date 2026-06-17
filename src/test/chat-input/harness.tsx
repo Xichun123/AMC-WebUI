@@ -156,8 +156,8 @@ vi.mock('@/utils/apiKeySelection', () => ({
   getKeyForRequest: mockApiUtils.getKeyForRequest,
   getGeminiKeyForRequest: mockApiUtils.getKeyForRequest,
   formatApiKeyErrorMessage: (error: string, translate: (translationKey: string) => string) => {
-    if (error === 'API Key not configured.') return translate('apiRuntime_keyNotConfigured');
-    if (error === 'No valid API keys found.') return translate('apiRuntime_noValidKeysFound');
+    if (error === 'API Key not configured.') return translate('apiRuntimeKeyNotConfigured');
+    if (error === 'No valid API keys found.') return translate('apiRuntimeNoValidKeysFound');
     return error;
   },
 }));

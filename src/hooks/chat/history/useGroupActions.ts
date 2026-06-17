@@ -16,7 +16,7 @@ export const useGroupActions = ({ updateAndPersistGroups, updateAndPersistSessio
     logService.info('Adding new group.');
     const newGroup: ChatGroup = {
       id: `group-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      title: t('newGroup_title'),
+      title: t('newGroupTitle'),
       timestamp: Date.now(),
       isExpanded: true,
     };

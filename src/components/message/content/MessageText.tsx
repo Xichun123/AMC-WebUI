@@ -112,7 +112,7 @@ export const MessageText: React.FC<MessageTextProps> = ({
           <div className="mr-2.5 flex-shrink-0">
             <GoogleSpinner size={14} />
           </div>
-          <span className="font-medium">{t('thinking_text')}</span>
+          <span className="font-medium">{t('thinkingText')}</span>
         </div>
       )}
 

@@ -18,7 +18,7 @@ describe('SessionItem spacing', () => {
 
     expect(source).not.toContain('GripVertical');
     expect(source).not.toContain('draggable="true"');
-    expect(source).not.toContain('history_drag_session');
+    expect(source).not.toContain('historyDragSession');
   });
 
   it('delegates export session selection to the export opener to avoid opening the dialog before async load completes', () => {

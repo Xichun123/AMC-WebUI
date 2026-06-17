@@ -13,12 +13,12 @@ export const InterfaceToggles: React.FC<InterfaceTogglesProps> = ({ settings, on
   const handleNotificationToggle = async (enabled: boolean) => {
     if (enabled) {
       if (!('Notification' in window)) {
-        alert(t('settings_notificationsUnsupported'));
+        alert(t('settingsNotificationsUnsupported'));
         return;
       }
 
       if (Notification.permission === 'denied') {
-        alert(t('settings_notificationsBlocked'));
+        alert(t('settingsNotificationsBlocked'));
         return;
       }
 
@@ -40,22 +40,22 @@ export const InterfaceToggles: React.FC<InterfaceTogglesProps> = ({ settings, on
         </label>
         <div className="grid grid-cols-1 gap-1">
           <ToggleItem
-            label={t('settings_showInputTranslationButton_label')}
+            label={t('settingsShowInputTranslationButtonLabel')}
             checked={settings.showInputTranslationButton ?? false}
             onChange={(enabled) => onUpdate('showInputTranslationButton', enabled)}
-            tooltip={t('settings_showInputTranslationButton_tooltip')}
+            tooltip={t('settingsShowInputTranslationButtonTooltip')}
           />
           <ToggleItem
-            label={t('settings_showInputPasteButton_label')}
+            label={t('settingsShowInputPasteButtonLabel')}
             checked={settings.showInputPasteButton ?? true}
             onChange={(enabled) => onUpdate('showInputPasteButton', enabled)}
-            tooltip={t('settings_showInputPasteButton_tooltip')}
+            tooltip={t('settingsShowInputPasteButtonTooltip')}
           />
           <ToggleItem
-            label={t('settings_showInputClearButton_label')}
+            label={t('settingsShowInputClearButtonLabel')}
             checked={settings.showInputClearButton ?? true}
             onChange={(enabled) => onUpdate('showInputClearButton', enabled)}
-            tooltip={t('settings_showInputClearButton_tooltip')}
+            tooltip={t('settingsShowInputClearButtonTooltip')}
           />
         </div>
       </div>
@@ -71,22 +71,22 @@ export const InterfaceToggles: React.FC<InterfaceTogglesProps> = ({ settings, on
             onChange={(enabled) => onUpdate('isStreamingEnabled', enabled)}
           />
           <ToggleItem
-            label={t('settings_pasteRichTextAsMarkdown_label')}
+            label={t('settingsPasteRichTextAsMarkdownLabel')}
             checked={settings.isPasteRichTextAsMarkdownEnabled ?? true}
             onChange={(enabled) => onUpdate('isPasteRichTextAsMarkdownEnabled', enabled)}
-            tooltip={t('settings_pasteRichTextAsMarkdown_tooltip')}
+            tooltip={t('settingsPasteRichTextAsMarkdownTooltip')}
           />
           <ToggleItem
-            label={t('settings_pasteAsTextFile_label')}
+            label={t('settingsPasteAsTextFileLabel')}
             checked={settings.isPasteAsTextFileEnabled ?? true}
             onChange={(enabled) => onUpdate('isPasteAsTextFileEnabled', enabled)}
-            tooltip={t('settings_pasteAsTextFile_tooltip')}
+            tooltip={t('settingsPasteAsTextFileTooltip')}
           />
           <ToggleItem
-            label={t('settings_copySelectionFormatting_label')}
+            label={t('settingsCopySelectionFormattingLabel')}
             checked={settings.isCopySelectionFormattingEnabled ?? true}
             onChange={(enabled) => onUpdate('isCopySelectionFormattingEnabled', enabled)}
-            tooltip={t('settings_copySelectionFormatting_tooltip')}
+            tooltip={t('settingsCopySelectionFormattingTooltip')}
           />
 
           <ToggleItem
@@ -96,57 +96,57 @@ export const InterfaceToggles: React.FC<InterfaceTogglesProps> = ({ settings, on
           />
 
           <ToggleItem
-            label={t('settings_enableSuggestions_label')}
+            label={t('settingsEnableSuggestionsLabel')}
             checked={settings.isSuggestionsEnabled}
             onChange={(enabled) => onUpdate('isSuggestionsEnabled', enabled)}
-            tooltip={t('settings_enableSuggestions_tooltip')}
+            tooltip={t('settingsEnableSuggestionsTooltip')}
           />
 
           <ToggleItem
-            label={t('settings_autoScrollOnSend_label')}
+            label={t('settingsAutoScrollOnSendLabel')}
             checked={settings.isAutoScrollOnSendEnabled ?? true}
             onChange={(enabled) => onUpdate('isAutoScrollOnSendEnabled', enabled)}
           />
           <ToggleItem
-            label={t('settings_enableCompletionNotification_label')}
+            label={t('settingsEnableCompletionNotificationLabel')}
             checked={settings.isCompletionNotificationEnabled}
             onChange={handleNotificationToggle}
-            tooltip={t('settings_enableCompletionNotification_tooltip')}
+            tooltip={t('settingsEnableCompletionNotificationTooltip')}
           />
           <ToggleItem
-            label={t('settings_enableCompletionSound_label')}
+            label={t('settingsEnableCompletionSoundLabel')}
             checked={settings.isCompletionSoundEnabled ?? false}
             onChange={(enabled) => onUpdate('isCompletionSoundEnabled', enabled)}
-            tooltip={t('settings_enableCompletionSound_tooltip')}
+            tooltip={t('settingsEnableCompletionSoundTooltip')}
           />
           <ToggleItem
-            label={t('settings_expandCodeBlocksByDefault_label')}
+            label={t('settingsExpandCodeBlocksByDefaultLabel')}
             checked={settings.expandCodeBlocksByDefault}
             onChange={(enabled) => onUpdate('expandCodeBlocksByDefault', enabled)}
           />
           <ToggleItem
-            label={t('settings_autoFullscreenHtml_label')}
+            label={t('settingsAutoFullscreenHtmlLabel')}
             checked={settings.autoFullscreenHtml ?? true}
             onChange={(enabled) => onUpdate('autoFullscreenHtml', enabled)}
-            tooltip={t('settings_autoFullscreenHtml_tooltip')}
+            tooltip={t('settingsAutoFullscreenHtmlTooltip')}
           />
           <ToggleItem
-            label={t('settings_enableMermaidRendering_label')}
+            label={t('settingsEnableMermaidRenderingLabel')}
             checked={settings.isMermaidRenderingEnabled}
             onChange={(enabled) => onUpdate('isMermaidRenderingEnabled', enabled)}
-            tooltip={t('settings_enableMermaidRendering_tooltip')}
+            tooltip={t('settingsEnableMermaidRenderingTooltip')}
           />
           <ToggleItem
-            label={t('settings_enableGraphvizRendering_label')}
+            label={t('settingsEnableGraphvizRenderingLabel')}
             checked={settings.isGraphvizRenderingEnabled ?? true}
             onChange={(enabled) => onUpdate('isGraphvizRenderingEnabled', enabled)}
-            tooltip={t('settings_enableGraphvizRendering_tooltip')}
+            tooltip={t('settingsEnableGraphvizRenderingTooltip')}
           />
           <ToggleItem
-            label={t('settings_audioCompression_label')}
+            label={t('settingsAudioCompressionLabel')}
             checked={settings.isAudioCompressionEnabled}
             onChange={(enabled) => onUpdate('isAudioCompressionEnabled', enabled)}
-            tooltip={t('settings_audioCompression_tooltip')}
+            tooltip={t('settingsAudioCompressionTooltip')}
           />
         </div>
       </div>

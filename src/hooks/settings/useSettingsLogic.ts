@@ -69,7 +69,7 @@ export const useSettingsLogic = ({
     setConfirmConfig({
       isOpen: true,
       title: t('settingsReset'),
-      message: t('settingsReset_confirm'),
+      message: t('settingsResetConfirm'),
       onConfirm: () => onSave(DEFAULT_APP_SETTINGS),
       isDanger: true,
       confirmLabel: t('settingsReset'),
@@ -80,7 +80,7 @@ export const useSettingsLogic = ({
     setConfirmConfig({
       isOpen: true,
       title: t('settingsClearLogs'),
-      message: t('settingsClearLogs_confirm'),
+      message: t('settingsClearLogsConfirm'),
       onConfirm: async () => {
         await logService.clearLogs();
       },
@@ -93,7 +93,7 @@ export const useSettingsLogic = ({
     setConfirmConfig({
       isOpen: true,
       title: t('settingsClearHistory'),
-      message: t('settingsClearHistory_confirm'),
+      message: t('settingsClearHistoryConfirm'),
       onConfirm: onClearAllHistory,
       isDanger: true,
       confirmLabel: t('delete'),
@@ -104,7 +104,7 @@ export const useSettingsLogic = ({
     setConfirmConfig({
       isOpen: true,
       title: t('settingsClearCache'),
-      message: t('settingsClearCache_confirm'),
+      message: t('settingsClearCacheConfirm'),
       onConfirm: onClearCache,
       isDanger: true,
       confirmLabel: t('delete'),
@@ -115,7 +115,7 @@ export const useSettingsLogic = ({
     setConfirmConfig({
       isOpen: true,
       title: t('settingsImportHistory'),
-      message: t('settingsImportHistory_confirm'),
+      message: t('settingsImportHistoryConfirm'),
       onConfirm: () => onImportHistory(file),
       isDanger: false,
       confirmLabel: t('import'),

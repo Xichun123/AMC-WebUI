@@ -8,124 +8,124 @@ const modelSettings = {
   settingsTemperature: { en: 'Temperature', zh: '温度' },
   settingsTopP: { en: 'Top P', zh: 'Top P' },
   settingsShowThoughts: { en: 'Show Model Reasoning', zh: '显示模型推理' },
-  settingsShowThoughts_tooltip: {
+  settingsShowThoughtsTooltip: {
     en: "Displays the model's reasoning before the final answer. Requires reasoning mode to be enabled.",
     zh: '在最终答案之前显示模型的推理内容。需要启用推理模式。',
   },
   settingsThinkingMode: { en: 'Reasoning Mode', zh: '推理模式' },
-  settingsThinkingMode_auto: { en: 'Auto', zh: '自动' },
-  settingsThinkingMode_preset: { en: 'Reasoning Level', zh: '推理等级' },
-  settingsThinkingMode_off: { en: 'Off', zh: '关闭' },
-  settingsThinkingMode_custom: { en: 'Token Budget', zh: 'Token 预算' },
-  settingsThinkingMode_tooltip: {
+  settingsThinkingModeAuto: { en: 'Auto', zh: '自动' },
+  settingsThinkingModePreset: { en: 'Reasoning Level', zh: '推理等级' },
+  settingsThinkingModeOff: { en: 'Off', zh: '关闭' },
+  settingsThinkingModeCustom: { en: 'Token Budget', zh: 'Token 预算' },
+  settingsThinkingModeTooltip: {
     en: 'Controls how much internal reasoning the model performs. Auto balances quality and speed. Off prioritizes speed. Budget lets you set a fixed token budget.',
     zh: '控制模型内部推理的强度。自动会平衡质量和速度，关闭优先速度，Token 预算允许您手动指定固定预算。',
   },
-  settingsGemmaReasoningToggle_label: { en: 'Gemma Reasoning Level', zh: 'Gemma 推理等级' },
-  settingsGemmaReasoningToggle_enabledDesc: {
+  settingsGemmaReasoningToggleLabel: { en: 'Gemma Reasoning Level', zh: 'Gemma 推理等级' },
+  settingsGemmaReasoningToggleEnabledDesc: {
     en: 'Gemma uses HIGH reasoning for better results, with higher latency.',
     zh: 'Gemma 使用 HIGH 推理以获得更好的结果，但延迟会更高。',
   },
-  settingsGemmaReasoningToggle_disabledDesc: {
+  settingsGemmaReasoningToggleDisabledDesc: {
     en: 'Gemma uses MINIMAL reasoning for faster responses.',
     zh: 'Gemma 使用 MINIMAL 推理以获得更快的响应。',
   },
-  settingsThinkingCustom_placeholder: { en: 'Token budget', zh: 'Token 预算' },
+  settingsThinkingCustomPlaceholder: { en: 'Token budget', zh: 'Token 预算' },
   settingsThinkingBudget: { en: 'Reasoning Budget', zh: '推理预算' },
   settingsThinkingLevel: { en: 'Reasoning Level', zh: '推理等级' },
-  settingsThinkingBudget_tooltip: {
+  settingsThinkingBudgetTooltip: {
     en: 'Set a token budget for reasoning. -1 means auto/unlimited, 0 disables reasoning, and values above 0 set a fixed limit.',
     zh: '设置推理的 Token 预算。-1 表示自动或不限量，0 表示关闭推理，大于 0 则表示固定上限。',
   },
-  settingsThinkingBudget_placeholder: { en: 'e.g., -1 for auto', zh: '例如：-1 代表自动' },
+  settingsThinkingBudgetPlaceholder: { en: 'e.g., -1 for auto', zh: '例如：-1 代表自动' },
   settingsMediaResolution: { en: 'Input Detail Level', zh: '输入细节等级' },
-  settingsMediaResolution_tooltip: {
+  settingsMediaResolutionTooltip: {
     en: 'Controls the detail level for images, videos, and PDFs sent to the model. Higher detail uses more tokens but preserves more information.',
     zh: '控制发送给模型的图片、视频和 PDF 的细节等级。等级越高会消耗更多 Token，但保留更多细节。',
   },
-  mediaResolution_unspecified: { en: 'Auto (Default)', zh: '自动（默认）' },
-  mediaResolution_low: { en: 'Low (Faster)', zh: '低（较快）' },
-  mediaResolution_medium: { en: 'Medium (Balanced)', zh: '中（平衡）' },
-  mediaResolution_high: { en: 'High (Detail)', zh: '高（细节）' },
-  mediaResolution_ultra_high: { en: 'Ultra High (Images only)', zh: '超高（仅限图片）' },
-  chatBehavior_voiceModel_label: { en: 'Speech-to-Text Model', zh: '语音转文本模型' },
-  chatBehavior_voiceModel_tooltip: {
+  mediaResolutionUnspecified: { en: 'Auto (Default)', zh: '自动（默认）' },
+  mediaResolutionLow: { en: 'Low (Faster)', zh: '低（较快）' },
+  mediaResolutionMedium: { en: 'Medium (Balanced)', zh: '中（平衡）' },
+  mediaResolutionHigh: { en: 'High (Detail)', zh: '高（细节）' },
+  mediaResolutionUltraHigh: { en: 'Ultra High (Images only)', zh: '超高（仅限图片）' },
+  chatBehaviorVoiceModelLabel: { en: 'Speech-to-Text Model', zh: '语音转文本模型' },
+  chatBehaviorVoiceModelTooltip: {
     en: 'Selects the model used for transcribing voice input to text.',
     zh: '选择用于将语音输入转录为文本的模型。',
   },
-  chatBehavior_temp_tooltip: {
+  chatBehaviorTempTooltip: {
     en: 'Controls randomness. Lower values (~0.2) make the model more deterministic and focused. Higher values (~1.0) make it more creative and diverse.',
     zh: '控制随机性。较低的值（~0.2）使模型更具确定性和专注性。较高的值（~1.0）使其更具创造性和多样性。',
   },
-  chatBehavior_topP_tooltip: {
+  chatBehaviorTopPTooltip: {
     en: "Controls diversity by sampling from a probability mass. Lower values (~0.1) keep the model's choices very focused, while higher values (~0.95) allow for more variety.",
     zh: '通过从概率质量中采样来控制多样性。较低的值（~0.1）使模型的选择非常集中，而较高的值（~0.95）则允许更多变化。',
   },
-  settingsTopK_tooltip: {
+  settingsTopKTooltip: {
     en: 'Limits sampling to the K most probable tokens. Gemma 4 recommends 64. Set to 0 to disable.',
     zh: '限制采样范围为概率最高的 K 个 Token。Gemma 4 建议设为 64，设为 0 可禁用。',
   },
-  settingsMediaResolution_live_tooltip: {
+  settingsMediaResolutionLiveTooltip: {
     en: 'Controls video/audio resolution for Live API.',
     zh: '控制 Live API 的视频/音频分辨率。',
   },
-  chatBehavior_enableThoughts_tooltip: {
+  chatBehaviorEnableThoughtsTooltip: {
     en: "Controls the model's thinking process. 'Off' prioritizes speed. 'Auto' lets the model decide for best quality. 'Manual' allows setting a specific token budget for thinking. Affects models like Gemini 2.5 Flash and Gemini 3.",
     zh: '控制模型的思考过程。“关闭”优先考虑速度。“自动”让模型自行决定以获得最佳质量。“手动”允许为思考设置特定的 Token 预算。影响 Gemini 2.5 Flash 和 Gemini 3 等模型。',
   },
-  chatBehavior_systemPrompt_placeholder: {
+  chatBehaviorSystemPromptPlaceholder: {
     en: 'e.g., You are a precise, concise assistant who proactively clarifies requirements.',
     zh: '例如：你是一个严谨、简洁、主动澄清需求的 AI 助手。',
   },
-  chatBehavior_model_noModels: { en: 'No models available', zh: '无可用模型' },
-  settings_filesApi_title: { en: 'File Transfer Method', zh: '文件传输方式' },
-  settings_filesApi_desc: {
+  chatBehaviorModelNoModels: { en: 'No models available', zh: '无可用模型' },
+  settingsFilesApiTitle: { en: 'File Transfer Method', zh: '文件传输方式' },
+  settingsFilesApiDesc: {
     en: 'Choose whether newly added files prefer Files API uploads or inline delivery. Text files are sent as text when possible; binary files use Base64 inline data. Inline requests are limited to 100MB, or 50MB for PDFs; oversized files still fall back to Files API.',
     zh: '为新添加的文件选择优先通过 Files API 上传，还是尽量内联发送。文本文件会尽量作为文本发送，二进制文件会使用 Base64 内联数据。内联请求上限为 100MB，PDF 为 50MB；超出限制时仍会回退到 Files API。',
   },
-  settings_filesApi_images: { en: 'Images', zh: '图片' },
-  settings_filesApi_pdfs: { en: 'PDFs', zh: 'PDF' },
-  settings_filesApi_audio: { en: 'Audio', zh: '音频' },
-  settings_filesApi_video: { en: 'Video', zh: '视频' },
-  settings_filesApi_text: { en: 'Text & Code', zh: '文本与代码' },
-  settings_filesApi_tooltip: {
+  settingsFilesApiImages: { en: 'Images', zh: '图片' },
+  settingsFilesApiPdfs: { en: 'PDFs', zh: 'PDF' },
+  settingsFilesApiAudio: { en: 'Audio', zh: '音频' },
+  settingsFilesApiVideo: { en: 'Video', zh: '视频' },
+  settingsFilesApiText: { en: 'Text & Code', zh: '文本与代码' },
+  settingsFilesApiTooltip: {
     en: 'Applies to files added after changing this setting. On prefers Files API. Off sends content inline when possible; oversized files may still use Files API.',
     zh: '仅影响更改设置后新添加的文件。打开时优先使用 Files API；关闭时会尽量内联发送，文件过大时仍可能使用 Files API。',
   },
-  settings_generateQuadImages_label: { en: 'Quad Image Generation', zh: '四图生成模式' },
-  settings_generateQuadImages_tooltip: {
+  settingsGenerateQuadImagesLabel: { en: 'Quad Image Generation', zh: '四图生成模式' },
+  settingsGenerateQuadImagesTooltip: {
     en: 'When enabled, prompts sent to an Imagen model will generate four independent image variations at once. This will consume more API credits.',
     zh: '启用后，使用 Imagen 模型将一次性生成四张独立的图片变体。这将消耗更多 API 用量。',
   },
-  settings_liveArtifactsSystemPrompt_label: { en: 'Live Artifacts Prompt', zh: 'Live Artifacts 提示词' },
-  settings_liveArtifactsSystemPrompt_placeholder: {
+  settingsLiveArtifactsSystemPromptLabel: { en: 'Live Artifacts Prompt', zh: 'Live Artifacts 提示词' },
+  settingsLiveArtifactsSystemPromptPlaceholder: {
     en: 'The current built-in prompt appears here; edit it to customize this version.',
     zh: '这里会显示当前内置提示词；编辑后只会自定义当前版本。',
   },
-  settings_liveArtifactsSystemPrompt_help: {
+  settingsLiveArtifactsSystemPromptHelp: {
     en: 'The Live Artifacts button, suggestions, and automatic visualizations use the prompt for the selected version.',
     zh: 'Live Artifacts 按钮、建议入口和自动可视化都会使用当前版本对应的提示词。',
   },
-  settings_liveArtifactsSystemPrompt_reset: {
+  settingsLiveArtifactsSystemPromptReset: {
     en: 'Reset current prompt version to the built-in prompt',
     zh: '将当前提示词版本恢复为内置提示词',
   },
   settingsTranslationSectionTitle: { en: 'Translation', zh: '翻译设置' },
   settingsInputTranslationSectionTitle: { en: 'Input Translation', zh: '输入框翻译' },
   settingsInputTranslationLanguageLabel: { en: 'Input Translation Language', zh: '输入框翻译语言' },
-  settings_translationTargetLanguage_label: { en: 'Target Language', zh: '目标语言' },
-  settings_inputTranslationModel_label: { en: 'Input Translation Model', zh: '输入框翻译模型' },
+  settingsTranslationTargetLanguageLabel: { en: 'Target Language', zh: '目标语言' },
+  settingsInputTranslationModelLabel: { en: 'Input Translation Model', zh: '输入框翻译模型' },
   settingsThoughtTranslationSectionTitle: { en: 'Reasoning Translation', zh: '推理内容翻译' },
-  settings_thoughtTranslationModel_label: { en: 'Reasoning Translation Model', zh: '推理内容翻译模型' },
-  settings_thoughtTranslationTargetLanguage_label: { en: 'Reasoning Translation Language', zh: '推理内容翻译语言' },
-  translationTargetLanguage_english: { en: 'English', zh: '英文' },
-  translationTargetLanguage_simplifiedChinese: { en: 'Simplified Chinese', zh: '简体中文' },
-  translationTargetLanguage_traditionalChinese: { en: 'Traditional Chinese', zh: '繁体中文' },
-  translationTargetLanguage_japanese: { en: 'Japanese', zh: '日语' },
-  translationTargetLanguage_korean: { en: 'Korean', zh: '韩语' },
-  translationTargetLanguage_spanish: { en: 'Spanish', zh: '西班牙语' },
-  translationTargetLanguage_french: { en: 'French', zh: '法语' },
-  translationTargetLanguage_german: { en: 'German', zh: '德语' },
+  settingsThoughtTranslationModelLabel: { en: 'Reasoning Translation Model', zh: '推理内容翻译模型' },
+  settingsThoughtTranslationTargetLanguageLabel: { en: 'Reasoning Translation Language', zh: '推理内容翻译语言' },
+  translationTargetLanguageEnglish: { en: 'English', zh: '英文' },
+  translationTargetLanguageSimplifiedChinese: { en: 'Simplified Chinese', zh: '简体中文' },
+  translationTargetLanguageTraditionalChinese: { en: 'Traditional Chinese', zh: '繁体中文' },
+  translationTargetLanguageJapanese: { en: 'Japanese', zh: '日语' },
+  translationTargetLanguageKorean: { en: 'Korean', zh: '韩语' },
+  translationTargetLanguageSpanish: { en: 'Spanish', zh: '西班牙语' },
+  translationTargetLanguageFrench: { en: 'French', zh: '法语' },
+  translationTargetLanguageGerman: { en: 'German', zh: '德语' },
   settingsLiveArtifactsSectionTitle: { en: 'Live Artifacts', zh: 'Live Artifacts' },
   settingsVoiceSectionTitle: { en: 'Speech & Voice', zh: '语音与朗读' },
   settingsTranscriptionSectionTitle: { en: 'Speech Input', zh: '语音输入' },

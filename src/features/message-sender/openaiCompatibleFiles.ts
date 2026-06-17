@@ -7,7 +7,7 @@ type OpenAICompatibleFilesResult =
   | {
       ok: false;
       files: UploadedFile[];
-      errorKey: 'messageSender_openaiCompatibleFileReferenceUnsupported';
+      errorKey: 'messageSenderOpenaiCompatibleFileReferenceUnsupported';
       fileName: string;
     };
 
@@ -29,7 +29,7 @@ export const prepareFilesForOpenAICompatibleMode = (files: UploadedFile[]): Open
       return {
         ok: false,
         files,
-        errorKey: 'messageSender_openaiCompatibleFileReferenceUnsupported',
+        errorKey: 'messageSenderOpenaiCompatibleFileReferenceUnsupported',
         fileName: file.name,
       };
     }

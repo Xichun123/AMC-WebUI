@@ -146,7 +146,7 @@ describe('source readability boundaries', () => {
   it('does not pass literal fallbacks for translation keys that already exist', () => {
     const sendControlsSource = readProjectFile('src/components/chat/input/actions/SendControls.tsx');
 
-    expect(sendControlsSource).not.toContain("t('sendMessage_fast_suffix',");
+    expect(sendControlsSource).not.toContain("t('sendMessageFastSuffix',");
   });
 
   it('names shared error boundary contracts after the component', () => {
@@ -296,6 +296,7 @@ describe('source readability boundaries', () => {
       'Shadow Textarea for Height Calculation',
       'Insert BBox and Guide Buttons after "Smart Board" (organize action) if available',
       'Wrap toolbar in z-indexed container to ensure dropdowns render above status banner',
+      'Use chunkIndex+1 to match the [N] citation markers in the text body.',
     ]);
     const jsxCommentPattern = /\{\/\*\s*([^*]+?)\s*\*\/\}/g;
     const unexpectedComments = listProjectSourceFiles('src')

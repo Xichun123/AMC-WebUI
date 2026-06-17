@@ -5,7 +5,7 @@ import { getGeminiKeyForRequest } from '@/utils/apiKeySelection';
 import { generateSessionTitle } from '@/utils/chat/session';
 import { generateTitleApi } from '@/services/api/generation/textApi';
 import { getVisibleChatMessages } from '@/utils/chat/visibility';
-import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
+import { isThirdPartyApiActive } from '@/utils/thirdPartyApiActive';
 
 type SessionsUpdater = (updater: (prev: SavedChatSession[]) => SavedChatSession[]) => void;
 
@@ -87,9 +87,7 @@ export const useAutoTitling = ({
       setGeneratingTitleSessionIds((prev) => new Set(prev).add(sessionId));
       logService.info(`Auto-generating title for session ${sessionId}`);
 
-      const stickyKey = isOpenAICompatibleApiActive(appSettings)
-        ? undefined
-        : sessionKeyMapRef?.current?.get(sessionId);
+      const stickyKey = isThirdPartyApiActive(appSettings) ? undefined : sessionKeyMapRef?.current?.get(sessionId);
 
       let keyToUse: string;
       if (stickyKey) {

@@ -66,7 +66,7 @@ export const DiagramWrapper: React.FC<DiagramWrapperProps> = ({
           <div className="text-center text-red-400">
             <AlertTriangle className="mx-auto mb-2" />
             <strong className="font-semibold">
-              {title} {t('diagram_error_suffix')}
+              {title} {t('diagramErrorSuffix')}
             </strong>
             <pre className="mt-1 text-xs text-left whitespace-pre-wrap">{error}</pre>
           </div>
@@ -88,12 +88,12 @@ export const DiagramWrapper: React.FC<DiagramWrapperProps> = ({
           <button
             onClick={() => setShowSource(!showSource)}
             className={headerButtonClass}
-            title={showSource ? t('diagram_hide_source') : t('diagram_show_source')}
+            title={showSource ? t('diagramHideSource') : t('diagramShowSource')}
           >
             <Code size={16} />
           </button>
           {extraActions}
-          <button onClick={onOpenSidePanel} className={headerButtonClass} title={t('diagram_open_side_panel')}>
+          <button onClick={onOpenSidePanel} className={headerButtonClass} title={t('diagramOpenSidePanel')}>
             <Sidebar size={16} />
           </button>
           {diagramFile && (
@@ -104,7 +104,7 @@ export const DiagramWrapper: React.FC<DiagramWrapperProps> = ({
                   onImageClick(diagramFile);
                 }}
                 className={headerButtonClass}
-                title={t('diagram_zoom')}
+                title={t('diagramZoom')}
               >
                 <Maximize size={16} />
               </button>
@@ -115,7 +115,7 @@ export const DiagramWrapper: React.FC<DiagramWrapperProps> = ({
                 }}
                 disabled={isDownloading}
                 className={headerButtonClass}
-                title={t('diagram_download_jpg')}
+                title={t('diagramDownloadJpg')}
               >
                 {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
               </button>
@@ -135,7 +135,7 @@ export const DiagramWrapper: React.FC<DiagramWrapperProps> = ({
       {showSource && (
         <div className="relative border-t border-[var(--theme-border-secondary)] bg-[var(--theme-bg-code-block)] overflow-hidden rounded-b-lg">
           <div className="absolute top-2 right-2 z-10">
-            <button onClick={handleCopyCode} className={headerButtonClass} title={t('diagram_copy_code')}>
+            <button onClick={handleCopyCode} className={headerButtonClass} title={t('diagramCopyCode')}>
               {isCopied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
             </button>
           </div>

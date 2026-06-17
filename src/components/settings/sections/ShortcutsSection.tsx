@@ -28,9 +28,9 @@ export const ShortcutsSection: React.FC<ShortcutsSectionProps> = ({
   }, []);
 
   const categoryTitles: Record<string, string> = {
-    general: 'shortcuts_general_title',
-    input: 'shortcuts_chat_input_title',
-    global: 'shortcuts_global_title',
+    general: 'shortcutsGeneralTitle',
+    input: 'shortcutsChatInputTitle',
+    global: 'shortcutsGlobalTitle',
   };
 
   const handleShortcutChange = useCallback(
@@ -53,7 +53,7 @@ export const ShortcutsSection: React.FC<ShortcutsSectionProps> = ({
 
   // Show a read-only fallback when settings callbacks are unavailable.
   if (!currentSettings || !onUpdateSettings) {
-    return <div className="p-4 text-center text-[var(--theme-text-tertiary)]">{t('shortcuts_unavailable')}</div>;
+    return <div className="p-4 text-center text-[var(--theme-text-tertiary)]">{t('shortcutsUnavailable')}</div>;
   }
 
   return (

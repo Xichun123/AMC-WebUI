@@ -58,7 +58,7 @@ export const uploadFileItem = async ({
         size: file.size,
         isProcessing: false,
         progress: 0,
-        error: t('upload_unsupported_type').replace('{filename}', file.name),
+        error: t('uploadUnsupportedType').replace('{filename}', file.name),
         uploadState: 'failed',
       },
     ]);
@@ -71,7 +71,7 @@ export const uploadFileItem = async ({
 
   if (shouldUploadFile) {
     if (!keyToUse) {
-      const errorMsg = t('upload_missing_api_key');
+      const errorMsg = t('uploadMissingApiKey');
       logService.error(errorMsg);
       releaseManagedObjectUrl(dataUrl);
       setSelectedFiles((previousFiles) => [
@@ -102,7 +102,7 @@ export const uploadFileItem = async ({
       transferStrategy: 'files-api',
       uploadState: 'uploading',
       abortController: controller,
-      uploadSpeed: t('upload_starting'),
+      uploadSpeed: t('uploadStarting'),
       mediaResolution: defaultResolution,
     });
 
@@ -168,7 +168,7 @@ export const uploadFileItem = async ({
                 rawFile: file,
                 transferStrategy: 'files-api',
                 uploadState,
-                error: uploadState === 'failed' ? t('upload_api_processing_failed') : selectedFile.error || undefined,
+                error: uploadState === 'failed' ? t('uploadApiProcessingFailed') : selectedFile.error || undefined,
                 abortController: undefined,
                 uploadSpeed: undefined,
               }
@@ -176,14 +176,14 @@ export const uploadFileItem = async ({
         ),
       );
     } catch (uploadError) {
-      let errorMsg = t('upload_failed_with_message').replace(
+      let errorMsg = t('uploadFailedWithMessage').replace(
         '{message}',
         uploadError instanceof Error ? uploadError.message : String(uploadError),
       );
       let uploadStateUpdate: UploadedFile['uploadState'] = 'failed';
 
       if (uploadError instanceof Error && uploadError.name === 'AbortError') {
-        errorMsg = t('upload_cancelled_by_user');
+        errorMsg = t('uploadCancelledByUser');
         uploadStateUpdate = 'cancelled';
         logService.warn(`File upload cancelled by user: ${file.name}`);
       } else {

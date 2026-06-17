@@ -2,10 +2,18 @@ import { vi } from 'vitest';
 import type { ChatToolToggleStates, ToggleableChatToolId } from '@/types/chatTools';
 
 type ChatToolEnabledFlags = Partial<Record<ToggleableChatToolId, boolean>>;
-const TOGGLEABLE_CHAT_TOOL_IDS = ['googleSearch', 'deepSearch', 'codeExecution', 'localPython', 'urlContext'] as const;
+const TOGGLEABLE_CHAT_TOOL_IDS = [
+  'googleSearch',
+  'googleMaps',
+  'deepSearch',
+  'codeExecution',
+  'localPython',
+  'urlContext',
+] as const;
 
 export const createChatToolToggleStates = (overrides: ChatToolToggleStates = {}): ChatToolToggleStates => ({
   googleSearch: { isEnabled: false, onToggle: vi.fn() },
+  googleMaps: { isEnabled: false, onToggle: vi.fn() },
   deepSearch: { isEnabled: false, onToggle: vi.fn() },
   codeExecution: { isEnabled: false, onToggle: vi.fn() },
   localPython: { isEnabled: false, onToggle: vi.fn() },

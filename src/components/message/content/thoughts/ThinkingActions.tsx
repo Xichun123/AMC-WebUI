@@ -32,7 +32,7 @@ export const ThinkingActions: React.FC<ThinkingActionsProps> = ({
                     transition-all duration-200
                     ${isShowingTranslation ? 'text-[var(--theme-text-link)]' : ''}
                 `}
-        title={isShowingTranslation ? t('thinking_show_original') : t('thinking_translate_to_chinese')}
+        title={isShowingTranslation ? t('thinkingShowOriginal') : t('thinkingTranslateToChinese')}
       >
         {isTranslatingThoughts ? (
           <Loader2 size={15} className="animate-spin" />
@@ -49,7 +49,7 @@ export const ThinkingActions: React.FC<ThinkingActionsProps> = ({
                     transition-all duration-200
                     ${isCopied ? 'text-[var(--theme-text-success)]' : ''}
                 `}
-        title={isCopied ? t('copied_button_title') : t('copy_button_title')}
+        title={isCopied ? t('copiedButtonTitle') : t('copyButtonTitle')}
       >
         {isCopied ? <Check size={15} strokeWidth={2.5} /> : <ClipboardCopy size={15} strokeWidth={2} />}
       </button>

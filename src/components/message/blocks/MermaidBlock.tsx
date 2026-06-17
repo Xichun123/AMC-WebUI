@@ -71,7 +71,7 @@ export const MermaidBlock: React.FC<MermaidBlockProps> = ({
         if (isMessageLoading) {
           setIsRendering(true);
         } else {
-          const errorMessage = error instanceof Error ? error.message : t('diagram_render_mermaid_failed');
+          const errorMessage = error instanceof Error ? error.message : t('diagramRenderMermaidFailed');
           setError(errorMessage.replace(/.*error:\s*/, ''));
           setSvg('');
           setIsRendering(false);
@@ -92,7 +92,7 @@ export const MermaidBlock: React.FC<MermaidBlockProps> = ({
       const { exportSvgAsImage } = await import('@/utils/export/image');
       await exportSvgAsImage(svg, `mermaid-diagram-${Date.now()}.jpg`, 3, 'image/jpeg');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : t('diagram_export_jpg_failed');
+      const errorMessage = error instanceof Error ? error.message : t('diagramExportJpgFailed');
       setError(errorMessage);
     } finally {
       setIsDownloading(false);
@@ -111,7 +111,7 @@ export const MermaidBlock: React.FC<MermaidBlockProps> = ({
       setShowSource={setShowSource}
       onImageClick={onImageClick}
       onDownloadJpg={handleDownloadJpg}
-      onOpenSidePanel={() => onOpenSidePanel({ type: 'mermaid', content: code, title: t('diagram_mermaid_title') })}
+      onOpenSidePanel={() => onOpenSidePanel({ type: 'mermaid', content: code, title: t('diagramMermaidTitle') })}
       themeId={themeId}
       containerRef={diagramContainerRef}
     >

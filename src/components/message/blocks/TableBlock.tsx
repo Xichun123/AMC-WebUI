@@ -144,7 +144,7 @@ export const TableBlock: React.FC<TableBlockProps> = ({ children, className, nod
           <button
             onClick={handleCopyMarkdown}
             className={`p-1.5 rounded-lg bg-[var(--theme-bg-primary)] text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-primary)] shadow-sm border border-[var(--theme-border-secondary)] transition-colors ${FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS}`}
-            title={isCopied ? t('copied') : t('table_copy_markdown')}
+            title={isCopied ? t('copied') : t('tableCopyMarkdown')}
           >
             {isCopied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
           </button>
@@ -181,7 +181,7 @@ export const TableBlock: React.FC<TableBlockProps> = ({ children, className, nod
           <button
             onClick={toggleFullscreen}
             className={`p-1.5 rounded-lg bg-[var(--theme-bg-primary)] text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-primary)] shadow-sm border border-[var(--theme-border-secondary)] transition-colors ${FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS}`}
-            title={t('table_exit_fullscreen')}
+            title={t('tableExitFullscreen')}
           >
             <Minimize2 size={16} />
           </button>
@@ -214,9 +214,9 @@ export const TableBlock: React.FC<TableBlockProps> = ({ children, className, nod
       <div className="absolute top-2 right-2 flex gap-1 z-10 opacity-0 pointer-events-none transition-opacity duration-200 group-hover/table:opacity-100 group-hover/table:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto">
         <button
           onClick={handleCopyMarkdown}
-          aria-label={t('table_copy_markdown_aria')}
+          aria-label={t('tableCopyMarkdownAria')}
           className={`p-1.5 rounded-md text-[var(--theme-text-tertiary)] hover:text-[var(--theme-text-primary)] hover:bg-[var(--theme-bg-tertiary)] transition-colors ${FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS}`}
-          title={isCopied ? t('copied') : t('table_copy_markdown')}
+          title={isCopied ? t('copied') : t('tableCopyMarkdown')}
         >
           {isCopied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
         </button>
@@ -224,7 +224,7 @@ export const TableBlock: React.FC<TableBlockProps> = ({ children, className, nod
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowDownloadMenu(!showDownloadMenu)}
-            aria-label={t('table_download_aria')}
+            aria-label={t('tableDownloadAria')}
             className={`p-1.5 rounded-md text-[var(--theme-text-tertiary)] hover:text-[var(--theme-text-primary)] hover:bg-[var(--theme-bg-tertiary)] transition-colors ${FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS}`}
             title={t('download')}
           >
@@ -252,9 +252,9 @@ export const TableBlock: React.FC<TableBlockProps> = ({ children, className, nod
 
         <button
           onClick={toggleFullscreen}
-          aria-label={t('table_fullscreen_aria')}
+          aria-label={t('tableFullscreenAria')}
           className={`p-1.5 rounded-md text-[var(--theme-text-tertiary)] hover:text-[var(--theme-text-primary)] hover:bg-[var(--theme-bg-tertiary)] transition-colors ${FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS}`}
-          title={t('htmlPreview_fullscreen')}
+          title={t('htmlPreviewFullscreen')}
         >
           <Maximize2 size={14} />
         </button>

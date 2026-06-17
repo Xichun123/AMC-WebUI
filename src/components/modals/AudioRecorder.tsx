@@ -52,17 +52,17 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
       await onRecord(file);
     } catch (saveError) {
       logService.error('Failed to save audio recording.', saveError);
-      alert(t('audioRecorder_failedToSave'));
+      alert(t('audioRecorderFailedToSave'));
       setIsSaving(false);
     }
   };
 
   const getSystemAudioWarningText = (warning: string) => {
     if (warning === SYSTEM_AUDIO_NOT_SHARED_WARNING) {
-      return t('audioRecorder_systemAudioNotSharedWarning');
+      return t('audioRecorderSystemAudioNotSharedWarning');
     }
     if (warning === SYSTEM_AUDIO_CAPTURE_FAILED_WARNING) {
-      return t('audioRecorder_systemAudioCaptureFailedWarning');
+      return t('audioRecorderSystemAudioCaptureFailedWarning');
     }
     return warning;
   };
@@ -83,7 +83,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
       <div className="flex items-center justify-between px-5 pt-4 pb-3 bg-[var(--theme-bg-primary)]">
         <h2 className="flex items-center gap-2 text-lg font-semibold text-[var(--theme-text-primary)]">
           <Mic size={20} className="text-[var(--theme-text-link)]" />
-          {viewState === 'review' ? t('audioRecorder_previewTitle') : t('audioRecorder_title')}
+          {viewState === 'review' ? t('audioRecorderPreviewTitle') : t('audioRecorderTitle')}
         </h2>
         <button onClick={onCancel} aria-label={t('close')} className={MODAL_CLOSE_BUTTON_CLASS}>
           <X size={20} />
@@ -110,7 +110,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
                 <div className="flex min-w-0 items-center gap-2">
                   <Loader2 size={15} className="shrink-0 animate-spin text-[var(--theme-text-link)]" />
                   <p className="text-sm font-medium text-[var(--theme-text-primary)]">
-                    {t('audioRecorder_accessingMicrophone')}
+                    {t('audioRecorderAccessingMicrophone')}
                   </p>
                 </div>
               </div>
@@ -123,9 +123,9 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
                   className={`group flex min-h-14 items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-[var(--theme-text-primary)] transition-colors hover:bg-[var(--theme-bg-primary)]/80 ${FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS}`}
                 >
                   <span className="flex min-w-0 flex-col">
-                    <span className="text-sm font-medium">{t('audioRecorder_recordMicrophone')}</span>
+                    <span className="text-sm font-medium">{t('audioRecorderRecordMicrophone')}</span>
                     <span className="text-xs text-[var(--theme-text-tertiary)]">
-                      {t('audioRecorder_microphoneOnly')}
+                      {t('audioRecorderMicrophoneOnly')}
                     </span>
                   </span>
                   <ChevronRight
@@ -139,9 +139,9 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
                   className={`group flex min-h-14 items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-[var(--theme-text-primary)] transition-colors hover:bg-[var(--theme-bg-primary)]/80 ${FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS}`}
                 >
                   <span className="flex min-w-0 flex-col">
-                    <span className="text-sm font-medium">{t('audioRecorder_recordSystemAudio')}</span>
+                    <span className="text-sm font-medium">{t('audioRecorderRecordSystemAudio')}</span>
                     <span className="text-xs text-[var(--theme-text-tertiary)]">
-                      {t('audioRecorder_systemAudioAndMic')}
+                      {t('audioRecorderSystemAudioAndMic')}
                     </span>
                   </span>
                   <ChevronRight
@@ -150,7 +150,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
                   />
                 </button>
                 <p className="px-3 pb-1.5 pt-1 text-xs leading-5 text-[var(--theme-text-tertiary)]">
-                  {t('audioRecorder_browserPermissionRequired')}
+                  {t('audioRecorderBrowserPermissionRequired')}
                 </p>
               </div>
             )}
@@ -167,7 +167,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
 
             <div className="flex items-center gap-2 text-xs font-medium text-[var(--theme-text-tertiary)] uppercase tracking-widest">
               <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              {t('audioRecorder_recordingStatus')}
+              {t('audioRecorderRecordingStatus')}
             </div>
           </div>
         )}
@@ -176,7 +176,7 @@ export const AudioRecorder: React.FC<AudioRecorderProps> = ({ onRecord, onCancel
           <div className="w-full space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="flex flex-col items-center mb-6">
               <div className="text-xs text-[var(--theme-text-tertiary)] mb-1 uppercase tracking-wide">
-                {t('audioRecorder_totalDuration')}
+                {t('audioRecorderTotalDuration')}
               </div>
               <div className="text-3xl font-mono text-[var(--theme-text-primary)]">{formatTime(recordingTime)}</div>
             </div>

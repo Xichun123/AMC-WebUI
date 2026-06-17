@@ -17,7 +17,12 @@ import {
   type Theme,
   type ThinkingLevel,
 } from '@/types';
-import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
+import { isThirdPartyApiActive } from '@/utils/thirdPartyApiActive';
+import {
+  buildProviderAwareModelList,
+  getThirdPartyProviderModelId,
+  getThirdPartyProviderModels,
+} from '@/utils/thirdPartyApiProviders';
 import { useDataExport } from '@/hooks/data-management/useDataExport';
 import { useDataImport } from '@/hooks/data-management/useDataImport';
 import { useChatSessionExport } from '@/hooks/data-management/useChatSessionExport';
@@ -27,10 +32,6 @@ import { focusChatInput } from '@/utils/chat-input/focus';
 import { useAppPromptModes } from './useAppPromptModes';
 import { DEFAULT_THINKING_BUDGET } from '@/constants/modelConfiguration';
 import { getModelCapabilities } from '@/utils/modelCapabilities';
-
-const buildProviderAwareModels = (apiModels: ModelOption[]): ModelOption[] => {
-  return apiModels.map((model) => ({ ...model, apiMode: 'gemini-native' as const }));
-};
 
 type AppTranslator = ReturnType<typeof getTranslator>;
 type ChatViewModel = ReturnType<typeof useChat>;
@@ -127,7 +128,10 @@ export const useApp = (): AppViewModel => {
     }
   }, [pipState.pipWindow, currentTheme, appSettings]);
 
-  const providerAwareModels = useMemo(() => buildProviderAwareModels(apiModels), [apiModels]);
+  const providerAwareModels = useMemo(
+    () => buildProviderAwareModelList(appSettings, apiModels),
+    [appSettings, apiModels],
+  );
 
   const eventsState = useAppEvents({
     appSettings,
@@ -195,7 +199,7 @@ export const useApp = (): AppViewModel => {
       } catch (error) {
         logService.error(`Chat export failed (format: ${format})`, { error });
         alert(
-          t('export_failed_with_message').replace('{message}', error instanceof Error ? error.message : String(error)),
+          t('exportFailedWithMessage').replace('{message}', error instanceof Error ? error.message : String(error)),
         );
       } finally {
         setExportStatus('idle');
@@ -272,14 +276,11 @@ export const useApp = (): AppViewModel => {
   );
 
   const getCurrentModelDisplayName = useCallback(() => {
-    const isOpenAICompatibleMode = isOpenAICompatibleApiActive({
-      apiMode: appSettings.apiMode,
-      isOpenAICompatibleApiEnabled: appSettings.isOpenAICompatibleApiEnabled,
-    });
-    const modelIdToDisplay = isOpenAICompatibleMode
-      ? appSettings.openaiCompatibleModelId
+    const isThirdPartyMode = isThirdPartyApiActive(appSettings);
+    const modelIdToDisplay = isThirdPartyMode
+      ? getThirdPartyProviderModelId(appSettings)
       : currentChatSettings.modelId || appSettings.modelId;
-    const availableModels = isOpenAICompatibleMode ? appSettings.openaiCompatibleModels : apiModels;
+    const availableModels = isThirdPartyMode ? getThirdPartyProviderModels(appSettings) : apiModels;
 
     if (isSwitchingModel) {
       return t('appSwitchingModel');
@@ -305,17 +306,7 @@ export const useApp = (): AppViewModel => {
     }
 
     return availableModels.length === 0 ? t('appNoModelsAvailable') : t('appNoModelSelected');
-  }, [
-    apiModels,
-    appSettings.apiMode,
-    appSettings.isOpenAICompatibleApiEnabled,
-    appSettings.modelId,
-    appSettings.openaiCompatibleModelId,
-    appSettings.openaiCompatibleModels,
-    currentChatSettings.modelId,
-    isSwitchingModel,
-    t,
-  ]);
+  }, [apiModels, appSettings, currentChatSettings.modelId, isSwitchingModel, t]);
 
   return {
     appSettings,

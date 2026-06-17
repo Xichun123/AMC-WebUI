@@ -5,7 +5,7 @@ import { getGeminiKeyForRequest } from '@/utils/apiKeySelection';
 import { getModelCapabilities } from '@/utils/modelCapabilities';
 import { generateSuggestionsApi } from '@/services/api/generation/textApi';
 import { getVisibleChatMessages } from '@/utils/chat/visibility';
-import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
+import { isThirdPartyApiActive } from '@/utils/thirdPartyApiActive';
 
 type MessageUpdater = (
   sessionId: string,
@@ -42,9 +42,7 @@ export const useSuggestions = ({
     ) => {
       updateMessageInSession(sessionId, messageId, { isGeneratingSuggestions: true });
 
-      const stickyKey = isOpenAICompatibleApiActive(appSettings)
-        ? undefined
-        : sessionKeyMapRef?.current?.get(sessionId);
+      const stickyKey = isThirdPartyApiActive(appSettings) ? undefined : sessionKeyMapRef?.current?.get(sessionId);
       let keyToUse: string;
 
       if (stickyKey) {

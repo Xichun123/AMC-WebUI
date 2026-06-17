@@ -35,3 +35,10 @@ describe('DEFAULT_APP_SETTINGS', () => {
     );
   });
 });
+
+describe('Live Translate settings defaults', () => {
+  it('defaults target language to English (en) and echo off', () => {
+    expect(DEFAULT_APP_SETTINGS.liveTranslateTargetLanguageCode).toBe('en');
+    expect(DEFAULT_APP_SETTINGS.liveTranslateEchoTargetLanguage).toBe(false);
+  });
+});

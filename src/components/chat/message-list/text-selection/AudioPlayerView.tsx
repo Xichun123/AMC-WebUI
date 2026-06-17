@@ -59,7 +59,7 @@ export const AudioPlayerView: React.FC<AudioPlayerViewProps> = ({
         <span data-audio-loading-spinner className="flex h-8 w-8 items-center justify-center">
           <GoogleSpinner size={20} />
         </span>
-        <span className="pr-1 text-[var(--theme-text-secondary)]">{t('generating_audio')}</span>
+        <span className="pr-1 text-[var(--theme-text-secondary)]">{t('generatingAudio')}</span>
       </div>
     );
   }
@@ -75,7 +75,7 @@ export const AudioPlayerView: React.FC<AudioPlayerViewProps> = ({
       <div
         onMouseDown={onDragStart}
         className="flex h-8 w-5 cursor-grab touch-none items-center justify-center rounded-full text-[var(--theme-text-tertiary)] transition-colors hover:bg-[var(--theme-bg-secondary)] hover:text-[var(--theme-text-secondary)] active:cursor-grabbing"
-        title={t('drag_to_move')}
+        title={t('dragToMove')}
       >
         <GripVertical size={13} />
       </div>
@@ -102,7 +102,7 @@ export const AudioPlayerView: React.FC<AudioPlayerViewProps> = ({
         type="button"
         onClick={togglePlayback}
         className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-full border border-[var(--theme-border-secondary)] bg-[var(--theme-bg-secondary)] text-[var(--theme-text-primary)] shadow-sm transition-all hover:border-[var(--theme-border-focus)] hover:bg-[var(--theme-bg-tertiary)] active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--theme-border-focus)] focus:ring-offset-2 focus:ring-offset-[var(--theme-bg-primary)]"
-        aria-label={isPlaying ? t('audioPlayer_pause') : t('audioPlayer_play')}
+        aria-label={isPlaying ? t('audioPlayerPause') : t('audioPlayerPlay')}
       >
         {isPlaying ? (
           <Pause size={14} fill="currentColor" />
@@ -139,7 +139,7 @@ export const AudioPlayerView: React.FC<AudioPlayerViewProps> = ({
             onChange={handleSeek}
             disabled={!duration}
             className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-default"
-            aria-label={t('audioPlayer_playback_progress')}
+            aria-label={t('audioPlayerPlaybackProgress')}
           />
         </div>
 

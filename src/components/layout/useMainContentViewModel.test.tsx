@@ -3,8 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AppViewModel } from '@/hooks/app/useApp';
 import { renderHook } from '@/test/render/renderer';
 import { createAppSettings, createChatAreaProviderValue, createChatRuntimeApp } from '@/test/chat-area/fixtures';
+import { createDefaultThirdPartyApiSettings } from '@/utils/thirdPartyApiProviders';
 import { ChatRuntimeProvider, useChatHeaderRuntime } from './chat-runtime/ChatRuntimeContext';
-import { CHAT_INPUT_TEXTAREA_SELECTOR } from '@/constants/storageKeys';
+import { CHAT_INPUT_TEXTAREA_SELECTOR } from '@/constants/layout';
 
 const mockStores = vi.hoisted(() => {
   const ui = {
@@ -52,15 +53,28 @@ type BuildAppOverrides = Omit<Partial<AppViewModel>, 'chatState'> & {
 
 const buildApp = (overrides: BuildAppOverrides = {}) => {
   const { chatState: chatStateOverrides, ...appOverrides } = overrides;
+  const baseDefaults = createDefaultThirdPartyApiSettings();
   const appSettings = createAppSettings({
-    isOpenAICompatibleApiEnabled: true,
-    apiMode: 'openai-compatible',
+    isThirdPartyApiEnabled: true,
+    apiMode: 'third-party',
     modelId: 'gemini-3-flash-preview',
-    openaiCompatibleModelId: 'gpt-5.5',
-    openaiCompatibleModels: [
-      { id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true },
-      { id: 'gpt-4.1', name: 'GPT-4.1' },
-    ],
+    thirdPartyApi: {
+      activeProvider: 'openai',
+      providers: {
+        ...baseDefaults.providers,
+        openai: {
+          apiKey: null,
+          baseUrl: baseDefaults.providers.openai.baseUrl,
+          modelId: 'gpt-5.5',
+          models: [
+            { id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true },
+            { id: 'gpt-4.1', name: 'GPT-4.1' },
+          ],
+          protocol: 'openai-compatible',
+          enabled: true,
+        },
+      },
+    },
   });
   const handleSelectModelInHeader = vi.fn();
   const setAppSettings = vi.fn<AppViewModel['setAppSettings']>();
@@ -93,6 +107,37 @@ const buildApp = (overrides: BuildAppOverrides = {}) => {
   } satisfies AppViewModel;
 };
 
+const buildOpenaiProviderAppSettings = (overrides: {
+  enabled?: boolean;
+  apiMode?: 'third-party' | 'gemini-native';
+  modelId?: string;
+  models?: Array<{ id: string; name: string; isPinned?: boolean }>;
+}) => {
+  const defaults = createDefaultThirdPartyApiSettings();
+  const enabled = overrides.enabled ?? true;
+  return {
+    ...createAppSettings(),
+    isThirdPartyApiEnabled: enabled,
+    apiMode: (overrides.apiMode ??
+      (enabled ? 'third-party' : 'gemini-native')) as AppViewModel['appSettings']['apiMode'],
+    modelId: 'gemini-3-flash-preview',
+    thirdPartyApi: {
+      activeProvider: 'openai' as const,
+      providers: {
+        ...defaults.providers,
+        openai: {
+          apiKey: null,
+          baseUrl: defaults.providers.openai.baseUrl,
+          modelId: overrides.modelId ?? defaults.providers.openai.modelId,
+          models: overrides.models ?? defaults.providers.openai.models,
+          protocol: 'openai-compatible' as const,
+          enabled,
+        },
+      },
+    },
+  };
+};
+
 describe('chat runtime values', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -106,8 +151,8 @@ describe('chat runtime values', () => {
 
     expect(header.availableModels).toEqual([
       { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash Preview', apiMode: 'gemini-native' },
-      { id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true, apiMode: 'openai-compatible' },
-      { id: 'gpt-4.1', name: 'GPT-4.1', apiMode: 'openai-compatible' },
+      { id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true, apiMode: 'third-party' },
+      { id: 'gpt-4.1', name: 'GPT-4.1', apiMode: 'third-party' },
     ]);
     expect(header.selectedModelId).toBe('gpt-5.5');
     expect(header.currentModelName).toBe('GPT-5.5');
@@ -123,27 +168,21 @@ describe('chat runtime values', () => {
     if (typeof updater !== 'function') {
       throw new Error('Expected setAppSettings to receive an updater function');
     }
-    expect(updater(app.appSettings)).toEqual(
-      expect.objectContaining({
-        apiMode: 'openai-compatible',
-        modelId: 'gemini-3-flash-preview',
-        openaiCompatibleModelId: 'gpt-4.1',
-      }),
-    );
+    const updatedSettings = updater(app.appSettings);
+    expect(updatedSettings.apiMode).toBe('third-party');
+    expect((updatedSettings as AppViewModel['appSettings']).thirdPartyApi.providers.openai.modelId).toBe('gpt-4.1');
 
     unmount();
   });
 
-  it('shows API-configured OpenAI-compatible models in the header while Gemini-native mode is active', () => {
+  it('shows third-party provider models in the header while Gemini-native mode is active', () => {
     const app = buildApp({
-      appSettings: {
-        ...createAppSettings(),
-        isOpenAICompatibleApiEnabled: true,
+      appSettings: buildOpenaiProviderAppSettings({
+        enabled: true,
         apiMode: 'gemini-native',
-        modelId: 'gemini-3-flash-preview',
-        openaiCompatibleModelId: 'gpt-5.5',
-        openaiCompatibleModels: [{ id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true }],
-      },
+        modelId: 'gpt-5.5',
+        models: [{ id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true }],
+      }),
       getCurrentModelDisplayName: vi.fn(() => 'Gemini 3 Flash Preview'),
     });
     const { result, unmount } = renderChatHeaderRuntime(app);
@@ -151,7 +190,7 @@ describe('chat runtime values', () => {
 
     expect(header.availableModels).toEqual([
       { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash Preview', apiMode: 'gemini-native' },
-      { id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true, apiMode: 'openai-compatible' },
+      { id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true, apiMode: 'third-party' },
     ]);
     expect(header.selectedModelId).toBe('gemini-3-flash-preview');
 
@@ -172,17 +211,14 @@ describe('chat runtime values', () => {
     if (typeof switchToOpenAI !== 'function') {
       throw new Error('Expected setAppSettings to receive an updater function');
     }
-    expect(switchToOpenAI(app.appSettings)).toEqual(
-      expect.objectContaining({
-        apiMode: 'openai-compatible',
-        openaiCompatibleModelId: 'gpt-5.5',
-      }),
-    );
+    const switchedSettings = switchToOpenAI(app.appSettings);
+    expect(switchedSettings.apiMode).toBe('third-party');
+    expect((switchedSettings as AppViewModel['appSettings']).thirdPartyApi.providers.openai.modelId).toBe('gpt-5.5');
 
     unmount();
   });
 
-  it('focuses the chat input after selecting an OpenAI-compatible model from Gemini-native mode', () => {
+  it('focuses the chat input after selecting a third-party model from Gemini-native mode', () => {
     vi.useFakeTimers();
     const previousFocus = document.createElement('button');
     const textarea = document.createElement('textarea');
@@ -191,14 +227,12 @@ describe('chat runtime values', () => {
     previousFocus.focus();
 
     const app = buildApp({
-      appSettings: {
-        ...createAppSettings(),
-        isOpenAICompatibleApiEnabled: true,
+      appSettings: buildOpenaiProviderAppSettings({
+        enabled: true,
         apiMode: 'gemini-native',
-        modelId: 'gemini-3-flash-preview',
-        openaiCompatibleModelId: 'gpt-5.5',
-        openaiCompatibleModels: [{ id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true }],
-      },
+        modelId: 'gpt-5.5',
+        models: [{ id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true }],
+      }),
       getCurrentModelDisplayName: vi.fn(() => 'Gemini 3 Flash Preview'),
     });
     const { result, unmount } = renderChatHeaderRuntime(app);
@@ -217,16 +251,14 @@ describe('chat runtime values', () => {
     }
   });
 
-  it('keeps OpenAI-compatible models hidden while the provider switch is off', () => {
+  it('keeps third-party provider models hidden while the provider switch is off', () => {
     const app = buildApp({
-      appSettings: {
-        ...createAppSettings(),
-        isOpenAICompatibleApiEnabled: false,
+      appSettings: buildOpenaiProviderAppSettings({
+        enabled: false,
         apiMode: 'gemini-native',
-        modelId: 'gemini-3-flash-preview',
-        openaiCompatibleModelId: 'gpt-5.5',
-        openaiCompatibleModels: [{ id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true }],
-      },
+        modelId: 'gpt-5.5',
+        models: [{ id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true }],
+      }),
       getCurrentModelDisplayName: vi.fn(() => 'Gemini 3 Flash Preview'),
     });
     const { result, unmount } = renderChatHeaderRuntime(app);
@@ -267,7 +299,6 @@ describe('chat runtime values', () => {
       expect.objectContaining({
         apiMode: 'gemini-native',
         modelId: 'gemini-3-flash-preview',
-        openaiCompatibleModelId: 'gpt-5.5',
       }),
     );
 

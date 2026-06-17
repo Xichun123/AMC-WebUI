@@ -138,7 +138,7 @@ export const useLiveConnection = ({
 
     if (retryCountRef.current >= MAX_RECONNECT_RETRIES) {
       logService.error('Max reconnection attempts reached.');
-      setTranslationError('liveStatus_connection_lost_retry_failed');
+      setTranslationError('liveStatusConnectionLostRetryFailed');
       setIsReconnecting(false);
       setIsConnected(false);
 
@@ -154,7 +154,7 @@ export const useLiveConnection = ({
     logService.warn(
       `Live API disconnected. Reconnecting in ${delay}ms... (Attempt ${attempt}/${MAX_RECONNECT_RETRIES})`,
     );
-    setTranslationError('liveStatus_reconnecting_attempt', {
+    setTranslationError('liveStatusReconnectingAttempt', {
       attempt,
       maxRetries: MAX_RECONNECT_RETRIES,
     });
@@ -175,7 +175,7 @@ export const useLiveConnection = ({
       logService.info('Live API GoAway received', goAway ?? {});
       isProactiveReconnectRef.current = true;
       setIsReconnecting(true);
-      setTranslationError('liveStatus_refreshing');
+      setTranslationError('liveStatusRefreshing');
 
       sessionRef.current?.then((session) => session.close());
     },
@@ -292,7 +292,7 @@ export const useLiveConnection = ({
               if (connectionError.message) {
                 setRawError(connectionError.message);
               } else {
-                setTranslationError('liveStatus_connection_error');
+                setTranslationError('liveStatusConnectionError');
               }
             }
           },
@@ -340,11 +340,11 @@ export const useLiveConnection = ({
         setIsReconnecting(false);
         const authError = connectionError as LiveApiAuthConfigurationError & { code?: string };
         if (authError.code === 'MISSING_API_KEY') {
-          setTranslationError('liveStatus_missing_api_key');
+          setTranslationError('liveStatusMissingApiKey');
         } else if (connectionError.message) {
           setRawError(connectionError.message);
         } else {
-          setTranslationError('liveStatus_failed_to_start');
+          setTranslationError('liveStatusFailedToStart');
         }
         resetAudioState();
         stopVideo();
@@ -357,7 +357,7 @@ export const useLiveConnection = ({
         if (connectionError instanceof Error && connectionError.message) {
           setRawError(connectionError.message);
         } else {
-          setTranslationError('liveStatus_failed_to_start');
+          setTranslationError('liveStatusFailedToStart');
         }
         resetAudioState();
       }

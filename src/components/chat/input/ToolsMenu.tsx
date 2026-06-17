@@ -1,6 +1,17 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { SlidersHorizontal, Globe, Check, Terminal, Link, X, Telescope, Calculator, AlertTriangle } from 'lucide-react';
+import {
+  SlidersHorizontal,
+  Globe,
+  Check,
+  Terminal,
+  Link,
+  X,
+  Telescope,
+  Calculator,
+  AlertTriangle,
+  MapPin,
+} from 'lucide-react';
 import { useI18n } from '@/contexts/I18nContext';
 import { IconPython } from '@/components/icons';
 import { CHAT_INPUT_BUTTON_CLASS } from '@/constants/buttonClasses';
@@ -48,10 +59,21 @@ const ActiveToolBadge: React.FC<{
   </>
 );
 
-const BUILT_IN_TOOL_IDS = new Set<ChatToolId>(['deepSearch', 'googleSearch', 'codeExecution', 'urlContext']);
+const BUILT_IN_TOOL_IDS = new Set<ChatToolId>([
+  'deepSearch',
+  'googleSearch',
+  'googleMaps',
+  'codeExecution',
+  'urlContext',
+]);
 
 const isToggleableToolId = (id: ChatToolId): id is ToggleableChatToolId =>
-  id === 'deepSearch' || id === 'googleSearch' || id === 'codeExecution' || id === 'localPython' || id === 'urlContext';
+  id === 'deepSearch' ||
+  id === 'googleSearch' ||
+  id === 'googleMaps' ||
+  id === 'codeExecution' ||
+  id === 'localPython' ||
+  id === 'urlContext';
 
 const renderToolIcon = (icon: ChatToolIconKey, size: number) => {
   switch (icon) {
@@ -59,6 +81,8 @@ const renderToolIcon = (icon: ChatToolIconKey, size: number) => {
       return <Telescope size={size} strokeWidth={2} />;
     case 'globe':
       return <Globe size={size} strokeWidth={2} />;
+    case 'map':
+      return <MapPin size={size} strokeWidth={2} />;
     case 'terminal':
       return <Terminal size={size} strokeWidth={2} />;
     case 'python':
@@ -128,8 +152,8 @@ export const ToolsMenu: React.FC<ToolsMenuProps> = ({ currentModelId, toolStates
             onClick={toggleMenu}
             disabled={disabled}
             className={`${CHAT_INPUT_BUTTON_CLASS} text-[var(--theme-icon-attach)] ${isOpen ? 'bg-[var(--theme-bg-tertiary)] text-[var(--theme-text-primary)]' : 'bg-transparent hover:bg-[var(--theme-bg-tertiary)]'}`}
-            aria-label={t('tools_button')}
-            title={t('tools_button')}
+            aria-label={t('toolsButton')}
+            title={t('toolsButton')}
             aria-haspopup="true"
             aria-expanded={isOpen}
           >
@@ -192,7 +216,7 @@ export const ToolsMenu: React.FC<ToolsMenuProps> = ({ currentModelId, toolStates
         <div className="max-w-sm rounded-xl border border-[var(--theme-bg-danger)]/20 bg-[var(--theme-bg-danger)]/8 px-3 py-2 text-xs text-[var(--theme-text-secondary)]">
           <div className="flex items-start gap-2">
             <AlertTriangle size={14} className="mt-0.5 flex-shrink-0 text-[var(--theme-text-danger)]" strokeWidth={2} />
-            <span>{t('tools_local_python_combination_notice')}</span>
+            <span>{t('toolsLocalPythonCombinationNotice')}</span>
           </div>
         </div>
       )}

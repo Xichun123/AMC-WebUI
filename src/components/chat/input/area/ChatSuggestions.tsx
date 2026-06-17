@@ -111,11 +111,11 @@ export const ChatSuggestions: React.FC<ChatSuggestionsProps> = ({
                                                 : 'bg-[var(--theme-bg-input)] hover:bg-[var(--theme-bg-tertiary)] text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-primary)]'
                                             }
                                         `}
-                    aria-label={t('bbox_button_title')}
-                    title={t('bbox_button_title')}
+                    aria-label={t('bboxButtonTitle')}
+                    title={t('bboxButtonTitle')}
                   >
                     <SuggestionIcon iconName="Scan" />
-                    <span>{t('bbox_button_short')}</span>
+                    <span>{t('bboxButtonShort')}</span>
                   </button>
                 )}
                 {onToggleGuide && (
@@ -133,11 +133,11 @@ export const ChatSuggestions: React.FC<ChatSuggestionsProps> = ({
                                                 : 'bg-[var(--theme-bg-input)] hover:bg-[var(--theme-bg-tertiary)] text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-primary)]'
                                             }
                                         `}
-                    aria-label={t('guide_button_title')}
-                    title={t('guide_button_title')}
+                    aria-label={t('guideButtonTitle')}
+                    title={t('guideButtonTitle')}
                   >
                     <MousePointer2 size={13} />
-                    <span>{t('guide_button_short')}</span>
+                    <span>{t('guideButtonShort')}</span>
                   </button>
                 )}
               </>
@@ -151,7 +151,7 @@ export const ChatSuggestions: React.FC<ChatSuggestionsProps> = ({
           type="button"
           onClick={() => handleScroll('left')}
           className={`absolute left-0 top-1/2 -translate-y-[calc(50%+4px)] z-10 p-1.5 rounded-full bg-[var(--theme-bg-primary)]/95 border border-[var(--theme-border-secondary)] shadow-md text-[var(--theme-text-primary)] transition-all duration-200 ${isSuggestionsHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          aria-label={t('suggestions_scroll_left')}
+          aria-label={t('suggestionsScrollLeft')}
         >
           <ChevronLeft size={16} strokeWidth={2} />
         </button>
@@ -161,7 +161,7 @@ export const ChatSuggestions: React.FC<ChatSuggestionsProps> = ({
           type="button"
           onClick={() => handleScroll('right')}
           className={`absolute right-0 top-1/2 -translate-y-[calc(50%+4px)] z-10 p-1.5 rounded-full bg-[var(--theme-bg-primary)]/95 border border-[var(--theme-border-secondary)] shadow-md text-[var(--theme-text-primary)] transition-all duration-200 ${isSuggestionsHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          aria-label={t('suggestions_scroll_right')}
+          aria-label={t('suggestionsScrollRight')}
         >
           <ChevronRight size={16} strokeWidth={2} />
         </button>

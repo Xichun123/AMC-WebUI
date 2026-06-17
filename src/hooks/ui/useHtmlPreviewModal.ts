@@ -220,7 +220,7 @@ export const useHtmlPreviewModal = ({
   }, [isOpen, onClose, initialTrueFullscreenRequest, enterTrueFullscreen, isTrueFullscreen, targetDocument, iframeRef]);
 
   const getPreviewTitle = useCallback(() => {
-    let title = t('htmlPreview_title');
+    let title = t('htmlPreviewTitle');
     try {
       const titleMatch = htmlContent?.match(/<title[^>]*>([^<]+)<\/title>/i);
       if (titleMatch && titleMatch[1]) {
@@ -272,13 +272,13 @@ export const useHtmlPreviewModal = ({
         backgroundColor: null,
         scale: 2,
         messages: {
-          imageTooLarge: t('export_image_too_large'),
-          exportFailed: (message) => t('export_failed_with_message').replace('{message}', message),
+          imageTooLarge: t('exportImageTooLarge'),
+          exportFailed: (message) => t('exportFailedWithMessage').replace('{message}', message),
         },
       });
     } catch (screenshotError) {
       logService.error('Failed to take screenshot of iframe content:', screenshotError);
-      alert(t('htmlPreview_screenshot_failed'));
+      alert(t('htmlPreviewScreenshotFailed'));
     } finally {
       cleanup();
       setIsScreenshotting(false);

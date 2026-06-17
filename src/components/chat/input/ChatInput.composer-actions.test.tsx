@@ -1,4 +1,7 @@
 import { act } from 'react';
+// jsdom's Blob lacks `.stream()`, which undici's Response.blob() requires.
+// Import the spec-compliant Node Blob solely for building fetch mock bodies.
+import { Blob as NodeBlob } from 'node:buffer';
 import { setupProviderTestRenderer } from '@/test/render/providerRenderer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -379,7 +382,7 @@ describe('ChatInput composer actions', () => {
     const read = vi.fn(async () => []);
     const readText = vi.fn(async () => 'PixPin_2026-05-09_16-05-36.png');
     const fetchMock = vi.fn(async () => {
-      return new Response(new Blob(['local-png'], { type: 'image/png' }), {
+      return new Response(new NodeBlob(['local-png'], { type: 'image/png' }), {
         status: 200,
         headers: {
           'content-type': 'image/png',
@@ -441,7 +444,7 @@ describe('ChatInput composer actions', () => {
     const read = vi.fn(async () => []);
     const readText = vi.fn(async () => '');
     const fetchMock = vi.fn(async () => {
-      return new Response(new Blob(['local-png'], { type: 'image/png' }), {
+      return new Response(new NodeBlob(['local-png'], { type: 'image/png' }), {
         status: 200,
         headers: {
           'content-type': 'image/png',

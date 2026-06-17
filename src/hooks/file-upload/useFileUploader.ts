@@ -16,7 +16,7 @@ import {
 import { uploadFileItem } from '@/utils/file-upload/uploadFileItem';
 import { runWithConcurrencyLimit } from '@/utils/file-upload/uploadQueue';
 import { useI18n } from '@/contexts/I18nContext';
-import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
+import { isThirdPartyApiActive } from '@/utils/thirdPartyApiActive';
 
 const MAX_CONCURRENT_FILE_UPLOADS = 3;
 
@@ -66,7 +66,7 @@ export const useFileUploader = ({
           return;
         }
         keyToUse = keyResult.key;
-        if (keyResult.isNewKey && !isOpenAICompatibleApiActive(appSettings)) {
+        if (keyResult.isNewKey && !isThirdPartyApiActive(appSettings)) {
           logService.info('New API key selected for this session due to file upload.');
           setCurrentChatSettings((previousSettings) => ({ ...previousSettings, lockedApiKey: keyToUse! }));
         }
@@ -112,7 +112,7 @@ export const useFileUploader = ({
             return {
               ...file,
               isProcessing: false,
-              error: t('upload_cancelled'),
+              error: t('uploadCancelled'),
               uploadState: 'cancelled',
               uploadSpeed: undefined,
               dataUrl: undefined, // Clear URL so UI gracefully falls back to a file type icon

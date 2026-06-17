@@ -106,4 +106,19 @@ export default tseslint.config(
       'no-console': 'off',
     },
   },
+  {
+    files: ['docker/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'commonjs',
+      globals: {
+        __dirname: 'readonly',
+        console: 'readonly',
+        process: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        URL: 'readonly',
+      },
+    },
+  },
 );

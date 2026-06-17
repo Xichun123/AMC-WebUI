@@ -2,6 +2,7 @@ import { getRuntimeConfigAppSettingsOverrides } from '@/runtime/runtimeConfig';
 import { MediaResolution, type AppSettings, type FilesApiConfig, type ModelOption, type ThinkingLevel } from '@/types';
 import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '@/utils/apiProxyUrl';
 import { createEmptyLiveArtifactsSystemPrompts } from '@/utils/liveArtifactsPromptSettings';
+import { DEFAULT_THEME_ID } from './themeRegistry';
 import {
   DEFAULT_MODEL_ID,
   DEFAULT_SHOW_THOUGHTS,
@@ -16,6 +17,7 @@ import {
 } from './modelConfiguration';
 import { DEFAULT_SAFETY_SETTINGS } from './safetySettings';
 import { DEFAULT_THOUGHT_TRANSLATION_TARGET_LANGUAGE, DEFAULT_TRANSLATION_TARGET_LANGUAGE } from './translationOptions';
+import { DEFAULT_THIRD_PARTY_API_SETTINGS } from '@/utils/thirdPartyApiProviders';
 
 export const DEFAULT_SYSTEM_INSTRUCTION = '';
 
@@ -50,6 +52,7 @@ export const DEFAULT_CHAT_SETTINGS = {
   thinkingLevel: DEFAULT_THINKING_LEVEL as ThinkingLevel,
   lockedApiKey: null,
   isGoogleSearchEnabled: false,
+  isGoogleMapsEnabled: false,
   isCodeExecutionEnabled: false,
   isUrlContextEnabled: false,
   isDeepSearchEnabled: false,
@@ -61,7 +64,7 @@ export const DEFAULT_CHAT_SETTINGS = {
 
 const BASE_DEFAULT_APP_SETTINGS: AppSettings = {
   ...DEFAULT_CHAT_SETTINGS,
-  themeId: 'pearl',
+  themeId: DEFAULT_THEME_ID,
   baseFontSize: DEFAULT_BASE_FONT_SIZE,
   apiMode: 'gemini-native',
   isOpenAICompatibleApiEnabled: DEFAULT_IS_OPENAI_COMPATIBLE_API_ENABLED,
@@ -109,6 +112,9 @@ const BASE_DEFAULT_APP_SETTINGS: AppSettings = {
   mcpServers: [],
   customShortcuts: {},
   tabModelCycleIds: undefined,
+  liveTranslateTargetLanguageCode: 'en',
+  liveTranslateEchoTargetLanguage: false,
+  thirdPartyApi: DEFAULT_THIRD_PARTY_API_SETTINGS,
 };
 
 export function getDefaultAppSettings(): AppSettings {

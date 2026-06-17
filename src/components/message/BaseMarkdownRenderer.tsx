@@ -335,7 +335,7 @@ export const BaseMarkdownRenderer: React.FC<BaseMarkdownRendererProps> = React.m
       );
 
       if (hideThinkingInContext) {
-        return wrapReasoningMarkup(contentWithNormalizedMath, isLoading, t('thinking_raw_process'));
+        return wrapReasoningMarkup(contentWithNormalizedMath, isLoading, t('thinkingRawProcess'));
       }
 
       return stripGemmaThoughtMarkup(contentWithNormalizedMath);

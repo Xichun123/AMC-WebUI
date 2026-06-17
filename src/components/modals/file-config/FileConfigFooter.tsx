@@ -22,7 +22,7 @@ export const FileConfigFooter: React.FC<FileConfigFooterProps> = ({ onClose, onS
         className="px-4 py-2 text-sm bg-[var(--theme-bg-accent)] text-[var(--theme-text-accent)] hover:bg-[var(--theme-bg-accent-hover)] rounded-lg transition-colors flex items-center gap-2 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--theme-bg-primary)]"
       >
         <Save size={16} />
-        {t('videoSettings_save')}
+        {t('videoSettingsSave')}
       </button>
     </div>
   );

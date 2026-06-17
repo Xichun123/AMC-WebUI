@@ -16,7 +16,7 @@ export const ImageOutputModeSelector: React.FC<ImageOutputModeSelectorProps> = (
   return (
     <Select
       id="image-output-mode-selector"
-      label={t('imageOutputMode_title')}
+      label={t('imageOutputModeTitle')}
       hideLabel
       value={imageOutputMode}
       onChange={(e) => setImageOutputMode(e.target.value as ImageOutputMode)}
@@ -24,8 +24,8 @@ export const ImageOutputModeSelector: React.FC<ImageOutputModeSelectorProps> = (
       wrapperClassName="relative w-[150px]"
       direction="up"
     >
-      <option value="IMAGE_TEXT">{t('imageOutputMode_textAndImage')}</option>
-      <option value="IMAGE_ONLY">{t('imageOutputMode_imageOnly')}</option>
+      <option value="IMAGE_TEXT">{t('imageOutputModeTextAndImage')}</option>
+      <option value="IMAGE_ONLY">{t('imageOutputModeImageOnly')}</option>
     </Select>
   );
 };

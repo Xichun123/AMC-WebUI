@@ -269,7 +269,7 @@ export const useChatInputFileUi = ({
         });
       } catch (error) {
         logService.error('Failed to move text file into input:', error);
-        setAppFileError(t('selectedFile_readTextFailed'));
+        setAppFileError(t('selectedFileReadTextFailed'));
       }
     },
     [setAppFileError, setInputText, setSelectedFiles, t, textareaRef],

@@ -121,7 +121,7 @@ export const ChatTextArea: React.FC<ChatTextAreaProps> = ({
           height: isFullscreen ? '100%' : `${isMobile ? 26 : initialTextareaHeight + 2}px`,
           overflowY: isFullscreen ? 'auto' : 'hidden',
         }}
-        aria-label={t('chatInput_textarea_aria')}
+        aria-label={t('chatInputTextareaAria')}
         data-chat-input-textarea="true"
         onFocus={onFocus}
         disabled={disabled || isConverting}

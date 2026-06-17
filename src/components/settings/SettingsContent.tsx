@@ -11,7 +11,8 @@ import { ShortcutsSection } from './sections/ShortcutsSection';
 import { AboutSection } from './sections/AboutSection';
 import { type SettingsTransferProps } from './settingsTypes';
 import type { LogViewerProps } from '@/components/log-viewer/LogViewer';
-import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
+import { isThirdPartyApiActive } from '@/utils/thirdPartyApiActive';
+import { getThirdPartyProviderConfig } from '@/utils/thirdPartyApiProviders';
 interface SettingsContentProps extends SettingsTransferProps {
   activeTab: SettingsTab;
   currentSettings: AppSettings;
@@ -47,7 +48,7 @@ const buildGeminiModelList = (geminiModels: ModelOption[]): ModelOption[] =>
   tagModelsWithApiMode(geminiModels, 'gemini-native');
 
 const getGeminiModelsFromEditedList = (models: ModelOption[]): ModelOption[] =>
-  models.filter((model) => model.apiMode !== 'openai-compatible').map(stripApiMode);
+  models.filter((model) => model.apiMode !== 'third-party').map(stripApiMode);
 
 const getFallbackModelId = (models: ModelOption[]): string | undefined =>
   models.find((model) => model.isPinned)?.id || models[0]?.id;
@@ -77,20 +78,20 @@ export const SettingsContent: React.FC<SettingsContentProps> = ({
   onExportScenarios,
 }) => {
   const animClass = 'animate-in fade-in duration-200 ease-out';
-  const isOpenAICompatibleMode = isOpenAICompatibleApiActive(currentSettings);
+  const isOpenAICompatibleMode = isThirdPartyApiActive(currentSettings);
   const effectiveModelId = currentSettings.modelId;
   const effectiveAvailableModels = React.useMemo(() => buildGeminiModelList(availableModels), [availableModels]);
   const effectiveDefaultModels = React.useMemo(() => buildGeminiModelList(getDefaultModelOptions()), []);
   const shortcutAvailableModels = React.useMemo(() => {
-    if (currentSettings.isOpenAICompatibleApiEnabled !== true) {
+    if (currentSettings.isThirdPartyApiEnabled !== true) {
       return effectiveAvailableModels;
     }
 
     return [
       ...effectiveAvailableModels,
-      ...tagModelsWithApiMode(currentSettings.openaiCompatibleModels ?? [], 'openai-compatible'),
+      ...tagModelsWithApiMode(getThirdPartyProviderConfig(currentSettings).models, 'third-party'),
     ];
-  }, [currentSettings.isOpenAICompatibleApiEnabled, currentSettings.openaiCompatibleModels, effectiveAvailableModels]);
+  }, [currentSettings, effectiveAvailableModels]);
 
   const handleBatchUpdate = (updates: Partial<AppSettings>) => {
     (Object.entries(updates) as Array<[keyof AppSettings, AppSettings[keyof AppSettings]]>).forEach(([key, value]) => {
@@ -99,7 +100,7 @@ export const SettingsContent: React.FC<SettingsContentProps> = ({
   };
 
   const handleEffectiveModelChange = (modelId: string, apiMode?: ApiMode) => {
-    if (apiMode === 'openai-compatible') {
+    if (apiMode === 'third-party') {
       return;
     }
 

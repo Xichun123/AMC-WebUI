@@ -92,9 +92,9 @@ export const useDataImport = ({
           if (importPayload && importPayload.type === expectedType) {
             onValid(importPayload);
           } else {
-            const foundType = typeof importPayload?.type === 'string' ? importPayload.type : t('export_not_applicable');
+            const foundType = typeof importPayload?.type === 'string' ? importPayload.type : t('exportNotApplicable');
             throw new Error(
-              t('settingsImport_invalidFileFormat')
+              t('settingsImportInvalidFileFormat')
                 .replace('{expectedType}', expectedType)
                 .replace('{foundType}', foundType),
             );
@@ -102,7 +102,7 @@ export const useDataImport = ({
         } catch (error) {
           logService.error(`Failed to import ${expectedType}`, { error });
           alert(
-            t('settingsImport_errorWithMessage').replace(
+            t('settingsImportErrorWithMessage').replace(
               '{message}',
               error instanceof Error ? error.message : String(error),
             ),
@@ -111,7 +111,7 @@ export const useDataImport = ({
       };
       reader.onerror = (event) => {
         logService.error(`Failed to read ${expectedType} file`, { error: event });
-        alert(t('settingsImport_error'));
+        alert(t('settingsImportError'));
       };
       reader.readAsText(file);
     },
@@ -123,7 +123,7 @@ export const useDataImport = ({
       handleImportFile<ImportedSettingsPayload>(file, 'AllModelChat-Settings', (data) => {
         const newSettings = sanitizeImportedAppSettings(data.settings);
         setAppSettings(newSettings);
-        alert(t('settingsImport_success'));
+        alert(t('settingsImportSuccess'));
       });
     },
     [handleImportFile, setAppSettings, t],
@@ -150,9 +150,9 @@ export const useDataImport = ({
             });
           }
 
-          alert(t('settingsImportHistory_success'));
+          alert(t('settingsImportHistorySuccess'));
         } else {
-          throw new Error(t('settingsImportHistory_invalidData'));
+          throw new Error(t('settingsImportHistoryInvalidData'));
         }
       });
     },
@@ -170,9 +170,9 @@ export const useDataImport = ({
               createId: generateUniqueId,
             }),
           );
-          alert(t('scenarios_feedback_imported'));
+          alert(t('scenariosFeedbackImported'));
         } else {
-          throw new Error(t('settingsImportScenarios_invalidData'));
+          throw new Error(t('settingsImportScenariosInvalidData'));
         }
       });
     },

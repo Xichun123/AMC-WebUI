@@ -44,7 +44,7 @@ export const MarkdownPreviewModal: React.FC<MarkdownPreviewModalProps> = ({
 
   const confirmDiscardChanges = useCallback(() => {
     if (!hasUnsavedChanges) return true;
-    return window.confirm(t('filePreview_discard_unsaved_changes'));
+    return window.confirm(t('filePreviewDiscardUnsavedChanges'));
   }, [hasUnsavedChanges, t]);
 
   const handleCopy = useCallback(async () => {
@@ -115,12 +115,12 @@ export const MarkdownPreviewModal: React.FC<MarkdownPreviewModalProps> = ({
                   value={editedName}
                   onChange={(event) => setEditedName(event.target.value)}
                   className="w-full rounded-lg border border-[var(--theme-border-secondary)] bg-[var(--theme-bg-secondary)] px-2 py-1 text-sm font-semibold outline-none focus:border-[var(--theme-border-focus)]"
-                  placeholder={t('filePreview_filename_placeholder')}
+                  placeholder={t('filePreviewFilenamePlaceholder')}
                 />
               ) : (
                 <h2 className="truncate text-sm font-semibold sm:text-base">{file.name}</h2>
               )}
-              <p className="text-xs text-[var(--theme-text-tertiary)]">{t('markdownPreview_document')}</p>
+              <p className="text-xs text-[var(--theme-text-tertiary)]">{t('markdownPreviewDocument')}</p>
             </div>
           </div>
 
@@ -131,7 +131,7 @@ export const MarkdownPreviewModal: React.FC<MarkdownPreviewModalProps> = ({
                 onClick={handleSave}
                 className="rounded-lg bg-[var(--theme-bg-accent)] px-3 py-2 text-sm font-medium text-white hover:opacity-90"
               >
-                <Save size={16} className="mr-1.5 inline" /> {t('filePreview_save_changes')}
+                <Save size={16} className="mr-1.5 inline" /> {t('filePreviewSaveChanges')}
               </button>
             ) : onSaveText ? (
               <button
@@ -139,14 +139,14 @@ export const MarkdownPreviewModal: React.FC<MarkdownPreviewModalProps> = ({
                 onClick={handleToggleEdit}
                 className="rounded-lg border border-[var(--theme-border-secondary)] px-3 py-2 text-sm text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-primary)]"
               >
-                <Edit3 size={16} className="mr-1.5 inline" /> {t('filePreview_edit_file')}
+                <Edit3 size={16} className="mr-1.5 inline" /> {t('filePreviewEditFile')}
               </button>
             ) : null}
             <button
               type="button"
               onClick={handleCopy}
               className="rounded-lg border border-[var(--theme-border-secondary)] p-2 text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-primary)]"
-              title={t('filePreview_copy_content')}
+              title={t('filePreviewCopyContent')}
             >
               {isCopied ? <Check size={18} className="text-green-500" /> : <ClipboardCopy size={18} />}
             </button>
@@ -154,7 +154,7 @@ export const MarkdownPreviewModal: React.FC<MarkdownPreviewModalProps> = ({
               type="button"
               onClick={handleDownload}
               className="rounded-lg border border-[var(--theme-border-secondary)] p-2 text-[var(--theme-text-secondary)] hover:text-[var(--theme-text-primary)]"
-              title={t('filePreview_download_file')}
+              title={t('filePreviewDownloadFile')}
             >
               <Download size={18} />
             </button>
@@ -162,7 +162,7 @@ export const MarkdownPreviewModal: React.FC<MarkdownPreviewModalProps> = ({
               type="button"
               onClick={isEditing ? handleToggleEdit : handleClose}
               className="rounded-lg border border-[var(--theme-border-secondary)] p-2 text-[var(--theme-text-secondary)] hover:border-red-400/60 hover:text-red-500"
-              title={isEditing ? t('filePreview_cancel_edit') : t('imageZoom_close_title')}
+              title={isEditing ? t('filePreviewCancelEdit') : t('imageZoomCloseTitle')}
             >
               <X size={18} />
             </button>

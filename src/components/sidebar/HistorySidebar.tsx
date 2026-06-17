@@ -203,7 +203,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = (props) => {
 
   const [listParentRef] = useAutoAnimate<HTMLDivElement>({ duration: 200 });
   const expandedPaneRef = React.useRef<HTMLDivElement>(null);
-  const searchTitle = t('history_search_button') + (searchChatsShortcut ? ` (${searchChatsShortcut})` : '');
+  const searchTitle = t('historySearchButton') + (searchChatsShortcut ? ` (${searchChatsShortcut})` : '');
 
   React.useEffect(() => {
     const pane = expandedPaneRef.current as (HTMLDivElement & { inert?: boolean }) | null;
@@ -232,7 +232,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = (props) => {
                  
                  border-r border-[var(--theme-border-primary)]`}
       role="complementary"
-      aria-label={t('history_title')}
+      aria-label={t('historyTitle')}
     >
       <div
         ref={expandedPaneRef}
@@ -261,7 +261,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = (props) => {
         >
           {sessions.length === 0 && !searchQuery ? (
             <p className="p-4 text-xs sm:text-sm text-center text-[var(--theme-text-tertiary)] cursor-auto">
-              {t('history_empty')}
+              {t('historyEmpty')}
             </p>
           ) : (
             <div
@@ -290,7 +290,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = (props) => {
 
               {pinnedUngrouped.length > 0 && (
                 <SessionListGroup
-                  title={t('history_pinned')}
+                  title={t('historyPinned')}
                   sessions={pinnedUngrouped}
                   sessionItemProps={sessionItemSharedProps}
                 />

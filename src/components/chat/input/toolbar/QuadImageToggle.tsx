@@ -21,10 +21,10 @@ export const QuadImageToggle: React.FC<QuadImageToggleProps> = ({ enabled, onTog
                     : 'text-[var(--theme-text-tertiary)] hover:bg-[var(--theme-bg-secondary)]/50'
                 }
             `}
-      title={t('settings_generateQuadImages_tooltip')}
+      title={t('settingsGenerateQuadImagesTooltip')}
     >
       <LayoutGrid size={14} strokeWidth={2} />
-      <span>{t('quadImages_label')}</span>
+      <span>{t('quadImagesLabel')}</span>
     </button>
   );
 };

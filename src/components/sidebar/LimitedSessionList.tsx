@@ -78,9 +78,9 @@ export const LimitedSessionList: React.FC<LimitedSessionListProps> = ({ sessions
             })
           }
           className="mx-1 my-1 w-[calc(100%-0.5rem)] rounded-lg px-3 py-2 text-left text-xs font-medium text-[var(--theme-text-tertiary)] hover:bg-[var(--theme-bg-tertiary)] hover:text-[var(--theme-text-primary)]"
-          aria-label={formatShowMoreLabel(t('history_show_more_chats'), remainingCount)}
+          aria-label={formatShowMoreLabel(t('historyShowMoreChats'), remainingCount)}
         >
-          {formatShowMoreLabel(t('history_show_more_chats'), remainingCount)}
+          {formatShowMoreLabel(t('historyShowMoreChats'), remainingCount)}
         </button>
       )}
     </>

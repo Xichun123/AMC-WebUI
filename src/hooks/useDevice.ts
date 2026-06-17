@@ -15,7 +15,6 @@ export const useIsMobile = () => {
 
     const handleChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
 
-    // Modern browsers
     mediaQuery.addEventListener('change', handleChange);
 
     return () => mediaQuery.removeEventListener('change', handleChange);

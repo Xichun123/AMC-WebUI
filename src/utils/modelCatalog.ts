@@ -116,7 +116,7 @@ export const filterModelCatalog = (entries: ModelCatalogEntry[], query: string):
 export const buildModelCatalogSections = (entries: ModelCatalogEntry[]): ModelCatalogSection[] => {
   const hasProviderSections = entries.some((entry) => entry.model.apiMode);
   if (hasProviderSections) {
-    const providerOrder: ModelCatalogProviderKey[] = ['gemini-native', 'openai-compatible'];
+    const providerOrder: ModelCatalogProviderKey[] = ['gemini-native', 'openai-compatible', 'third-party'];
 
     return providerOrder.reduce<ModelCatalogSection[]>((sections, providerKey) => {
       const providerEntries = entries.filter((entry) => entry.model.apiMode === providerKey);
@@ -154,6 +154,10 @@ export const buildModelCatalogSections = (entries: ModelCatalogEntry[]): ModelCa
 export const getModelProviderSectionLabelKey = (providerKey: ModelCatalogProviderKey): string => {
   if (providerKey === 'openai-compatible') {
     return 'modelPickerProviderOpenAICompatible';
+  }
+
+  if (providerKey === 'third-party') {
+    return 'modelPickerProviderThirdParty';
   }
 
   return 'modelPickerProviderGemini';

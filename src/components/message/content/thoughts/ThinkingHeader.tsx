@@ -43,24 +43,24 @@ export const ThinkingHeader: React.FC<ThinkingHeaderProps> = ({
           {isLoading ? (
             <>
               <span className="text-base font-bold uppercase tracking-wider text-[var(--theme-text-secondary)] truncate opacity-90">
-                {lastThought && !lastThought.isFallback ? lastThought.title : t('thinking_text')}
+                {lastThought && !lastThought.isFallback ? lastThought.title : t('thinkingText')}
               </span>
               <div className="flex items-baseline gap-2 mt-0.5 min-w-0">
                 <span className="text-sm text-[var(--theme-text-tertiary)] truncate font-mono">
                   {thinkingTimeMs !== undefined ? (
-                    t('thinking_took_time').replace(
+                    t('thinkingTookTime').replace(
                       '{duration}',
                       formatDuration(Math.round(finalThinkingDurationMs / 1000)),
                     )
                   ) : effectiveTimerStart ? (
                     <ThinkingTimer startTime={effectiveTimerStart} />
                   ) : (
-                    <span className="animate-pulse">{t('thinking_text')}</span>
+                    <span className="animate-pulse">{t('thinkingText')}</span>
                   )}
                 </span>
                 {firstTokenTimeMs !== undefined && (
                   <span className="text-xs text-[var(--theme-text-tertiary)] font-mono opacity-70 whitespace-nowrap">
-                    {t('metrics_ttft')}: {(firstTokenTimeMs / 1000).toFixed(2)}s
+                    {t('metricsTtft')}: {(firstTokenTimeMs / 1000).toFixed(2)}s
                   </span>
                 )}
               </div>
@@ -69,15 +69,15 @@ export const ThinkingHeader: React.FC<ThinkingHeaderProps> = ({
             <div className="flex items-baseline gap-2 min-w-0">
               <span className="text-base text-[var(--theme-text-secondary)] font-medium truncate opacity-90">
                 {thinkingTimeMs !== undefined
-                  ? t('thinking_took_time').replace(
+                  ? t('thinkingTookTime').replace(
                       '{duration}',
                       formatDuration(Math.round(finalThinkingDurationMs / 1000)),
                     )
-                  : t('thinking_process')}
+                  : t('thinkingProcess')}
               </span>
               {firstTokenTimeMs !== undefined && (
                 <span className="text-xs text-[var(--theme-text-tertiary)] font-mono opacity-70 whitespace-nowrap">
-                  {t('metrics_ttft')}: {(firstTokenTimeMs / 1000).toFixed(2)}s
+                  {t('metricsTtft')}: {(firstTokenTimeMs / 1000).toFixed(2)}s
                 </span>
               )}
             </div>

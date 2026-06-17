@@ -54,7 +54,7 @@ export const TokenCountModal: React.FC<TokenCountModalProps> = (props) => {
       <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--theme-border-secondary)] bg-[var(--theme-bg-secondary)]/50">
         <h2 className="text-lg font-semibold text-[var(--theme-text-primary)] flex items-center gap-2">
           <Calculator size={20} className="text-[var(--theme-text-link)]" />
-          {t('tokenModal_title')}
+          {t('tokenModalTitle')}
         </h2>
         <button onClick={onClose} className={MODAL_CLOSE_BUTTON_CLASS}>
           <X size={20} />
@@ -64,7 +64,7 @@ export const TokenCountModal: React.FC<TokenCountModalProps> = (props) => {
       <div className="flex-grow flex flex-col min-h-0 overflow-y-auto custom-scrollbar p-5 space-y-5">
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase text-[var(--theme-text-tertiary)] tracking-wider">
-            {t('tokenModal_model')}
+            {t('tokenModalModel')}
           </label>
           <ModelPicker
             models={availableModels}

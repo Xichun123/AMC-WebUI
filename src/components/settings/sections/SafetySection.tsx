@@ -19,11 +19,11 @@ const ALL_CATEGORIES: HarmCategory[] = [
 ];
 
 const CATEGORY_TRANSLATION_KEYS: Record<HarmCategory, string> = {
-  [HarmCategory.HARM_CATEGORY_HARASSMENT]: 'safety_category_HARASSMENT',
-  [HarmCategory.HARM_CATEGORY_HATE_SPEECH]: 'safety_category_HATE_SPEECH',
-  [HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT]: 'safety_category_SEXUALLY_EXPLICIT',
-  [HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT]: 'safety_category_DANGEROUS_CONTENT',
-  [HarmCategory.HARM_CATEGORY_CIVIC_INTEGRITY]: 'safety_category_CIVIC_INTEGRITY',
+  [HarmCategory.HARM_CATEGORY_HARASSMENT]: 'safetyCategoryHarassment',
+  [HarmCategory.HARM_CATEGORY_HATE_SPEECH]: 'safetyCategoryHateSpeech',
+  [HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT]: 'safetyCategorySexuallyExplicit',
+  [HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT]: 'safetyCategoryDangerousContent',
+  [HarmCategory.HARM_CATEGORY_CIVIC_INTEGRITY]: 'safetyCategoryCivicIntegrity',
 };
 
 const DEFAULT_THRESHOLD_INDEX = 3;
@@ -36,11 +36,11 @@ const THRESHOLD_STEPS: HarmBlockThreshold[] = [
 ];
 
 const THRESHOLD_LABEL_KEYS: Record<HarmBlockThreshold, string> = {
-  [HarmBlockThreshold.OFF]: 'safety_threshold_OFF',
-  [HarmBlockThreshold.BLOCK_NONE]: 'safety_threshold_BLOCK_NONE',
-  [HarmBlockThreshold.BLOCK_ONLY_HIGH]: 'safety_threshold_BLOCK_ONLY_HIGH',
-  [HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE]: 'safety_threshold_BLOCK_MEDIUM_AND_ABOVE',
-  [HarmBlockThreshold.BLOCK_LOW_AND_ABOVE]: 'safety_threshold_BLOCK_LOW_AND_ABOVE',
+  [HarmBlockThreshold.OFF]: 'safetyThresholdOff',
+  [HarmBlockThreshold.BLOCK_NONE]: 'safetyThresholdBlockNone',
+  [HarmBlockThreshold.BLOCK_ONLY_HIGH]: 'safetyThresholdBlockOnlyHigh',
+  [HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE]: 'safetyThresholdBlockMediumAndAbove',
+  [HarmBlockThreshold.BLOCK_LOW_AND_ABOVE]: 'safetyThresholdBlockLowAndAbove',
 };
 
 const STEP_TEXT_COLOR_CLASSES = [
@@ -129,9 +129,9 @@ export const SafetySection: React.FC<SafetySectionProps> = ({
         <div className="flex items-start gap-3 p-4 bg-[var(--theme-bg-secondary)] border border-[var(--theme-border-secondary)] rounded-xl">
           <Shield size={24} className="text-[var(--theme-text-link)] flex-shrink-0 mt-0.5" />
           <div>
-            <h3 className="text-base font-semibold text-[var(--theme-text-primary)]">{t('safety_title')}</h3>
+            <h3 className="text-base font-semibold text-[var(--theme-text-primary)]">{t('safetyTitle')}</h3>
             <p className="text-sm text-[var(--theme-text-secondary)] mt-1 leading-relaxed opacity-90">
-              {t('safety_description')}
+              {t('safetyDescription')}
             </p>
           </div>
         </div>
@@ -194,7 +194,7 @@ export const SafetySection: React.FC<SafetySectionProps> = ({
 
       <div className="flex items-center justify-center gap-2 text-xs text-[var(--theme-text-tertiary)] pt-4">
         <Info size={14} />
-        <span>{t('safety_changes_apply')}</span>
+        <span>{t('safetyChangesApply')}</span>
       </div>
     </div>
   );

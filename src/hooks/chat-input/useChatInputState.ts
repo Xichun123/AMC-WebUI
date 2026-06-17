@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect, useReducer, type SetStateAction } from 'react';
 import { useChatDraftStore, type ChatDraft } from '@/stores/chatDraftStore';
+import { resolveUpdaterOrValue } from '@/stores/stateUpdaters';
 import { useIsMobile } from '@/hooks/useDevice';
 import {
   chatInputStateReducer,
@@ -17,9 +18,6 @@ const EMPTY_EDITING_DRAFT: ChatDraft = {
 };
 const EMPTY_QUOTES: string[] = [];
 const FULLSCREEN_TEXTAREA_FOCUS_DELAY_MS = 50;
-
-const resolveSetStateAction = <T>(value: SetStateAction<T>, previous: T): T =>
-  typeof value === 'function' ? (value as (prev: T) => T)(previous) : value;
 
 export const useChatInputState = (activeSessionId: string | null, isEditing: boolean) => {
   const persistedInputText = useChatDraftStore((state) =>
@@ -87,7 +85,7 @@ export const useChatInputState = (activeSessionId: string | null, isEditing: boo
       if (!activeSessionId || isEditing) {
         setEditingDraft((draft) => ({
           ...draft,
-          inputText: resolveSetStateAction(value, draft.inputText),
+          inputText: resolveUpdaterOrValue(value, draft.inputText),
         }));
         return;
       }
@@ -102,7 +100,7 @@ export const useChatInputState = (activeSessionId: string | null, isEditing: boo
       if (!activeSessionId || isEditing) {
         setEditingDraft((draft) => ({
           ...draft,
-          quotes: resolveSetStateAction(value, draft.quotes),
+          quotes: resolveUpdaterOrValue(value, draft.quotes),
         }));
         return;
       }
@@ -117,7 +115,7 @@ export const useChatInputState = (activeSessionId: string | null, isEditing: boo
       if (!activeSessionId || isEditing) {
         setEditingDraft((draft) => ({
           ...draft,
-          ttsContext: resolveSetStateAction(value, draft.ttsContext),
+          ttsContext: resolveUpdaterOrValue(value, draft.ttsContext),
         }));
         return;
       }

@@ -77,7 +77,7 @@ export const ImagenAspectRatioSelector: React.FC<ImagenAspectRatioSelectorProps>
   return (
     <Select
       id="aspect-ratio-selector"
-      label={t('aspectRatio_title')}
+      label={t('aspectRatioTitle')}
       hideLabel
       value={aspectRatio}
       onChange={(e) => setAspectRatio(e.target.value)}

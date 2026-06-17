@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sendStandardMessage } from './standardChatStrategy';
 import { createStandardChatProps, type StandardChatPropsOverrides } from '@/test/hooks/factories';
 import { MediaResolution, type ThinkingLevel } from '@/types';
+import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import type { PreparedModelRequest } from './useModelRequestRunner';
 
 const {
@@ -508,7 +509,7 @@ describe('standardChatStrategy', () => {
     unmount();
   });
 
-  it('routes standard chat through OpenAI-compatible streaming when the global mode is selected', async () => {
+  it('routes standard chat through OpenAI-compatible streaming when third-party openai provider is selected', async () => {
     const streamOnError = vi.fn();
     const streamOnComplete = vi.fn();
     const streamOnPart = vi.fn();
@@ -522,12 +523,22 @@ describe('standardChatStrategy', () => {
 
     const { result, unmount } = renderStandardChat({
       appSettings: {
-        isOpenAICompatibleApiEnabled: true,
-        apiMode: 'openai-compatible',
+        isThirdPartyApiEnabled: true,
+        apiMode: 'third-party',
         apiKey: 'gemini-key',
-        openaiCompatibleApiKey: 'openai-key',
-        openaiCompatibleBaseUrl: 'https://api.openai.com/v1',
-        openaiCompatibleModelId: 'gpt-5.5',
+        thirdPartyApi: {
+          activeProvider: 'openai',
+          providers: {
+            ...DEFAULT_APP_SETTINGS.thirdPartyApi.providers,
+            openai: {
+              apiKey: 'openai-key',
+              baseUrl: 'https://api.openai.com/v1',
+              modelId: 'gpt-5.5',
+              models: [{ id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true }],
+              protocol: 'openai-compatible',
+            },
+          },
+        },
       },
       currentChatSettings: {
         isGoogleSearchEnabled: true,
@@ -563,6 +574,7 @@ describe('standardChatStrategy', () => {
         systemInstruction: 'Custom system instruction',
         temperature: 1,
         topP: 0.95,
+        thinkingLevel: 'LOW',
       },
       expect.any(AbortSignal),
       streamOnPart,
@@ -575,7 +587,7 @@ describe('standardChatStrategy', () => {
     unmount();
   });
 
-  it('routes non-stream OpenAI-compatible chat with the independent OpenAI model id', async () => {
+  it('routes non-stream OpenAI-compatible chat with the active provider model id', async () => {
     const streamOnError = vi.fn();
     const streamOnComplete = vi.fn();
     const streamOnPart = vi.fn();
@@ -589,13 +601,23 @@ describe('standardChatStrategy', () => {
 
     const { result, unmount } = renderStandardChat({
       appSettings: {
-        isOpenAICompatibleApiEnabled: true,
-        apiMode: 'openai-compatible',
+        isThirdPartyApiEnabled: true,
+        apiMode: 'third-party',
         apiKey: 'gemini-key',
-        openaiCompatibleApiKey: 'openai-key',
-        openaiCompatibleBaseUrl: 'https://api.openai.com/v1',
-        openaiCompatibleModelId: 'gpt-4.1-custom',
         isStreamingEnabled: false,
+        thirdPartyApi: {
+          activeProvider: 'openai',
+          providers: {
+            ...DEFAULT_APP_SETTINGS.thirdPartyApi.providers,
+            openai: {
+              apiKey: 'openai-key',
+              baseUrl: 'https://api.openai.com/v1',
+              modelId: 'gpt-4.1-custom',
+              models: [{ id: 'gpt-4.1-custom', name: 'GPT-4.1 Custom', isPinned: true }],
+              protocol: 'openai-compatible',
+            },
+          },
+        },
       },
       currentChatSettings: {
         isGoogleSearchEnabled: true,
@@ -629,6 +651,7 @@ describe('standardChatStrategy', () => {
         systemInstruction: 'Custom system instruction',
         temperature: 1,
         topP: 0.95,
+        thinkingLevel: 'LOW',
       },
       expect.any(AbortSignal),
       streamOnError,

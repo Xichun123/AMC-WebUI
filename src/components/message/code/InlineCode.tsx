@@ -22,13 +22,13 @@ export const InlineCode = ({ className, children, inline: _inline, ...props }: I
     <code
       className={`${className || ''} relative inline-block cursor-pointer group/code`}
       onClick={handleCopy}
-      title={t('code_inline_copy')}
+      title={t('codeInlineCopy')}
       {...props}
     >
       {children}
       {isCopied && (
         <span className="absolute bottom-full left-0 mb-1 bg-black/90 text-white text-[10px] px-1.5 py-0.5 rounded shadow-lg whitespace-nowrap z-10">
-          {t('copied_button_title')}
+          {t('copiedButtonTitle')}
         </span>
       )}
     </code>

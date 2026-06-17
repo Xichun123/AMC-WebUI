@@ -1,10 +1,17 @@
 import type { ChatSettings } from './settings';
 
-export type ChatToolId = 'deepSearch' | 'googleSearch' | 'codeExecution' | 'localPython' | 'urlContext' | 'tokenCount';
+export type ChatToolId =
+  | 'deepSearch'
+  | 'googleSearch'
+  | 'googleMaps'
+  | 'codeExecution'
+  | 'localPython'
+  | 'urlContext'
+  | 'tokenCount';
 
 export type ToggleableChatToolId = Extract<
   ChatToolId,
-  'deepSearch' | 'googleSearch' | 'codeExecution' | 'localPython' | 'urlContext'
+  'deepSearch' | 'googleSearch' | 'googleMaps' | 'codeExecution' | 'localPython' | 'urlContext'
 >;
 
 export interface ChatToolToggleState {
@@ -22,6 +29,7 @@ export type ChatToolSettingKey = Extract<
   keyof ChatSettings,
   | 'isDeepSearchEnabled'
   | 'isGoogleSearchEnabled'
+  | 'isGoogleMapsEnabled'
   | 'isCodeExecutionEnabled'
   | 'isLocalPythonEnabled'
   | 'isUrlContextEnabled'

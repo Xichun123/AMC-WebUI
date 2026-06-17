@@ -53,7 +53,7 @@ export const HtmlPreviewHeader: React.FC<HtmlPreviewHeaderProps> = ({
   const isReactPreview = title.toLowerCase().includes('react');
   const HeaderIcon = isReactPreview ? Atom : IconHtml5;
   const iconBgClass = isReactPreview ? 'bg-cyan-500/10 text-cyan-500' : 'bg-orange-500/10';
-  const subtitle = isReactPreview ? t('htmlPreview_react_app') : t('htmlPreview_title');
+  const subtitle = isReactPreview ? t('htmlPreviewReactApp') : t('htmlPreviewTitle');
   const iconBtnClass = `${ICON_BUTTON_CLASS} ${FOCUS_VISIBLE_RING_SECONDARY_OFFSET_CLASS} disabled:opacity-30 disabled:cursor-not-allowed`;
 
   return (
@@ -80,7 +80,7 @@ export const HtmlPreviewHeader: React.FC<HtmlPreviewHeaderProps> = ({
             onClick={onZoomOut}
             className={iconBtnClass}
             disabled={scale <= minZoom}
-            title={t('htmlPreview_zoom_out')}
+            title={t('htmlPreviewZoomOut')}
           >
             <ZoomOut size={18} strokeWidth={1.5} />
           </button>
@@ -91,7 +91,7 @@ export const HtmlPreviewHeader: React.FC<HtmlPreviewHeaderProps> = ({
             onClick={onZoomIn}
             className={iconBtnClass}
             disabled={scale >= maxZoom}
-            title={t('htmlPreview_zoom_in')}
+            title={t('htmlPreviewZoomIn')}
           >
             <ZoomIn size={18} strokeWidth={1.5} />
           </button>
@@ -99,17 +99,17 @@ export const HtmlPreviewHeader: React.FC<HtmlPreviewHeaderProps> = ({
 
         <div className="hidden sm:block w-px h-4 bg-[var(--theme-border-secondary)] mx-2" />
 
-        <button onClick={onRefresh} className={iconBtnClass} title={t('htmlPreview_reload')}>
+        <button onClick={onRefresh} className={iconBtnClass} title={t('htmlPreviewReload')}>
           <RotateCw size={18} strokeWidth={1.5} />
         </button>
-        <button onClick={onDownload} className={iconBtnClass} title={t('htmlPreview_download_html')}>
+        <button onClick={onDownload} className={iconBtnClass} title={t('htmlPreviewDownloadHtml')}>
           <Download size={18} strokeWidth={1.5} />
         </button>
         <button
           onClick={onScreenshot}
           className={iconBtnClass}
           disabled={!isPreviewReady || isScreenshotting}
-          title={t('htmlPreview_screenshot')}
+          title={t('htmlPreviewScreenshot')}
         >
           {isScreenshotting ? (
             <Loader2 size={18} className="animate-spin" strokeWidth={1.5} />
@@ -123,7 +123,7 @@ export const HtmlPreviewHeader: React.FC<HtmlPreviewHeaderProps> = ({
         <button
           onClick={onToggleFullscreen}
           className={iconBtnClass}
-          title={isTrueFullscreen ? t('htmlPreview_exit_fullscreen') : t('htmlPreview_fullscreen')}
+          title={isTrueFullscreen ? t('htmlPreviewExitFullscreen') : t('htmlPreviewFullscreen')}
         >
           {isTrueFullscreen ? <Minimize size={18} strokeWidth={1.5} /> : <Expand size={18} strokeWidth={1.5} />}
         </button>
@@ -132,7 +132,7 @@ export const HtmlPreviewHeader: React.FC<HtmlPreviewHeaderProps> = ({
           <button
             onClick={onClose}
             className={`${MODAL_CLOSE_BUTTON_DANGER_HOVER_CLASS} ml-1`}
-            title={t('htmlPreview_close')}
+            title={t('htmlPreviewClose')}
           >
             <X size={20} strokeWidth={1.5} />
           </button>

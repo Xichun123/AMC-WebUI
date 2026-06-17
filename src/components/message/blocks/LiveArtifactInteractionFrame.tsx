@@ -178,11 +178,11 @@ const LiveArtifactInteractionForm: React.FC<LiveArtifactInteractionFormProps> = 
     event.preventDefault();
 
     const { errors: validationErrors, submittedState } = validateState(fields, state, {
-      required: t('liveArtifactInteraction_required'),
-      invalidNumber: t('liveArtifactInteraction_invalidNumber'),
-      integer: t('liveArtifactInteraction_integer'),
-      range: t('liveArtifactInteraction_range'),
-      enum: t('liveArtifactInteraction_enum'),
+      required: t('liveArtifactInteractionRequired'),
+      invalidNumber: t('liveArtifactInteractionInvalidNumber'),
+      integer: t('liveArtifactInteractionInteger'),
+      range: t('liveArtifactInteractionRange'),
+      enum: t('liveArtifactInteractionEnum'),
     });
     if (Object.keys(validationErrors).length > 0) {
       setFormError(null);
@@ -191,7 +191,7 @@ const LiveArtifactInteractionForm: React.FC<LiveArtifactInteractionFormProps> = 
     }
 
     if (!isLiveArtifactFollowupStateWithinLimit(submittedState)) {
-      setFormError(t('liveArtifactInteraction_stateTooLarge'));
+      setFormError(t('liveArtifactInteractionStateTooLarge'));
       return;
     }
 
@@ -395,7 +395,7 @@ const LiveArtifactInteractionForm: React.FC<LiveArtifactInteractionFormProps> = 
           className="inline-flex items-center gap-2 rounded-md bg-[var(--theme-bg-accent)] px-3 py-2 text-[0.875em] font-medium text-[var(--theme-text-accent)] transition hover:bg-[var(--theme-bg-accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-border-focus)]/30"
         >
           <Send size={15} />
-          <span>{spec.submitLabel || t('liveArtifactInteraction_continue')}</span>
+          <span>{spec.submitLabel || t('liveArtifactInteractionContinue')}</span>
         </button>
       </div>
     </form>

@@ -440,7 +440,7 @@ describe('useLiveConnection', () => {
     expect(didConnect).toBe(false);
     expect(result.current.errorState).toEqual({
       kind: 'translation',
-      key: 'liveStatus_missing_api_key',
+      key: 'liveStatusMissingApiKey',
       values: undefined,
     });
     expect(result.current.isReconnecting).toBe(false);

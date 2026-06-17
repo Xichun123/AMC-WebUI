@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_APP_SETTINGS } from '@/constants/settingsDefaults';
 import type { SavedChatSession } from '@/types';
 import { useSuggestions } from './useSuggestions';
+import { createDefaultThirdPartyApiSettings } from '@/utils/thirdPartyApiProviders';
 
 const { generateSuggestionsApiMock, getGeminiKeyForRequestMock } = vi.hoisted(() => ({
   generateSuggestionsApiMock: vi.fn(),
@@ -61,10 +62,16 @@ describe('useSuggestions', () => {
     };
     const appSettings = {
       ...DEFAULT_APP_SETTINGS,
-      isOpenAICompatibleApiEnabled: true,
-      apiMode: 'openai-compatible' as const,
+      isThirdPartyApiEnabled: true,
+      apiMode: 'third-party' as const,
       apiKey: 'gemini-key',
-      openaiCompatibleApiKey: 'openai-key',
+      thirdPartyApi: {
+        activeProvider: 'openai' as const,
+        providers: {
+          ...createDefaultThirdPartyApiSettings().providers,
+          openai: { ...createDefaultThirdPartyApiSettings().providers.openai, apiKey: 'openai-key' },
+        },
+      },
     };
     const activeChat = createSession();
     let isLoading = true;

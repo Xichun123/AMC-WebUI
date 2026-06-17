@@ -50,12 +50,12 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, commands 
             className="text-lg font-semibold text-[var(--theme-text-primary)] flex items-center gap-2"
           >
             <HelpCircle size={20} className="text-[var(--theme-text-link)]" />
-            {t('helpModal_title')}
+            {t('helpModalTitle')}
           </h2>
           <button
             onClick={onClose}
             className={`text-[var(--theme-text-tertiary)] hover:text-[var(--theme-text-primary)] hover:bg-[var(--theme-bg-tertiary)] transition-colors p-1.5 rounded-full ${FOCUS_VISIBLE_RING_SECONDARY_OFFSET_CLASS}`}
-            aria-label={t('helpModal_close_aria')}
+            aria-label={t('helpModalCloseAria')}
           >
             <X size={20} />
           </button>
@@ -69,7 +69,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, commands 
             />
             <input
               type="text"
-              placeholder={t('helpModal_search_placeholder')}
+              placeholder={t('helpModalSearchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-[var(--theme-bg-input)] border border-[var(--theme-border-secondary)] rounded-xl text-sm text-[var(--theme-text-primary)] placeholder-[var(--theme-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-border-focus)] focus:border-transparent transition-all"
@@ -94,7 +94,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, commands 
                     <button
                       onClick={() => handleCopy(command.name)}
                       className={`flex items-center gap-2 text-left sm:w-40 flex-shrink-0 group/btn rounded-lg ${FOCUS_VISIBLE_RING_PRIMARY_OFFSET_CLASS}`}
-                      title={t('helpModal_copy_title')}
+                      title={t('helpModalCopyTitle')}
                     >
                       <code className="font-mono text-sm font-semibold text-[var(--theme-text-link)] bg-[var(--theme-bg-input)] px-2 py-1 rounded-md border border-[var(--theme-border-secondary)] group-hover/btn:border-[var(--theme-text-link)] transition-colors truncate w-full">
                         {command.name}
@@ -116,14 +116,14 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, commands 
               ))
             ) : (
               <div className="flex flex-col items-center justify-center h-40 text-[var(--theme-text-tertiary)]">
-                <p className="text-sm">{t('helpModal_no_results')}</p>
+                <p className="text-sm">{t('helpModalNoResults')}</p>
               </div>
             )}
           </div>
         </div>
 
         <div className="p-3 border-t border-[var(--theme-border-secondary)] bg-[var(--theme-bg-secondary)]/30 text-center">
-          <p className="text-xs text-[var(--theme-text-tertiary)]">{t('helpModal_tip')}</p>
+          <p className="text-xs text-[var(--theme-text-tertiary)]">{t('helpModalTip')}</p>
         </div>
       </div>
     </Modal>

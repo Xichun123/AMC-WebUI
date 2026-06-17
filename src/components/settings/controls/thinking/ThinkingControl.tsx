@@ -145,7 +145,7 @@ export const ThinkingControl: FC<ThinkingControlProps> = ({
           <div className="mt-3 px-3 py-2.5">
             <div className="flex flex-col gap-3">
               <span className="text-sm font-medium text-[var(--theme-text-primary)]">
-                {t('settingsGemmaReasoningToggle_label')}
+                {t('settingsGemmaReasoningToggleLabel')}
               </span>
               <ThinkingLevelSelector
                 thinkingLevel={gemmaThinkingLevel}
@@ -155,8 +155,8 @@ export const ThinkingControl: FC<ThinkingControlProps> = ({
             </div>
             <p className="mt-3 text-xs leading-relaxed text-[var(--theme-text-secondary)]">
               {showThoughts
-                ? t('settingsGemmaReasoningToggle_enabledDesc')
-                : t('settingsGemmaReasoningToggle_disabledDesc')}
+                ? t('settingsGemmaReasoningToggleEnabledDesc')
+                : t('settingsGemmaReasoningToggleDisabledDesc')}
             </p>
           </div>
         </div>
@@ -177,7 +177,7 @@ export const ThinkingControl: FC<ThinkingControlProps> = ({
           <label className="text-sm font-semibold text-[var(--theme-text-primary)] flex items-center gap-2">
             <Lightbulb size={16} className="text-[var(--theme-text-link)]" strokeWidth={1.5} />
             {t('settingsThinkingMode')}
-            <Tooltip text={t('settingsThinkingMode_tooltip')}>
+            <Tooltip text={t('settingsThinkingModeTooltip')}>
               <Info size={14} className="text-[var(--theme-text-tertiary)] cursor-help" strokeWidth={1.5} />
             </Tooltip>
           </label>

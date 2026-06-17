@@ -74,14 +74,14 @@ export const CreateFileBody: React.FC<CreateFileBodyProps> = ({
             onDragOver={onDragOver}
             onDrop={onDrop}
             className="absolute inset-0 w-full h-full p-4 bg-transparent border-none text-[var(--theme-text-primary)] placeholder-[var(--theme-text-tertiary)] resize-none custom-scrollbar outline-none font-mono text-sm leading-relaxed"
-            placeholder={t('createText_content_placeholder')}
-            aria-label={t('createText_content_aria')}
+            placeholder={t('createTextContentPlaceholder')}
+            aria-label={t('createTextContentAria')}
             spellCheck={false}
           />
           {isDragging && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none bg-[var(--theme-bg-accent)]/12">
               <div className="bg-[var(--theme-bg-accent)] text-[var(--theme-text-accent)] px-4 py-2 rounded-lg font-medium shadow-lg">
-                {t('createText_drop_image_to_insert')}
+                {t('createTextDropImageToInsert')}
               </div>
             </div>
           )}
@@ -102,7 +102,7 @@ export const CreateFileBody: React.FC<CreateFileBodyProps> = ({
               >
                 <div className="markdown-body">
                   <LazyMarkdownRenderer
-                    content={debouncedContent || t('createText_empty_preview')}
+                    content={debouncedContent || t('createTextEmptyPreview')}
                     isLoading={false}
                     onImageClick={() => {}}
                     onOpenHtmlPreview={() => {}}
@@ -116,7 +116,7 @@ export const CreateFileBody: React.FC<CreateFileBodyProps> = ({
                   />
                 </div>
                 <div className="mt-8 pt-4 border-t border-[var(--theme-border-secondary)] text-center text-xs text-[var(--theme-text-tertiary)] hidden print:block">
-                  {t('createText_generated_with')}
+                  {t('createTextGeneratedWith')}
                 </div>
               </div>
             </div>

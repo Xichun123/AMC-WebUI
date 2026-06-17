@@ -55,7 +55,7 @@ describe('SettingsModal', () => {
 
     expect(fixedDesktopTitle).toBeNull();
     expect(scrollingDesktopTitle?.textContent).toBe('API');
-    expect(document.body.textContent).toContain('OpenAI-Compatible API');
+    expect(document.body.textContent).toContain('Third-Party API');
   });
 
   it('opens the settings surface without any enter animation class', async () => {

@@ -111,7 +111,7 @@ export const TextFileViewer: React.FC<TextFileViewerProps> = ({
         })
         .catch((error) => {
           logService.error('Failed to load text content', error);
-          setLocalContent(t('filePreview_failed_text_content'));
+          setLocalContent(t('filePreviewFailedTextContent'));
           setIsLoading(false);
         });
     }
@@ -149,7 +149,7 @@ export const TextFileViewer: React.FC<TextFileViewerProps> = ({
     <div className="w-full h-full relative group bg-[var(--theme-bg-secondary)] text-[var(--theme-text-primary)]">
       {shouldShowLoading ? (
         <div className="flex items-center justify-center h-full text-[var(--theme-text-tertiary)]">
-          <Loader2 className="animate-spin mr-2" /> {t('filePreview_loading_text_content')}
+          <Loader2 className="animate-spin mr-2" /> {t('filePreviewLoadingTextContent')}
         </div>
       ) : isEditable ? (
         <textarea
@@ -162,13 +162,13 @@ export const TextFileViewer: React.FC<TextFileViewerProps> = ({
       ) : shouldDeferMarkdown ? (
         <div className="w-full h-full flex flex-col min-h-0">
           <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-[var(--theme-border-secondary)] bg-[var(--theme-bg-primary)]">
-            <p className="text-sm text-[var(--theme-text-secondary)]">{t('filePreview_large_markdown_notice')}</p>
+            <p className="text-sm text-[var(--theme-text-secondary)]">{t('filePreviewLargeMarkdownNotice')}</p>
             <button
               type="button"
               className="shrink-0 rounded-lg border border-[var(--theme-border-focus)] bg-[var(--theme-bg-accent)]/10 px-3 py-1.5 text-sm font-medium text-[var(--theme-text-primary)] transition-colors hover:bg-[var(--theme-bg-accent)]/20"
               onClick={() => setForcedMarkdownPreviewKey(markdownPreviewKey)}
             >
-              {t('filePreview_render_markdown_anyway')}
+              {t('filePreviewRenderMarkdownAnyway')}
             </button>
           </div>
           <div className="flex-1 min-h-0">{plainTextSurface}</div>

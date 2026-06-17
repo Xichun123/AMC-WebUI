@@ -53,7 +53,7 @@ export const parseThoughtProcess = (thoughts: string | undefined) => {
 
   const contentLines = lines.slice(lastHeadingIndex + 1);
   const content = contentLines
-    .filter((l) => l.trim() !== '')
+    .filter((line) => line.trim() !== '')
     .join('\n')
     .trim();
 

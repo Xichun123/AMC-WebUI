@@ -44,7 +44,7 @@ export const sendTtsMessage = async ({
     shouldLockKey,
     keyToLock: keyToUse,
     abortController,
-    errorPrefix: t('messageSender_ttsErrorPrefix'),
+    errorPrefix: t('messageSenderTtsErrorPrefix'),
     runMessageLifecycle,
     execute: async () => {
       const base64Pcm = await generateSpeechApi(
@@ -67,8 +67,8 @@ export const sendTtsMessage = async ({
         },
         feedback: {
           notification: {
-            title: t('messageSender_audioReadyTitle'),
-            body: t('messageSender_audioReadyBody'),
+            title: t('messageSenderAudioReadyTitle'),
+            body: t('messageSenderAudioReadyBody'),
           },
         },
       };

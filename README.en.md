@@ -161,7 +161,7 @@ Node.js 26 is recommended for local development. The repository includes `.nvmrc
 git clone https://github.com/yeahhe365/AMC-WebUI.git
 cd AMC-WebUI
 
-npm install
+npm ci
 npm run dev
 ```
 

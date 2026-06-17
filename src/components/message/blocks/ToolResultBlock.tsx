@@ -66,7 +66,7 @@ export const ToolResultBlock: React.FC<ToolResultBlockProps> = ({
           <button
             onClick={handleDownload}
             className={`${MESSAGE_BLOCK_BUTTON_CLASS} !bg-[var(--theme-bg-primary)] border border-[var(--theme-border-secondary)] shadow-sm`}
-            title={t('code_download_output')}
+            title={t('codeDownloadOutput')}
           >
             {copied ? (
               <Check size={14} className="text-[var(--theme-text-success)] icon-animate-pop" />
@@ -81,7 +81,7 @@ export const ToolResultBlock: React.FC<ToolResultBlockProps> = ({
       {generatedFiles.length > 0 && (
         <div className="mt-3 pt-3 border-t border-[var(--theme-border-secondary)]/50">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--theme-text-tertiary)] flex items-center gap-1.5 mb-2">
-            <FileOutput size={12} /> {t('code_generated_output_files')}
+            <FileOutput size={12} /> {t('codeGeneratedOutputFiles')}
           </span>
           <div className="flex flex-wrap gap-2">
             {generatedFiles.map((file) => (

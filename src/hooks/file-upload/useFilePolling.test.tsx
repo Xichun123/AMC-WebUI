@@ -71,11 +71,12 @@ describe('useFilePolling', () => {
         selectedFiles: [
           processingFile,
           createUploadedFile({
-            id: 'file-ready',
-            name: 'ready.png',
-            type: 'image/png',
-            uploadState: 'active',
-            isProcessing: false,
+            id: 'file-processing-2',
+            name: 'video-2.mp4',
+            type: 'video/mp4',
+            uploadState: 'processing_api',
+            isProcessing: true,
+            fileApiName: 'files/video-456',
           }),
         ],
         setSelectedFiles,

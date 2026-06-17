@@ -4,7 +4,9 @@ import { ChevronDown, Shield } from 'lucide-react';
 import { type ApiMode, type AppSettings, type ModelOption } from '@/types';
 import { ModelSelector } from '@/components/settings/controls/ModelSelector';
 import { fetchOpenAICompatibleModels } from '@/services/api/openaiCompatibleApi';
+import { fetchAnthropicModels } from '@/services/api/anthropicApi';
 import { parseApiKeys } from '@/utils/apiKeySelection';
+import { getThirdPartyProviderConfig } from '@/utils/thirdPartyApiProviders';
 import { LiveArtifactsSection } from './LiveArtifactsSection';
 import { GenerationSection } from './GenerationSection';
 import { LanguageVoiceSection } from './LanguageVoiceSection';
@@ -43,7 +45,8 @@ export const ModelsSection: React.FC<ModelsSectionProps> = ({
   const [modelFetchMessage, setModelFetchMessage] = useState<string | null>(null);
   const viteEnv = (import.meta as ImportMeta & { env?: { VITE_OPENAI_API_KEY?: string } }).env;
   const hasOpenAIEnvKey = !!viteEnv?.VITE_OPENAI_API_KEY;
-  const isOpenAICompatibleApiEnabled = currentSettings.isOpenAICompatibleApiEnabled === true;
+  const isThirdPartyApiEnabled = currentSettings.isThirdPartyApiEnabled === true;
+  const activeProvider = getThirdPartyProviderConfig(currentSettings);
 
   const updateSetting: SettingsUpdateHandler = (key, value) => {
     onUpdateSettings({ [key]: value } as Partial<AppSettings>);
@@ -61,15 +64,26 @@ export const ModelsSection: React.FC<ModelsSectionProps> = ({
     setModelFetchMessage(null);
   };
 
-  const resolveOpenAICompatibleKey = (): string | null =>
-    currentSettings.openaiCompatibleApiKey || viteEnv?.VITE_OPENAI_API_KEY || null;
+  const resolveProviderKey = (): string | null => activeProvider.apiKey || viteEnv?.VITE_OPENAI_API_KEY || null;
+
+  const updateActiveProviderField = (partial: Partial<typeof activeProvider>) => {
+    onUpdateSettings({
+      thirdPartyApi: {
+        ...currentSettings.thirdPartyApi,
+        providers: {
+          ...currentSettings.thirdPartyApi.providers,
+          [currentSettings.thirdPartyApi.activeProvider]: { ...activeProvider, ...partial },
+        },
+      },
+    });
+  };
 
   const handleFetchOpenAICompatibleModels = async (): Promise<ModelOption[]> => {
-    const keyToFetch = resolveOpenAICompatibleKey();
+    const keyToFetch = resolveProviderKey();
 
     if (!keyToFetch) {
       setModelFetchStatus('error');
-      setModelFetchMessage(t('apiConfig_noKeyAvailable'));
+      setModelFetchMessage(t('apiConfigNoKeyAvailable'));
       return [];
     }
 
@@ -78,7 +92,7 @@ export const ModelsSection: React.FC<ModelsSectionProps> = ({
 
     if (!firstKey) {
       setModelFetchStatus('error');
-      setModelFetchMessage(t('apiConfig_invalidKeyFormat'));
+      setModelFetchMessage(t('apiConfigInvalidKeyFormat'));
       return [];
     }
 
@@ -86,11 +100,10 @@ export const ModelsSection: React.FC<ModelsSectionProps> = ({
     setModelFetchMessage(null);
 
     try {
-      const fetchedModels = await fetchOpenAICompatibleModels(
-        firstKey,
-        currentSettings.openaiCompatibleBaseUrl,
-        new AbortController().signal,
-      );
+      const fetchedModels =
+        activeProvider.protocol === 'anthropic'
+          ? await fetchAnthropicModels(firstKey, activeProvider.baseUrl, new AbortController().signal)
+          : await fetchOpenAICompatibleModels(firstKey, activeProvider.baseUrl, new AbortController().signal);
 
       if (fetchedModels.length === 0) {
         setModelFetchStatus('error');
@@ -110,23 +123,21 @@ export const ModelsSection: React.FC<ModelsSectionProps> = ({
     }
   };
 
-  const openaiCompatibleModelListEditor = isOpenAICompatibleApiEnabled ? (
+  const openaiCompatibleModelListEditor = isThirdPartyApiEnabled ? (
     <OpenAICompatibleModelListEditor
-      models={currentSettings.openaiCompatibleModels ?? []}
-      selectedModelId={currentSettings.openaiCompatibleModelId}
+      models={activeProvider.models}
+      selectedModelId={activeProvider.modelId}
       onModelsChange={(models) => {
-        onUpdateSettings({ openaiCompatibleModels: models });
+        updateActiveProviderField({ models });
         resetOpenAICompatibleModelFetch();
       }}
       onSelectedModelChange={(modelId) => {
-        onUpdateSettings({ openaiCompatibleModelId: modelId });
+        updateActiveProviderField({ modelId });
         resetOpenAICompatibleModelFetch();
       }}
       onFetchModelsForImportPreview={handleFetchOpenAICompatibleModels}
       isFetchingModels={modelFetchStatus === 'loading'}
-      isFetchModelsDisabled={
-        modelFetchStatus === 'loading' || (!currentSettings.openaiCompatibleApiKey && !hasOpenAIEnvKey)
-      }
+      isFetchModelsDisabled={modelFetchStatus === 'loading' || (!activeProvider.apiKey && !hasOpenAIEnvKey)}
       fetchModelsStatus={modelFetchStatus === 'loading' ? 'idle' : modelFetchStatus}
       fetchModelsMessage={modelFetchMessage}
     />
@@ -171,17 +182,17 @@ export const ModelsSection: React.FC<ModelsSectionProps> = ({
               type="button"
               onClick={() => setIsSafetyExpanded((prev) => !prev)}
               aria-expanded={isSafetyExpanded}
-              aria-label={t('models_safety_toggle_aria')}
+              aria-label={t('modelsSafetyToggleAria')}
               className="flex w-full items-center justify-between gap-3 text-left"
             >
               <span className="flex min-w-0 items-start gap-3">
                 <Shield size={20} className="mt-0.5 flex-shrink-0 text-[var(--theme-text-link)]" strokeWidth={1.75} />
                 <span className="min-w-0">
                   <span className="block text-sm font-semibold text-[var(--theme-text-primary)]">
-                    {t('safety_title')}
+                    {t('safetyTitle')}
                   </span>
                   <span className="mt-1 block text-xs leading-relaxed text-[var(--theme-text-tertiary)]">
-                    {t('safety_description')}
+                    {t('safetyDescription')}
                   </span>
                 </span>
               </span>

@@ -107,14 +107,14 @@ export const DataManagementSection: React.FC<DataManagementSectionProps> = ({
   const isInstallDisabled = installState === 'installed';
   const installDescription =
     installState === 'installed'
-      ? t('settingsInstallApp_unavailable_title')
+      ? t('settingsInstallAppUnavailableTitle')
       : installState === 'manual'
-        ? t('settingsInstallApp_manual_title')
+        ? t('settingsInstallAppManualTitle')
         : undefined;
   const localAppDataDescription = isAppDataSizeLoading
-    ? t('settingsLocalAppData_loading')
+    ? t('settingsLocalAppDataLoading')
     : hasAppDataSizeError
-      ? t('settingsLocalAppData_error')
+      ? t('settingsLocalAppDataError')
       : formattedTotalSize;
   const importExportRows = [
     {
@@ -193,7 +193,7 @@ export const DataManagementSection: React.FC<DataManagementSectionProps> = ({
           <button
             onClick={onInstallPwa}
             disabled={isInstallDisabled}
-            aria-label={t('settingsInstallApp_aria')}
+            aria-label={t('settingsInstallAppAria')}
             className={`${outlineBtnClass} disabled:opacity-50 disabled:cursor-not-allowed`}
           >
             {t('settingsInstallApp')}

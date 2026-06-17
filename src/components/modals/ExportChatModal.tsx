@@ -30,13 +30,13 @@ export const ExportChatModal: React.FC<ExportChatModalProps> = ({ isOpen, onClos
             className="text-lg sm:text-xl font-semibold text-[var(--theme-text-link)] flex items-center"
           >
             <Download size={headingIconSize} className="mr-2.5 opacity-80" />
-            {t('export_chat_title')}
+            {t('exportChatTitle')}
           </h2>
           <button
             onClick={onClose}
             disabled={isLoading}
             className={`${MODAL_CLOSE_BUTTON_CLASS} disabled:opacity-50`}
-            aria-label={t('export_close_dialog_aria')}
+            aria-label={t('exportCloseDialogAria')}
           >
             <X size={22} />
           </button>
@@ -46,8 +46,8 @@ export const ExportChatModal: React.FC<ExportChatModalProps> = ({ isOpen, onClos
           {isLoading ? (
             <div className="flex flex-col items-center justify-center h-40 text-[var(--theme-text-secondary)]">
               <Loader2 size={36} className="animate-spin text-[var(--theme-text-link)] mb-4" />
-              <p className="text-base font-medium">{t('export_conversation_loading')}</p>
-              <p className="text-sm mt-1">{t('export_conversation_wait_hint')}</p>
+              <p className="text-base font-medium">{t('exportConversationLoading')}</p>
+              <p className="text-sm mt-1">{t('exportConversationWaitHint')}</p>
             </div>
           ) : (
             <ExportOptions onExport={onExport} variant="chat" />

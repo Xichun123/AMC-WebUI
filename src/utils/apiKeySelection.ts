@@ -2,6 +2,8 @@ import { type AppSettings, type ChatSettings } from '@/types';
 import { API_KEY_LAST_USED_INDEX_KEY } from '@/constants/storageKeys';
 import { logService } from '@/services/logService';
 import { isOpenAICompatibleApiActive } from './openaiCompatibleMode';
+import { isThirdPartyApiActive } from './thirdPartyApiActive';
+import { getThirdPartyProviderConfig } from './thirdPartyApiProviders';
 
 export const SERVER_MANAGED_API_KEY = '__SERVER_MANAGED_API_KEY__';
 
@@ -18,7 +20,7 @@ export const isServerManagedApiEnabledForProxyRequests = (appSettings: ServerMan
     appSettings.apiProxyUrl?.trim()
   );
 
-type ApiKeyRequestMode = 'active' | 'gemini-native' | 'openai-compatible';
+type ApiKeyRequestMode = 'active' | 'gemini-native' | 'openai-compatible' | 'third-party';
 
 type GetKeyForRequestOptions = {
   skipIncrement?: boolean;
@@ -31,6 +33,9 @@ const resolveApiKeyRequestMode = (appSettings: AppSettings, apiMode: ApiKeyReque
     return apiMode;
   }
 
+  if (isThirdPartyApiActive(appSettings)) {
+    return 'third-party';
+  }
   return isOpenAICompatibleApiActive(appSettings) ? 'openai-compatible' : 'gemini-native';
 };
 
@@ -38,7 +43,7 @@ const getActiveApiConfig = (
   appSettings: AppSettings,
   apiMode: ApiKeyRequestMode = 'active',
 ): { apiKeysString: string | null } => {
-  const envWithGeminiKey = (
+  const importEnv = (
     import.meta as ImportMeta & {
       env?: {
         VITE_GEMINI_API_KEY?: string;
@@ -49,8 +54,14 @@ const getActiveApiConfig = (
 
   if (resolveApiKeyRequestMode(appSettings, apiMode) === 'openai-compatible') {
     return {
-      apiKeysString: appSettings.openaiCompatibleApiKey || envWithGeminiKey?.VITE_OPENAI_API_KEY || null,
+      apiKeysString: appSettings.openaiCompatibleApiKey || importEnv?.VITE_OPENAI_API_KEY || null,
     };
+  }
+
+  if (resolveApiKeyRequestMode(appSettings, apiMode) === 'third-party') {
+    const activeProvider = getThirdPartyProviderConfig(appSettings);
+    const envFallback = activeProvider.protocol === 'openai-compatible' ? importEnv?.VITE_OPENAI_API_KEY : null;
+    return { apiKeysString: activeProvider.apiKey || envFallback || null };
   }
 
   if (appSettings.useCustomApiConfig) {
@@ -59,7 +70,7 @@ const getActiveApiConfig = (
     };
   }
   return {
-    apiKeysString: envWithGeminiKey?.VITE_GEMINI_API_KEY || null,
+    apiKeysString: importEnv?.VITE_GEMINI_API_KEY || null,
   };
 };
 
@@ -171,9 +182,9 @@ export const getGeminiKeyForRequest = (
 const getApiKeyErrorTranslationKey = (error: string): string | null => {
   switch (error) {
     case 'API Key not configured.':
-      return 'apiRuntime_keyNotConfigured';
+      return 'apiRuntimeKeyNotConfigured';
     case 'No valid API keys found.':
-      return 'apiRuntime_noValidKeysFound';
+      return 'apiRuntimeNoValidKeysFound';
     default:
       return null;
   }

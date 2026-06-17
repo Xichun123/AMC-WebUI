@@ -72,14 +72,14 @@ export const PdfToolbar: React.FC<PdfToolbarProps> = ({
   return (
     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto max-w-[90vw]">
       <FloatingToolbar className="p-2 gap-2 sm:gap-3">
-        <ToolbarButton onClick={onToggleSidebar} active={showSidebar} title={t('pdf_toggle_thumbnails')}>
+        <ToolbarButton onClick={onToggleSidebar} active={showSidebar} title={t('pdfToggleThumbnails')}>
           <PanelLeft size={18} />
         </ToolbarButton>
 
         <ToolbarDivider />
 
         <div className="flex items-center gap-1">
-          <ToolbarButton onClick={onPrevPage} disabled={currentPage <= 1} title={t('pdf_previous_page')}>
+          <ToolbarButton onClick={onPrevPage} disabled={currentPage <= 1} title={t('pdfPreviousPage')}>
             <ChevronLeft size={18} />
           </ToolbarButton>
 
@@ -93,12 +93,12 @@ export const PdfToolbar: React.FC<PdfToolbarProps> = ({
               onKeyDown={handleKeyDown}
               onBlur={commitPageInput}
               className="w-8 bg-transparent text-center font-mono text-sm text-white border-b border-white/20 focus:border-white/80 outline-none p-0 transition-colors"
-              aria-label={t('pdf_page_number_aria')}
+              aria-label={t('pdfPageNumberAria')}
             />
             <span className="text-xs font-mono text-white/50 select-none">/ {numPages}</span>
           </div>
 
-          <ToolbarButton onClick={onNextPage} disabled={currentPage >= numPages} title={t('pdf_next_page')}>
+          <ToolbarButton onClick={onNextPage} disabled={currentPage >= numPages} title={t('pdfNextPage')}>
             <ChevronRight size={18} />
           </ToolbarButton>
         </div>
@@ -106,18 +106,18 @@ export const PdfToolbar: React.FC<PdfToolbarProps> = ({
         <ToolbarDivider />
 
         <div className="flex items-center gap-1">
-          <ToolbarButton onClick={onZoomOut} disabled={scale <= 0.4} title={t('filePreview_zoom_out')}>
+          <ToolbarButton onClick={onZoomOut} disabled={scale <= 0.4} title={t('filePreviewZoomOut')}>
             <ZoomOut size={18} />
           </ToolbarButton>
           <ToolbarLabel className="min-w-[40px] text-center px-1">{Math.round(scale * 100)}%</ToolbarLabel>
-          <ToolbarButton onClick={onZoomIn} disabled={scale >= 3.0} title={t('filePreview_zoom_in')}>
+          <ToolbarButton onClick={onZoomIn} disabled={scale >= 3.0} title={t('filePreviewZoomIn')}>
             <ZoomIn size={18} />
           </ToolbarButton>
         </div>
 
         <ToolbarDivider />
 
-        <ToolbarButton onClick={onRotate} title={t('pdf_rotate')}>
+        <ToolbarButton onClick={onRotate} title={t('pdfRotate')}>
           <RotateCw size={18} />
         </ToolbarButton>
       </FloatingToolbar>

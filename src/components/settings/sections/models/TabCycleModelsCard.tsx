@@ -26,7 +26,7 @@ export const TabCycleModelsCard: React.FC<TabCycleModelsCardProps> = ({ availabl
   );
 
   const cycleSummary = useMemo(
-    () => t('shortcuts_cycle_models_scope_summary').replace('{count}', String(effectiveTabCycleIds.length)),
+    () => t('shortcutsCycleModelsScopeSummary').replace('{count}', String(effectiveTabCycleIds.length)),
     [effectiveTabCycleIds.length, t],
   );
 
@@ -54,17 +54,17 @@ export const TabCycleModelsCard: React.FC<TabCycleModelsCardProps> = ({ availabl
         type="button"
         onClick={() => setIsExpanded((prev) => !prev)}
         aria-expanded={isExpanded}
-        aria-label={t('shortcuts_cycle_models_scope_toggle_aria')}
+        aria-label={t('shortcutsCycleModelsScopeToggleAria')}
         className="flex w-full items-center justify-between gap-3 text-left"
       >
         <span className="flex min-w-0 items-start gap-3">
           <Keyboard size={20} className="mt-0.5 flex-shrink-0 text-[var(--theme-text-link)]" strokeWidth={1.75} />
           <span className="min-w-0">
             <span className="block text-sm font-semibold text-[var(--theme-text-primary)]">
-              {t('shortcuts_cycle_models_scope_title')}
+              {t('shortcutsCycleModelsScopeTitle')}
             </span>
             <span className="mt-1 block text-xs leading-relaxed text-[var(--theme-text-tertiary)]">
-              {t('shortcuts_cycle_models_scope_hint')}
+              {t('shortcutsCycleModelsScopeHint')}
             </span>
             <span className="mt-1 block text-xs text-[var(--theme-text-tertiary)]">{cycleSummary}</span>
           </span>
@@ -80,7 +80,7 @@ export const TabCycleModelsCard: React.FC<TabCycleModelsCardProps> = ({ availabl
         <div className="mt-4 border-t border-[var(--theme-border-secondary)]/60 pt-4">
           {orderedCycleModels.length === 0 ? (
             <div className="text-xs italic text-[var(--theme-text-tertiary)]">
-              {t('shortcuts_cycle_models_scope_empty')}
+              {t('shortcutsCycleModelsScopeEmpty')}
             </div>
           ) : (
             <div className="grid gap-2 sm:grid-cols-2">
@@ -102,7 +102,7 @@ export const TabCycleModelsCard: React.FC<TabCycleModelsCardProps> = ({ availabl
                       checked={isSelected}
                       disabled={isLocked}
                       onChange={() => handleToggleModel(model.id)}
-                      aria-label={`${t('shortcuts_cycle_models_scope_model_aria')}: ${model.name}`}
+                      aria-label={`${t('shortcutsCycleModelsScopeModelAria')}: ${model.name}`}
                       className="mt-0.5 h-4 w-4 rounded border-[var(--theme-border-secondary)] text-[var(--theme-text-link)] focus:ring-[var(--theme-border-focus)]"
                     />
                     <span className="min-w-0 flex-1">

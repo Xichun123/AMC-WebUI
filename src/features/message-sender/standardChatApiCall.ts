@@ -12,6 +12,7 @@ import {
   sendOpenAICompatibleMessageNonStream,
   sendOpenAICompatibleMessageStream,
 } from '@/services/api/openaiCompatibleApi';
+import { sendAnthropicMessageNonStream, sendAnthropicMessageStream } from '@/services/api/anthropicApi';
 import { createMcpClientFunctions } from '@/features/mcp/mcpClientFunctions';
 import { createStandardClientFunctions } from '@/features/standard-chat/standardClientFunctions';
 import { runStandardToolLoop } from '@/features/standard-chat/standardToolLoop';
@@ -32,7 +33,8 @@ import type {
   StreamHandlerFunctions,
 } from './messageSenderTypes';
 import type { resolveStandardChatTurn } from './standardChatTurn';
-import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
+import { isThirdPartyApiActive } from '@/utils/thirdPartyApiActive';
+import { getThirdPartyProviderConfig, resolveProviderForModelId } from '@/utils/thirdPartyApiProviders';
 
 interface StandardChatApiCallContext {
   appSettings: StandardChatProps['appSettings'];
@@ -113,8 +115,20 @@ export const performStandardChatApiCall = async ({
   textToUse,
   enrichedFiles,
 }: PerformStandardChatApiCallParams) => {
-  const isOpenAICompatibleMode = isOpenAICompatibleApiActive(appSettings);
-  const apiModelId = isOpenAICompatibleMode ? appSettings.openaiCompatibleModelId : activeModelId;
+  const isThirdPartyMode = isThirdPartyApiActive(appSettings);
+  // Resolve provider: if the active provider doesn't contain the selected model,
+  // fall back to searching enabled providers for the correct one.
+  let activeProvider = isThirdPartyMode ? getThirdPartyProviderConfig(appSettings) : null;
+  if (activeProvider) {
+    const hasModel = activeProvider.models.some((m) => m.id === activeProvider!.modelId);
+    if (!hasModel) {
+      const resolved = resolveProviderForModelId(appSettings, activeProvider!.modelId);
+      if (resolved.config) {
+        activeProvider = resolved.config;
+      }
+    }
+  }
+  const apiModelId = activeProvider ? activeProvider.modelId : activeModelId;
   const { baseMessagesForApi, finalRole, finalParts, shouldSkipApiCall } = resolveTurn({
     messages,
     promptParts,
@@ -155,30 +169,46 @@ export const performStandardChatApiCall = async ({
     streamOnComplete,
   });
 
-  if (isOpenAICompatibleMode) {
-    const openaiCompatibleConfig = {
-      baseUrl: appSettings.openaiCompatibleBaseUrl,
+  if (activeProvider) {
+    const providerConfig = {
+      baseUrl: activeProvider.baseUrl,
       systemInstruction: sessionToUpdate.systemInstruction,
       temperature: sessionToUpdate.temperature,
       topP: sessionToUpdate.topP,
+      thinkingLevel: sessionToUpdate.thinkingLevel,
     };
+    const isAnthropic = activeProvider.protocol === 'anthropic';
 
     if (appSettings.isStreamingEnabled) {
       await routeThrownStreamError(
         () =>
-          sendOpenAICompatibleMessageStream(
-            keyToUse,
-            apiModelId,
-            historyForChat,
-            finalParts,
-            openaiCompatibleConfig,
-            newAbortController.signal,
-            streamOnPart,
-            onThoughtChunk,
-            streamOnError,
-            streamOnComplete,
-            finalRole,
-          ),
+          isAnthropic
+            ? sendAnthropicMessageStream(
+                keyToUse,
+                apiModelId,
+                historyForChat,
+                finalParts,
+                providerConfig,
+                newAbortController.signal,
+                streamOnPart,
+                onThoughtChunk,
+                streamOnError,
+                streamOnComplete,
+                finalRole,
+              )
+            : sendOpenAICompatibleMessageStream(
+                keyToUse,
+                apiModelId,
+                historyForChat,
+                finalParts,
+                providerConfig,
+                newAbortController.signal,
+                streamOnPart,
+                onThoughtChunk,
+                streamOnError,
+                streamOnComplete,
+                finalRole,
+              ),
         streamOnError,
       );
       return;
@@ -186,17 +216,29 @@ export const performStandardChatApiCall = async ({
 
     await routeThrownStreamError(
       () =>
-        sendOpenAICompatibleMessageNonStream(
-          keyToUse,
-          apiModelId,
-          historyForChat,
-          finalParts,
-          openaiCompatibleConfig,
-          newAbortController.signal,
-          streamOnError,
-          nonStreamOnComplete,
-          finalRole,
-        ),
+        isAnthropic
+          ? sendAnthropicMessageNonStream(
+              keyToUse,
+              apiModelId,
+              historyForChat,
+              finalParts,
+              providerConfig,
+              newAbortController.signal,
+              streamOnError,
+              nonStreamOnComplete,
+              finalRole,
+            )
+          : sendOpenAICompatibleMessageNonStream(
+              keyToUse,
+              apiModelId,
+              historyForChat,
+              finalParts,
+              providerConfig,
+              newAbortController.signal,
+              streamOnError,
+              nonStreamOnComplete,
+              finalRole,
+            ),
       streamOnError,
     );
     return;
@@ -264,6 +306,7 @@ export const performStandardChatApiCall = async ({
   const mcpFunctionDeclarations = Object.values(mcpClientFunctions).map(({ declaration }) => declaration);
   const hasRequestedServerSideToolThatNeedsCombination =
     !!sessionSettingsForGeneration.isGoogleSearchEnabled ||
+    !!sessionSettingsForGeneration.isGoogleMapsEnabled ||
     !!sessionSettingsForGeneration.isDeepSearchEnabled ||
     !!sessionSettingsForGeneration.isUrlContextEnabled;
   const isLocalPythonEnabledForTurn =

@@ -1,7 +1,7 @@
 {
   "name": "amc-webui",
   "private": true,
-  "version": "1.8.15",
+  "version": "1.9.0",
   "type": "module",
   "engines": {
     "node": ">=24 <27"

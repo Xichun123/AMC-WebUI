@@ -102,7 +102,7 @@ export const SidebarActions: React.FC<SidebarActionsProps> = ({
           href="/"
           onClick={handleNewChatClick}
           className={SIDEBAR_ACTION_LINK_CLASS}
-          aria-label={t('headerNewChat_aria')}
+          aria-label={t('headerNewChatAria')}
         >
           <IconNewChat size={18} className="text-[var(--theme-icon-history)]" strokeWidth={2} />
           <span className="min-w-0 flex-1 truncate text-[var(--theme-text-primary)]">{t('newChat')}</span>
@@ -120,8 +120,8 @@ export const SidebarActions: React.FC<SidebarActionsProps> = ({
             <input
               ref={searchInputRef}
               type="text"
-              aria-label={t('history_search_aria')}
-              placeholder={t('history_search_placeholder')}
+              aria-label={t('historySearchAria')}
+              placeholder={t('historySearchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-transparent border-0 h-full py-0 text-sm focus:ring-0 outline-none text-[var(--theme-text-primary)] placeholder:text-[var(--theme-text-tertiary)]"
@@ -133,7 +133,7 @@ export const SidebarActions: React.FC<SidebarActionsProps> = ({
             <button
               onClick={closeSearch}
               className="h-6 w-6 flex items-center justify-center text-[var(--theme-icon-history)] hover:text-[var(--theme-text-primary)] rounded-md hover:bg-[var(--theme-bg-tertiary)]"
-              aria-label={t('history_search_clear_aria')}
+              aria-label={t('historySearchClearAria')}
             >
               <X size={14} strokeWidth={2} />
             </button>
@@ -142,20 +142,18 @@ export const SidebarActions: React.FC<SidebarActionsProps> = ({
           <button
             onClick={() => setIsSearching(true)}
             className={SIDEBAR_ACTION_ROW_CLASS}
-            aria-label={t('history_search_aria')}
+            aria-label={t('historySearchAria')}
           >
             <Search size={18} className="text-[var(--theme-icon-history)]" strokeWidth={2} />
-            <span className="min-w-0 flex-1 truncate text-[var(--theme-text-primary)]">
-              {t('history_search_button')}
-            </span>
+            <span className="min-w-0 flex-1 truncate text-[var(--theme-text-primary)]">{t('historySearchButton')}</span>
             <ShortcutHint shortcut={searchChatsShortcut} />
           </button>
         )}
       </div>
       <div>
-        <button onClick={onAddNewGroup} className={SIDEBAR_ACTION_ROW_CLASS} aria-label={t('newGroup_aria')}>
+        <button onClick={onAddNewGroup} className={SIDEBAR_ACTION_ROW_CLASS} aria-label={t('newGroupAria')}>
           <IconNewGroup size={18} className="text-[var(--theme-icon-history)]" strokeWidth={2} />
-          <span className="min-w-0 flex-1 truncate text-[var(--theme-text-primary)]">{t('newGroup_button')}</span>
+          <span className="min-w-0 flex-1 truncate text-[var(--theme-text-primary)]">{t('newGroupButton')}</span>
         </button>
       </div>
     </div>

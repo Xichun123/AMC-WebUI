@@ -44,8 +44,8 @@ export const useFilePreProcessingEffects = ({
     setIsScreenCapturing(true);
     try {
       const blob = await captureScreenImage({
-        unsupported: t('screenCapture_unsupported'),
-        startFailed: (message) => t('screenCapture_start_failed').replace('{message}', message),
+        unsupported: t('screenCaptureUnsupported'),
+        startFailed: (message) => t('screenCaptureStartFailed').replace('{message}', message),
       });
 
       if (!blob) {
@@ -58,7 +58,7 @@ export const useFilePreProcessingEffects = ({
       await onProcessFiles([file]);
     } catch (error) {
       logService.error('Failed to capture screenshot:', error);
-      setAppFileError(t('screenshot_capture_failed'));
+      setAppFileError(t('screenshotCaptureFailed'));
     } finally {
       isScreenCapturingRef.current = false;
       setIsScreenCapturing(false);
@@ -79,7 +79,7 @@ export const useFilePreProcessingEffects = ({
         ...prev,
         createProcessingPlaceholderFile({
           id: tempId,
-          name: t('folder_processing'),
+          name: t('folderProcessing'),
           type: DIRECTORY_PLACEHOLDER_MIME_TYPE,
           size: 0,
         }),
@@ -95,7 +95,7 @@ export const useFilePreProcessingEffects = ({
         await onProcessFiles([contextFile]);
       } catch (error) {
         logService.error('Failed to process folder import.', error);
-        setAppFileError(t('folder_process_failed'));
+        setAppFileError(t('folderProcessFailed'));
         setSelectedFiles((prev) => prev.filter((file) => file.id !== tempId));
       } finally {
         setIsConverting(false);
@@ -117,7 +117,7 @@ export const useFilePreProcessingEffects = ({
       const errorName = error instanceof DOMException ? error.name : '';
       if (errorName !== 'AbortError' && errorName !== 'NotAllowedError') {
         logService.error('Failed to read folder picker selection.', error);
-        setAppFileError(t('folder_process_failed'));
+        setAppFileError(t('folderProcessFailed'));
       }
     }
   }, [processFolderImport, setAppFileError, t]);

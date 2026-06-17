@@ -104,7 +104,7 @@ export const ChatInputModals: React.FC<ChatInputModalsProps> = ({
           <LazyTextEditorModal
             isOpen={showTtsContextEditor}
             onClose={onCloseTtsContextEditor}
-            title={t('ttsDirectorNotes_title')}
+            title={t('ttsDirectorNotesTitle')}
             value={ttsContext || DEFAULT_TTS_CONTEXT_TEMPLATE}
             onChange={setTtsContext}
             placeholder={DEFAULT_TTS_CONTEXT_TEMPLATE}

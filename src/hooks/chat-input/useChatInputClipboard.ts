@@ -116,7 +116,7 @@ export const useChatInputClipboard = ({
   const handleAddUrl = useCallback(
     async (url: string) => {
       if (!YOUTUBE_URL_REGEX.test(url)) {
-        setAppFileError(t('addByUrl_invalid'));
+        setAppFileError(t('addByUrlInvalid'));
         return;
       }
 

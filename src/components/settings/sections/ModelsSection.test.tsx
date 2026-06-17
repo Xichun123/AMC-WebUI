@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { setupStoreStateReset } from '@/test/stores/reset';
 import { ModelsSection } from './ModelsSection';
+import { createDefaultThirdPartyApiSettings } from '@/utils/thirdPartyApiProviders';
 import type { AppSettings } from '@/types';
 import type { ModelSelector } from '@/components/settings/controls/ModelSelector';
 import type { LanguageVoiceSection } from './LanguageVoiceSection';
@@ -57,6 +58,34 @@ vi.mock('./SafetySection', () => ({
     return <div data-testid="safety-section">safety section</div>;
   },
 }));
+
+const buildOpenaiProviderSettings = (
+  overrides: {
+    apiKey?: string | null;
+    baseUrl?: string | null;
+    modelId?: string;
+    models?: Array<{ id: string; name: string; isPinned?: boolean }>;
+  } = {},
+) => {
+  const defaults = createDefaultThirdPartyApiSettings();
+  return {
+    isThirdPartyApiEnabled: true,
+    apiMode: 'third-party' as const,
+    thirdPartyApi: {
+      activeProvider: 'openai' as const,
+      providers: {
+        ...defaults.providers,
+        openai: {
+          apiKey: overrides.apiKey ?? null,
+          baseUrl: overrides.baseUrl ?? defaults.providers.openai.baseUrl,
+          modelId: overrides.modelId ?? defaults.providers.openai.modelId,
+          models: overrides.models ?? defaults.providers.openai.models,
+          protocol: 'openai-compatible' as const,
+        },
+      },
+    },
+  };
+};
 
 describe('ModelsSection', () => {
   const renderer = setupTestRenderer({ providers: { language: 'en' } });
@@ -321,19 +350,19 @@ describe('ModelsSection', () => {
     ]);
   });
 
-  it('manages OpenAI-compatible model IDs inside the models settings screen', async () => {
+  it('manages active provider model IDs inside the models settings screen', async () => {
     const onUpdateSettings = vi.fn();
 
     await renderModelsSection({
       currentSettings: {
         ...useSettingsStore.getState().appSettings,
-        isOpenAICompatibleApiEnabled: true,
-        apiMode: 'openai-compatible',
-        openaiCompatibleModelId: 'gpt-5.5',
-        openaiCompatibleModels: [
-          { id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true },
-          { id: 'gpt-4.1', name: 'GPT-4.1' },
-        ],
+        ...buildOpenaiProviderSettings({
+          modelId: 'gpt-5.5',
+          models: [
+            { id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true },
+            { id: 'gpt-4.1', name: 'GPT-4.1' },
+          ],
+        }),
       },
       onUpdateSettings,
     });
@@ -365,16 +394,22 @@ describe('ModelsSection', () => {
       updatedModelIdInputs[2].dispatchEvent(new Event('change', { bubbles: true }));
     });
 
-    expect(onUpdateSettings).toHaveBeenCalledWith({
-      openaiCompatibleModels: [
-        { id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true },
-        { id: 'gpt-4.1', name: 'GPT-4.1' },
-        { id: 'deepseek-chat', name: 'deepseek-chat' },
-      ],
-    });
+    const thirdPartyUpdate = onUpdateSettings.mock.calls
+      .map((call) => call[0])
+      .find(
+        (partial): partial is { thirdPartyApi: AppSettings['thirdPartyApi'] } =>
+          typeof partial === 'object' && partial !== null && 'thirdPartyApi' in partial,
+      ) as { thirdPartyApi: AppSettings['thirdPartyApi'] } | undefined;
+
+    expect(thirdPartyUpdate).toBeDefined();
+    expect(thirdPartyUpdate!.thirdPartyApi.providers.openai.models).toEqual([
+      { id: 'gpt-5.5', name: 'GPT-5.5', isPinned: true },
+      { id: 'gpt-4.1', name: 'GPT-4.1' },
+      { id: 'deepseek-chat', name: 'deepseek-chat' },
+    ]);
   });
 
-  it('fetches OpenAI-compatible models from the models settings screen', async () => {
+  it('fetches active provider models from the models settings screen', async () => {
     const onUpdateSettings = vi.fn();
     fetchOpenAICompatibleModelsMock.mockResolvedValue([
       { id: 'gpt-5.5', name: 'gpt-5.5' },
@@ -384,12 +419,12 @@ describe('ModelsSection', () => {
     await renderModelsSection({
       currentSettings: {
         ...useSettingsStore.getState().appSettings,
-        isOpenAICompatibleApiEnabled: true,
-        apiMode: 'openai-compatible',
-        openaiCompatibleApiKey: 'openai-compatible-key',
-        openaiCompatibleBaseUrl: 'https://api.openai.com/v1',
-        openaiCompatibleModelId: 'missing-model',
-        openaiCompatibleModels: [{ id: 'gpt-5.5', name: 'My GPT', isPinned: true }],
+        ...buildOpenaiProviderSettings({
+          apiKey: 'openai-compatible-key',
+          baseUrl: 'https://api.openai.com/v1',
+          modelId: 'missing-model',
+          models: [{ id: 'gpt-5.5', name: 'My GPT', isPinned: true }],
+        }),
       },
       onUpdateSettings,
     });
@@ -430,13 +465,18 @@ describe('ModelsSection', () => {
       importButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    expect(onUpdateSettings).toHaveBeenCalledWith({
-      openaiCompatibleModels: [
-        { id: 'gpt-5.5', name: 'My GPT', isPinned: true },
-        { id: 'deepseek-chat', name: 'deepseek-chat' },
-      ],
-    });
-    expect(onUpdateSettings).toHaveBeenCalledWith({ openaiCompatibleModelId: 'gpt-5.5' });
+    const thirdPartyFetchUpdate = onUpdateSettings.mock.calls
+      .map((call) => call[0])
+      .find(
+        (partial): partial is { thirdPartyApi: AppSettings['thirdPartyApi'] } =>
+          typeof partial === 'object' && partial !== null && 'thirdPartyApi' in partial,
+      ) as { thirdPartyApi: AppSettings['thirdPartyApi'] } | undefined;
+
+    expect(thirdPartyFetchUpdate).toBeDefined();
+    expect(thirdPartyFetchUpdate!.thirdPartyApi.providers.openai.models).toEqual([
+      { id: 'gpt-5.5', name: 'My GPT', isPinned: true },
+      { id: 'deepseek-chat', name: 'deepseek-chat' },
+    ]);
   });
 
   it('shows only GPT-compatible model and chat controls in OpenAI-compatible mode', async () => {

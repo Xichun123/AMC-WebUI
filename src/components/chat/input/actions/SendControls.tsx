@@ -98,20 +98,20 @@ export const SendControls: React.FC = () => {
     }
   };
 
-  let label = t('sendMessage_aria');
-  let title = t('sendMessage_title');
+  let label = t('sendMessageAria');
+  let title = t('sendMessageTitle');
 
   if (isStop) {
-    label = t('stopGenerating_aria');
-    title = t('stopGenerating_title');
+    label = t('stopGeneratingAria');
+    title = t('stopGeneratingTitle');
   } else if (isEdit) {
-    label = t('updateMessage_aria');
-    title = t('updateMessage_title');
+    label = t('updateMessageAria');
+    title = t('updateMessageTitle');
   } else if (isUpload) {
-    label = t('cancelPendingUploadSend_aria');
-    title = t('cancelPendingUploadSend_title');
+    label = t('cancelPendingUploadSendAria');
+    title = t('cancelPendingUploadSendTitle');
   } else if (isSend && !isDisabled) {
-    title = t('sendMessage_title') + t('sendMessage_fast_suffix');
+    title = t('sendMessageTitle') + t('sendMessageFastSuffix');
   }
 
   const renderIcon = (
@@ -140,8 +140,8 @@ export const SendControls: React.FC = () => {
             onQueueMessage?.();
           }}
           className={`${CHAT_INPUT_BUTTON_CLASS} bg-transparent hover:bg-[var(--theme-bg-tertiary)] text-[var(--theme-icon-settings)]`}
-          aria-label={t('queueMessage_aria')}
-          title={t('queueMessage_title')}
+          aria-label={t('queueMessageAria')}
+          title={t('queueMessageTitle')}
           disabled={!canQueueMessage}
           tabIndex={canQueueMessage ? 0 : -1}
         >
@@ -160,8 +160,8 @@ export const SendControls: React.FC = () => {
             onCancelEdit();
           }}
           className={`${CHAT_INPUT_BUTTON_CLASS} bg-transparent hover:bg-[var(--theme-bg-tertiary)] text-[var(--theme-icon-settings)]`}
-          aria-label={t('cancelEdit_aria')}
-          title={t('cancelEdit_title')}
+          aria-label={t('cancelEditAria')}
+          title={t('cancelEditTitle')}
           disabled={!isEditing}
           tabIndex={isEditing ? 0 : -1}
         >

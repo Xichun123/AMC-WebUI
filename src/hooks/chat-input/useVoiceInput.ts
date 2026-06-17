@@ -69,8 +69,8 @@ export const useVoiceInput = ({
           }
         } catch (error) {
           logService.error('Error processing/transcribing audio:', error);
-          const message = error instanceof Error ? error.message : t('voiceInput_failed');
-          reportError(t('voiceInput_failedWithMessage').replace('{message}', message));
+          const message = error instanceof Error ? error.message : t('voiceInputFailed');
+          reportError(t('voiceInputFailedWithMessage').replace('{message}', message));
         } finally {
           setIsTranscribing(false);
           setIsFinalizingRecording(false);
@@ -86,7 +86,7 @@ export const useVoiceInput = ({
     onStop: handleRecordingComplete,
     onError: reportError,
     onSystemAudioWarning: reportSystemAudioWarning,
-    permissionErrorMessage: t('voiceInput_permission_error'),
+    permissionErrorMessage: t('voiceInputPermissionError'),
   });
 
   const isRecording = status === 'recording';

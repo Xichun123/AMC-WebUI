@@ -33,7 +33,7 @@ export const ApiUsageTab: React.FC<ApiUsageTabProps> = ({ apiKeyUsage, appSettin
   return (
     <div className="p-4 overflow-y-auto custom-scrollbar h-full">
       <h4 className="font-semibold text-lg text-[var(--theme-text-primary)] mb-4 flex items-center gap-2">
-        <KeyRound size={20} /> {t('logViewer_api_usage_title')}
+        <KeyRound size={20} /> {t('logViewerApiUsageTitle')}
       </h4>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {Array.from(displayApiKeyUsage.entries())
@@ -50,7 +50,7 @@ export const ApiUsageTab: React.FC<ApiUsageTabProps> = ({ apiKeyUsage, appSettin
                   <span className="font-mono text-xs text-[var(--theme-text-tertiary)]">#{index + 1}</span>
                   {isActive && (
                     <span className="text-[10px] font-bold uppercase bg-green-900 text-green-300 px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <CheckCircle size={10} /> {t('logViewer_active')}
+                      <CheckCircle size={10} /> {t('logViewerActive')}
                     </span>
                   )}
                 </div>
@@ -60,7 +60,7 @@ export const ApiUsageTab: React.FC<ApiUsageTabProps> = ({ apiKeyUsage, appSettin
                 <div className="flex items-end justify-between">
                   <div className="flex flex-col">
                     <span className="text-2xl font-bold text-[var(--theme-text-primary)]">{count}</span>
-                    <span className="text-xs text-[var(--theme-text-tertiary)]">{t('logViewer_requests')}</span>
+                    <span className="text-xs text-[var(--theme-text-tertiary)]">{t('logViewerRequests')}</span>
                   </div>
                   <div className="text-xl font-bold text-[var(--theme-text-tertiary)] opacity-30">
                     {percentage.toFixed(0)}%

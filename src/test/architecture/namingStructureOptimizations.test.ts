@@ -274,27 +274,26 @@ describe('naming and structure optimization guardrails', () => {
     expect(utilsSource).toContain('export const dedupeOpenAICompatibleModelOptions');
   });
 
-  it('keeps OpenAI-compatible API settings in the API config subcomponent', () => {
+  it('keeps third-party API settings in the API config subcomponent', () => {
     const apiConfigSource = readProjectFile('src/components/settings/sections/ApiConfigSection.tsx');
-    const openaiCompatibleSettingsSource = readProjectFile(
-      'src/components/settings/sections/api-config/OpenAICompatibleApiSettingsPanel.tsx',
+    const thirdPartySettingsSource = readProjectFile(
+      'src/components/settings/sections/api-config/ThirdPartyApiSettingsPanel.tsx',
     );
 
     expect(
       fs.existsSync(
-        path.join(projectRoot, 'src/components/settings/sections/api-config/OpenAICompatibleApiSettingsPanel.tsx'),
+        path.join(projectRoot, 'src/components/settings/sections/api-config/ThirdPartyApiSettingsPanel.tsx'),
       ),
     ).toBe(true);
-    expect(apiConfigSource).toContain("from './api-config/OpenAICompatibleApiSettingsPanel'");
-    expect(apiConfigSource).toContain('<OpenAICompatibleApiSettingsPanel');
+    expect(apiConfigSource).toContain("from './api-config/ThirdPartyApiSettingsPanel'");
+    expect(apiConfigSource).toContain('<ThirdPartyApiSettingsPanel');
     expect(apiConfigSource).not.toContain('buildOpenAICompatibleChatCompletionsUrl');
     expect(apiConfigSource).not.toContain('getOpenAICompatibleBaseUrlWarning');
     expect(apiConfigSource).not.toContain('DEFAULT_OPENAI_COMPATIBLE_BASE_URL');
     expect(apiConfigSource).not.toContain('settingsOpenAICompatibleRequestUrlPreview');
-    expect(openaiCompatibleSettingsSource).toContain('buildOpenAICompatibleChatCompletionsUrl');
-    expect(openaiCompatibleSettingsSource).toContain('getOpenAICompatibleBaseUrlWarning');
-    expect(openaiCompatibleSettingsSource).toContain('DEFAULT_OPENAI_COMPATIBLE_BASE_URL');
-    expect(openaiCompatibleSettingsSource).toContain('settingsOpenAICompatibleRequestUrlPreview');
+    expect(thirdPartySettingsSource).toContain('THIRD_PARTY_PROVIDER_IDS');
+    expect(thirdPartySettingsSource).toContain('getThirdPartyProviderConfig');
+    expect(thirdPartySettingsSource).toContain('updateThirdPartyProviderConfig');
   });
 
   it('keeps user message collapse state outside the markdown renderer component', () => {

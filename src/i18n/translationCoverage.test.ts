@@ -12,62 +12,62 @@ describe('translation coverage for protected UI surfaces', () => {
     await ensureAllFeatureTranslations();
     const t = getTranslator('zh');
 
-    expect(t('fill_input')).toBe('插入');
-    expect(t('queuedSubmission_action')).toBe('编辑');
+    expect(t('fillInput')).toBe('插入');
+    expect(t('queuedSubmissionAction')).toBe('编辑');
     expect(t('settingsFinishModelListEdit')).toBe('完成编辑');
-    expect(t('attachMenu_createText')).toBe('创建文本文件');
-    expect(t('tokens_unit')).toBe('Token');
-    expect(t('metrics_ttft')).toBe('首字延迟');
-    expect(t('createText_pdf_error')).toBe('生成 PDF 失败。');
-    expect(t('screenCapture_unsupported')).toBe('当前浏览器不支持屏幕捕获。');
-    expect(t('export_image_too_large')).toBe('导出失败：图片尺寸过大，浏览器无法处理。请尝试导出为 HTML 或文本。');
-    expect(t('folder_processing')).toBe('正在处理文件夹…');
-    expect(t('settings_notificationsUnsupported')).toBe('当前浏览器不支持桌面通知。');
-    expect(t('addByUrl_invalid')).toBe('YouTube 链接无效。');
-    expect(t('selectedFile_readTextFailed')).toBe('读取文本文件内容失败。');
-    expect(t('settingsImport_errorWithMessage').replace('{message}', 'X')).toBe('导入失败：X');
+    expect(t('attachMenuCreateText')).toBe('创建文本文件');
+    expect(t('tokensUnit')).toBe('Token');
+    expect(t('metricsTtft')).toBe('首字延迟');
+    expect(t('createTextPdfError')).toBe('生成 PDF 失败。');
+    expect(t('screenCaptureUnsupported')).toBe('当前浏览器不支持屏幕捕获。');
+    expect(t('exportImageTooLarge')).toBe('导出失败：图片尺寸过大，浏览器无法处理。请尝试导出为 HTML 或文本。');
+    expect(t('folderProcessing')).toBe('正在处理文件夹…');
+    expect(t('settingsNotificationsUnsupported')).toBe('当前浏览器不支持桌面通知。');
+    expect(t('addByUrlInvalid')).toBe('YouTube 链接无效。');
+    expect(t('selectedFileReadTextFailed')).toBe('读取文本文件内容失败。');
+    expect(t('settingsImportErrorWithMessage').replace('{message}', 'X')).toBe('导入失败：X');
     expect(t('appDefaultModelsLoadError')).toBe('加载默认模型失败。');
-    expect(t('pdf_load_failed')).toBe('PDF 加载失败。');
-    expect(t('pdf_load_failed_with_message').replace('{message}', 'X')).toBe('PDF 加载失败：X');
-    expect(t('diagram_export_failed')).toBe('导出图表失败。');
-    expect(t('translate_failed')).toBe('翻译失败。');
-    expect(t('translate_failed_with_message').replace('{message}', 'X')).toBe('翻译失败：X');
-    expect(t('token_count_error_with_message').replace('{message}', 'X')).toBe('计算 Token 失败：X');
-    expect(t('export_message_content_missing')).toBe('找不到消息内容。请确认该消息当前可见。');
-    expect(t('thinking_raw_process')).toBe('原始推理过程');
-    expect(t('chatInput_textarea_aria')).toBe('聊天消息输入框');
-    expect(t('settingsTopK_tooltip')).toBe('限制采样范围为概率最高的 K 个 Token。Gemma 4 建议设为 64，设为 0 可禁用。');
-    expect(t('settingsMediaResolution_live_tooltip')).toBe('控制 Live API 的视频/音频分辨率。');
-    expect(t('thinking_process')).toBe('推理过程');
-    expect(t('fileProcessing_zip').replace('{filename}', 'demo.zip')).toBe('正在处理 demo.zip…');
-    expect(t('upload_cancelled_by_user')).toBe('用户已取消上传。');
-    expect(t('voiceInput_failedWithMessage').replace('{message}', 'X')).toBe('语音输入失败：X');
-    expect(t('diagram_graphviz_title')).toBe('Graphviz 图表');
-    expect(t('diagram_mermaid_title')).toBe('Mermaid 图表');
-    expect(t('scenarios_title_required')).toBe('场景标题不能为空。');
-    expect(t('history_copy_suffix')).toBe('副本');
-    expect(t('history_copy_title').replace('{title}', 'A')).toBe('A（副本）');
-    expect(t('scenarios_copy_title').replace('{title}', 'A')).toBe('A（副本）');
-    expect(t('scenarios_message_count').replace('{count}', '2')).toBe('2 条消息');
-    expect(t('assistant_avatar_alt')).toBe('助手头像');
-    expect(t('messageSender_errorWithPrefix').replace('{prefix}', '错误').replace('{message}', 'X')).toBe('错误：X');
-    expect(t('messageSender_apiKeyNotConfigured')).toBe('未在设置中配置 API 密钥。');
-    expect(t('messageSender_ttsErrorPrefix')).toBe('语音生成错误');
-    expect(t('messageSender_imageGenErrorPrefix')).toBe('图像生成错误');
-    expect(t('messageSender_imageEditErrorPrefix')).toBe('图像编辑错误');
-    expect(t('messageSender_audioReadyTitle')).toBe('音频已生成');
-    expect(t('messageSender_imageReadyTitle')).toBe('图片已生成');
-    expect(t('messageSender_generatedImagesForPrompt').replace('{prompt}', 'A').replace('{count}', '2')).toBe(
+    expect(t('pdfLoadFailed')).toBe('PDF 加载失败。');
+    expect(t('pdfLoadFailedWithMessage').replace('{message}', 'X')).toBe('PDF 加载失败：X');
+    expect(t('diagramExportFailed')).toBe('导出图表失败。');
+    expect(t('translateFailed')).toBe('翻译失败。');
+    expect(t('translateFailedWithMessage').replace('{message}', 'X')).toBe('翻译失败：X');
+    expect(t('tokenCountErrorWithMessage').replace('{message}', 'X')).toBe('计算 Token 失败：X');
+    expect(t('exportMessageContentMissing')).toBe('找不到消息内容。请确认该消息当前可见。');
+    expect(t('thinkingRawProcess')).toBe('原始推理过程');
+    expect(t('chatInputTextareaAria')).toBe('聊天消息输入框');
+    expect(t('settingsTopKTooltip')).toBe('限制采样范围为概率最高的 K 个 Token。Gemma 4 建议设为 64，设为 0 可禁用。');
+    expect(t('settingsMediaResolutionLiveTooltip')).toBe('控制 Live API 的视频/音频分辨率。');
+    expect(t('thinkingProcess')).toBe('推理过程');
+    expect(t('fileProcessingZip').replace('{filename}', 'demo.zip')).toBe('正在处理 demo.zip…');
+    expect(t('uploadCancelledByUser')).toBe('用户已取消上传。');
+    expect(t('voiceInputFailedWithMessage').replace('{message}', 'X')).toBe('语音输入失败：X');
+    expect(t('diagramGraphvizTitle')).toBe('Graphviz 图表');
+    expect(t('diagramMermaidTitle')).toBe('Mermaid 图表');
+    expect(t('scenariosTitleRequired')).toBe('场景标题不能为空。');
+    expect(t('historyCopySuffix')).toBe('副本');
+    expect(t('historyCopyTitle').replace('{title}', 'A')).toBe('A（副本）');
+    expect(t('scenariosCopyTitle').replace('{title}', 'A')).toBe('A（副本）');
+    expect(t('scenariosMessageCount').replace('{count}', '2')).toBe('2 条消息');
+    expect(t('assistantAvatarAlt')).toBe('助手头像');
+    expect(t('messageSenderErrorWithPrefix').replace('{prefix}', '错误').replace('{message}', 'X')).toBe('错误：X');
+    expect(t('messageSenderApiKeyNotConfigured')).toBe('未在设置中配置 API 密钥。');
+    expect(t('messageSenderTtsErrorPrefix')).toBe('语音生成错误');
+    expect(t('messageSenderImageGenErrorPrefix')).toBe('图像生成错误');
+    expect(t('messageSenderImageEditErrorPrefix')).toBe('图像编辑错误');
+    expect(t('messageSenderAudioReadyTitle')).toBe('音频已生成');
+    expect(t('messageSenderImageReadyTitle')).toBe('图片已生成');
+    expect(t('messageSenderGeneratedImagesForPrompt').replace('{prompt}', 'A').replace('{count}', '2')).toBe(
       '已为“A”生成 2 张图片',
     );
-    expect(t('messageSender_imageEditResultPrefix').replace('{index}', '2')).toBe('图片 2：');
-    expect(t('messageSender_imageEditPartialNote').replace('{count}', '1').replace('{reason}', '原因。')).toBe(
+    expect(t('messageSenderImageEditResultPrefix').replace('{index}', '2')).toBe('图片 2：');
+    expect(t('messageSenderImageEditPartialNote').replace('{count}', '1').replace('{reason}', '原因。')).toBe(
       '*[提示：4 张图片中仅 1 张生成成功。原因。]*',
     );
-    expect(t('settingsImport_invalidFileFormat').replace('{expectedType}', 'A').replace('{foundType}', 'B')).toBe(
+    expect(t('settingsImportInvalidFileFormat').replace('{expectedType}', 'A').replace('{foundType}', 'B')).toBe(
       '文件格式无效。应为 A，实际为 B。',
     );
-    expect(t('export_message_dialog_title')).toBe('导出消息');
+    expect(t('exportMessageDialogTitle')).toBe('导出消息');
   });
 
   it('keeps Chinese UI copy on full-width punctuation where applicable', async () => {
@@ -561,12 +561,12 @@ describe('translation coverage for protected UI surfaces', () => {
       {
         file: 'src/hooks/live-api/useLiveConnection.ts',
         snippets: [
-          "setTranslationError('liveStatus_connection_lost_retry_failed', 'Connection lost. Please try again.')",
-          "setTranslationError('liveStatus_reconnecting_attempt', 'Connection lost. Reconnecting... ({attempt}/{maxRetries})'",
-          "setTranslationError('liveStatus_refreshing', 'Refreshing live session...')",
-          "setTranslationError('liveStatus_connection_error', 'Connection error')",
-          "setTranslationError('liveStatus_missing_api_key', 'Live API requires a browser API key.')",
-          "setTranslationError('liveStatus_failed_to_start', 'Failed to start session')",
+          "setTranslationError('liveStatusConnectionLostRetryFailed', 'Connection lost. Please try again.')",
+          "setTranslationError('liveStatusReconnectingAttempt', 'Connection lost. Reconnecting... ({attempt}/{maxRetries})'",
+          "setTranslationError('liveStatusRefreshing', 'Refreshing live session...')",
+          "setTranslationError('liveStatusConnectionError', 'Connection error')",
+          "setTranslationError('liveStatusMissingApiKey', 'Live API requires a browser API key.')",
+          "setTranslationError('liveStatusFailedToStart', 'Failed to start session')",
         ],
       },
       {

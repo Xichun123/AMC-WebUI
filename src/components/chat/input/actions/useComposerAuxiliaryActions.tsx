@@ -46,8 +46,8 @@ export const useComposerAuxiliaryActions = (): ComposerAuxiliaryAction[] => {
   const localInputEditBlocked = disabled || isWaitingForUpload;
 
   return useMemo(() => {
-    const fullscreenLabel = isFullscreen ? t('fullscreen_tooltip_collapse') : t('fullscreen_tooltip_expand');
-    const translateLabel = isTranslating ? t('translating_button_title') : t('translate_button_title');
+    const fullscreenLabel = isFullscreen ? t('fullscreenTooltipCollapse') : t('fullscreenTooltipExpand');
+    const translateLabel = isTranslating ? t('translatingButtonTitle') : t('translateButtonTitle');
 
     const actions: Array<ComposerAuxiliaryAction | null> = [
       !isNativeAudioModel && onToggleFullscreen
@@ -77,7 +77,7 @@ export const useComposerAuxiliaryActions = (): ComposerAuxiliaryAction[] => {
       showInputClearButton
         ? {
             id: 'clear',
-            ...actionText(t('clearInput_title'), t('clearInput_aria')),
+            ...actionText(t('clearInputTitle'), t('clearInputAria')),
             icon: <Eraser size={18} strokeWidth={2} />,
             disabled: localInputEditBlocked,
             action: onClearInput,
@@ -87,7 +87,7 @@ export const useComposerAuxiliaryActions = (): ComposerAuxiliaryAction[] => {
       showInputPasteButton
         ? {
             id: 'paste',
-            ...actionText(t('pasteClipboard_title'), t('pasteClipboard_aria')),
+            ...actionText(t('pasteClipboardTitle'), t('pasteClipboardAria')),
             icon: <ClipboardPaste size={18} strokeWidth={2} />,
             disabled: localInputEditBlocked,
             action: onPasteFromClipboard,

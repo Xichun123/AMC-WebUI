@@ -51,7 +51,7 @@ export const sendImageGenerationMessage = async ({
     shouldLockKey,
     keyToLock: keyToUse,
     abortController,
-    errorPrefix: t('messageSender_imageGenErrorPrefix'),
+    errorPrefix: t('messageSenderImageGenErrorPrefix'),
     runMessageLifecycle,
     execute: async () => {
       const imageBase64Array = await generateImagesApi(
@@ -76,7 +76,7 @@ export const sendImageGenerationMessage = async ({
       return {
         patch: {
           isLoading: false,
-          content: formatMessageSenderText(t('messageSender_generatedImagesForPrompt'), {
+          content: formatMessageSenderText(t('messageSenderGeneratedImagesForPrompt'), {
             count: generatedFiles.length,
             prompt: text,
           }),
@@ -85,8 +85,8 @@ export const sendImageGenerationMessage = async ({
         },
         feedback: {
           notification: {
-            title: t('messageSender_imageReadyTitle'),
-            body: t('messageSender_imageReadyBody'),
+            title: t('messageSenderImageReadyTitle'),
+            body: t('messageSenderImageReadyBody'),
           },
         },
       };

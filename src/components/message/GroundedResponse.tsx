@@ -2,8 +2,10 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { type UploadedFile, type SideViewContent } from '@/types';
 import { LazyMarkdownRenderer } from './LazyMarkdownRenderer';
 import { insertCitations, extractSources } from './grounded-response/groundingSources';
+import { extractMapsPlaces } from '@/utils/groundingMetadata';
 import { ContextUrls } from './grounded-response/ContextUrls';
 import { SearchSources } from './grounded-response/SearchSources';
+import { MapsWidget } from './grounded-response/MapsWidget';
 import { IconGoogle } from '@/components/icons';
 import type { LiveArtifactFollowupPayload } from '@/utils/liveArtifactFollowup';
 
@@ -174,6 +176,7 @@ export const GroundedResponse: React.FC<GroundedResponseProps> = ({
 }) => {
   const content = useMemo(() => insertCitations(text, metadata), [text, metadata]);
   const sources = useMemo(() => extractSources(metadata), [metadata]);
+  const mapsPlaces = useMemo(() => extractMapsPlaces(metadata), [metadata]);
   const searchEntryPointContent = useMemo(() => {
     if (typeof metadata !== 'object' || metadata === null) {
       return undefined;
@@ -208,7 +211,7 @@ export const GroundedResponse: React.FC<GroundedResponseProps> = ({
 
       <ContextUrls metadata={urlContextMetadata} />
 
-      <SearchSources sources={sources} />
+      {mapsPlaces.length > 0 ? <MapsWidget places={mapsPlaces} /> : <SearchSources sources={sources} />}
     </div>
   );
 };

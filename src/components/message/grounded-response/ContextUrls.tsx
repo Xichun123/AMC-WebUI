@@ -43,7 +43,7 @@ export const ContextUrls: React.FC<ContextUrlsProps> = ({ metadata }) => {
       <div className="flex items-center gap-2 mb-2">
         <LinkIcon size={11} className="text-[var(--theme-text-tertiary)]" strokeWidth={2} />
         <h4 className="text-[10px] font-bold uppercase text-[var(--theme-text-tertiary)] tracking-widest">
-          {t('context_urls_title')}
+          {t('contextUrlsTitle')}
         </h4>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -59,7 +59,7 @@ export const ContextUrls: React.FC<ContextUrlsProps> = ({ metadata }) => {
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[var(--theme-bg-tertiary)]/20 hover:bg-[var(--theme-bg-tertiary)]/60 border border-[var(--theme-border-secondary)]/30 hover:border-[var(--theme-border-secondary)] transition-all no-underline group max-w-full"
-              title={t('context_urls_status').replace('{status}', status || t('unknown'))}
+              title={t('contextUrlsStatus').replace('{status}', status || t('unknown'))}
             >
               <div className="flex-shrink-0 pt-0.5">{getStatusIcon(status)}</div>
               <span className="text-xs font-mono text-[var(--theme-text-secondary)] truncate group-hover:text-[var(--theme-text-primary)]">

@@ -37,7 +37,7 @@ const stripGeneratedInlinePayload = (part: Part): Part => {
 
 const translateImageHistoryError = (error: unknown, t: MessageSenderTranslator): unknown => {
   if (error instanceof Error && error.message === GEMINI_IMAGE_HISTORY_REHYDRATION_ERROR) {
-    return new Error(t('messageSender_imageEditHistoryMissingGeneratedImage'));
+    return new Error(t('messageSenderImageEditHistoryMissingGeneratedImage'));
   }
 
   return error;
@@ -102,7 +102,7 @@ export const sendImageEditMessage = async ({
     shouldLockKey,
     keyToLock: keyToUse,
     abortController,
-    errorPrefix: t('messageSender_imageEditErrorPrefix'),
+    errorPrefix: t('messageSenderImageEditErrorPrefix'),
     runMessageLifecycle,
     execute: async () => {
       const { contentParts: promptParts } = await buildContentParts(text, imageFiles, currentChatSettings.modelId);
@@ -163,7 +163,7 @@ export const sendImageEditMessage = async ({
       results.forEach((result, index) => {
         const prefix =
           results.length > 1
-            ? formatMessageSenderText(t('messageSender_imageEditResultPrefix'), { index: index + 1 })
+            ? formatMessageSenderText(t('messageSenderImageEditResultPrefix'), { index: index + 1 })
             : '';
 
         if (result.status === 'fulfilled') {
@@ -192,11 +192,11 @@ export const sendImageEditMessage = async ({
           if (textPartContent.trim()) {
             combinedText += `${prefix}${textPartContent.trim()}\n\n`;
           } else if (!hasImagePart && results.length > 1) {
-            combinedText += `${prefix}${t('messageSender_imageEditNoImageGenerated')}\n\n`;
+            combinedText += `${prefix}${t('messageSenderImageEditNoImageGenerated')}\n\n`;
           }
         } else {
           logService.error(`Image edit API call failed for index ${index}`, { error: result.reason });
-          combinedText += `${prefix}${formatMessageSenderText(t('messageSender_imageEditRequestFailed'), {
+          combinedText += `${prefix}${formatMessageSenderText(t('messageSenderImageEditRequestFailed'), {
             message: result.reason instanceof Error ? result.reason.message : String(result.reason),
           })}\n\n`;
         }
@@ -204,14 +204,14 @@ export const sendImageEditMessage = async ({
 
       if (appSettings.generateQuadImages && successfulImageCount < 4 && successfulImageCount > 0) {
         const failureReason = combinedText.toLowerCase().includes('block')
-          ? t('messageSender_imageEditSafetyFailure')
-          : t('messageSender_imageEditPartialFailure');
-        combinedText += `\n${formatMessageSenderText(t('messageSender_imageEditPartialNote'), {
+          ? t('messageSenderImageEditSafetyFailure')
+          : t('messageSenderImageEditPartialFailure');
+        combinedText += `\n${formatMessageSenderText(t('messageSenderImageEditPartialNote'), {
           count: successfulImageCount,
           reason: failureReason,
         })}`;
       } else if (successfulImageCount === 0 && combinedText.trim() === '') {
-        combinedText = t('messageSender_imageEditEmptyFailure');
+        combinedText = t('messageSenderImageEditEmptyFailure');
       }
 
       return {

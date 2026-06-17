@@ -186,8 +186,14 @@ export const buildFileUploadPreflight = (
   const filesToUpload: File[] = [];
   const duplicateNames: string[] = [];
   const unsupportedNames: string[] = [];
+  const emptyNames: string[] = [];
 
   for (const file of files) {
+    if (file.size === 0) {
+      emptyNames.push(file.name);
+      continue;
+    }
+
     const signature = getFileSignature(file);
     if (seenSignatures.has(signature)) {
       duplicateNames.push(file.name);
@@ -204,12 +210,15 @@ export const buildFileUploadPreflight = (
   }
 
   const noticeParts: string[] = [];
+  if (emptyNames.length > 0) {
+    noticeParts.push(t('uploadSkippedEmpty').replace('{filenames}', emptyNames.join(', ')));
+  }
   if (duplicateNames.length > 0) {
-    noticeParts.push(t('upload_skipped_duplicates').replace('{filenames}', duplicateNames.join(', ')));
+    noticeParts.push(t('uploadSkippedDuplicates').replace('{filenames}', duplicateNames.join(', ')));
   }
 
   if (unsupportedNames.length > 0) {
-    noticeParts.push(t('upload_unsupported_types').replace('{filenames}', unsupportedNames.join(', ')));
+    noticeParts.push(t('uploadUnsupportedTypes').replace('{filenames}', unsupportedNames.join(', ')));
   }
 
   return {

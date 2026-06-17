@@ -204,8 +204,8 @@ export const CollapsedRecentChatsButton: React.FC<CollapsedRecentChatsButtonProp
           }
         }}
         className={SIDEBAR_ICON_BUTTON_CLASS}
-        title={t('history_recent_chats')}
-        aria-label={t('history_recent_chats')}
+        title={t('historyRecentChats')}
+        aria-label={t('historyRecentChats')}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
       >
@@ -233,10 +233,10 @@ export const CollapsedRecentChatsButton: React.FC<CollapsedRecentChatsButtonProp
             }}
             onClick={(event) => event.stopPropagation()}
             role="dialog"
-            aria-label={t('history_recent_chats')}
+            aria-label={t('historyRecentChats')}
           >
             <div className="px-4 py-3 text-sm font-medium text-[var(--theme-text-secondary)]">
-              {t('history_recent_chats')}
+              {t('historyRecentChats')}
             </div>
             <div className="max-h-[min(420px,calc(100vh-120px))] overflow-y-auto py-1 custom-scrollbar">
               {recentSessions.length > 0 ? (
@@ -263,7 +263,7 @@ export const CollapsedRecentChatsButton: React.FC<CollapsedRecentChatsButtonProp
                   );
                 })
               ) : (
-                <p className="px-4 py-3 text-sm text-[var(--theme-text-tertiary)]">{t('history_empty')}</p>
+                <p className="px-4 py-3 text-sm text-[var(--theme-text-tertiary)]">{t('historyEmpty')}</p>
               )}
             </div>
           </div>,

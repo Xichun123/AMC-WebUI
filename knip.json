@@ -5,7 +5,11 @@
     "src/utils/export/dom.ts",
     "src/utils/export/files.ts",
     "src/utils/export/image.ts",
-    "src/utils/export/templates.ts"
+    "src/utils/export/templates.ts",
+    "src/utils/thirdPartyApiProviders.ts",
+    "src/constants/translationOptions.ts",
+    "src/services/api/anthropicUrls.ts",
+    "src/hooks/live-api/useLiveTranslateConfig.ts"
   ],
   "ignoreDependencies": ["pdfjs-dist", "pyodide", "lamejs"]
 }

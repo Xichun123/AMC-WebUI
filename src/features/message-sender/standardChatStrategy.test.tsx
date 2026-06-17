@@ -34,6 +34,7 @@ const {
   mockSendOpenAICompatibleMessageNonStream: vi.fn(),
   mockModelCapabilities: vi.fn((id: string) => ({
     isGemini3: id.includes('gemini-3'),
+    isGemini3FlashModel: id.includes('gemini-3') && id.includes('flash'),
     supportsRawReasoningPrefill: false,
   })),
 }));
@@ -221,6 +222,7 @@ describe('standardChatStrategy', () => {
     mockSendOpenAICompatibleMessageNonStream.mockResolvedValue(undefined);
     mockModelCapabilities.mockImplementation((id: string) => ({
       isGemini3: id.includes('gemini-3'),
+      isGemini3FlashModel: id.includes('gemini-3') && id.includes('flash'),
       supportsRawReasoningPrefill: false,
     }));
   });
@@ -400,6 +402,54 @@ describe('standardChatStrategy', () => {
         isLocalPythonEnabled: true,
         imageOutputMode: 'IMAGE_TEXT',
         personGeneration: 'ALLOW_ADULT',
+      }),
+    );
+
+    unmount();
+  });
+
+  it('uses minimal Gemini 3 Flash thinking for ASR audio attachment requests', async () => {
+    const getStreamHandlers = vi.fn(() => ({
+      streamOnError: vi.fn(),
+      streamOnComplete: vi.fn(),
+      streamOnPart: vi.fn(),
+      onThoughtChunk: vi.fn(),
+    }));
+    const audioFile = {
+      id: 'audio-1',
+      name: 'lecture.mp3',
+      type: 'audio/mpeg',
+      size: 4096,
+      uploadState: 'active' as const,
+    };
+    const prompt = '请对附加的音频文件进行自动语音识别（ASR）。将语音内容逐字转录为文本。';
+
+    const { result, unmount } = renderStandardChat({
+      currentChatSettings: {
+        modelId: 'gemini-3.5-flash',
+        thinkingBudget: -1,
+        thinkingLevel: 'HIGH',
+      },
+      getStreamHandlers,
+    });
+
+    await act(async () => {
+      await result.current.sendStandardMessage({
+        text: prompt,
+        files: [audioFile],
+        editingMessageId: null,
+        activeModelId: 'gemini-3.5-flash',
+        request: createPreparedRequest(),
+      });
+    });
+
+    expect(mockBuildGenerationConfig).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modelId: 'gemini-3.5-flash',
+        settings: expect.objectContaining({
+          thinkingBudget: 0,
+          thinkingLevel: 'MINIMAL',
+        }),
       }),
     );
 
@@ -800,6 +850,7 @@ describe('standardChatStrategy', () => {
 
     mockModelCapabilities.mockImplementation((id: string) => ({
       isGemini3: id.includes('gemini-3'),
+      isGemini3FlashModel: id.includes('gemini-3') && id.includes('flash'),
       supportsRawReasoningPrefill: id === 'gemini-3-flash-preview',
     }));
     mockCreateStandardClientFunctions.mockReturnValue({});

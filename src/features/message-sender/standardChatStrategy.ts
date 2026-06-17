@@ -1,6 +1,7 @@
 import { logService } from '@/services/logService';
 import { buildContentParts } from '@/utils/chat/builder';
 import { isServerCodeExecutionMode } from '@/utils/codeExecution';
+import { isAudioMimeType } from '@/utils/fileTypeClassification';
 import { getModelCapabilities, normalizeThinkingLevelForModel } from '@/utils/modelCapabilities';
 import { isOpenAICompatibleApiActive } from '@/utils/openaiCompatibleMode';
 import type { UploadedFile } from '@/types';
@@ -22,6 +23,12 @@ interface SendStandardMessageParams {
   isFastMode?: boolean;
   request: PreparedModelRequest;
 }
+
+const AUDIO_TRANSCRIPTION_PROMPT_PATTERN =
+  /\b(?:asr|transcri(?:be|ption)|speech[-\s]?to[-\s]?text|verbatim)\b|语音识别|转录|逐字|逐词|原话|确切文字/i;
+
+const isAudioTranscriptionRequest = (text: string, files: UploadedFile[]): boolean =>
+  AUDIO_TRANSCRIPTION_PROMPT_PATTERN.test(text) && files.some((file) => isAudioMimeType(file.type));
 
 export const sendStandardMessage = async ({
   props,
@@ -71,6 +78,18 @@ export const sendStandardMessage = async ({
   const successfullyProcessedFiles = filesToUse.filter(
     (file) => file.uploadState === 'active' && !file.error && !file.isProcessing,
   );
+
+  if (!isFastMode && isAudioTranscriptionRequest(textToUse, successfullyProcessedFiles)) {
+    const capabilities = getModelCapabilities(effectiveActiveModelId);
+    if (capabilities.isGemini3) {
+      const targetLevel = capabilities.isGemini3FlashModel ? 'MINIMAL' : 'LOW';
+
+      settingsForApi.thinkingLevel = targetLevel;
+      settingsForApi.thinkingBudget = 0;
+      logService.info(`Audio transcription request detected: overriding thinking level to ${targetLevel}.`);
+    }
+  }
+
   const preferCodeExecutionFileInputs = isServerCodeExecutionMode(settingsForApi);
 
   const { contentParts: promptParts, enrichedFiles } = await buildContentParts(

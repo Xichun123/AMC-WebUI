@@ -12,6 +12,7 @@
     "build:analyze": "vite build --mode analyze",
     "build:api": "tsc -p server/tsconfig.json",
     "build:docker": "npm run build && npm run build:api",
+    "backend:switch": "bash scripts/switch-backend.sh",
     "preview": "vite preview",
     "clean": "rm -rf dist server/dist coverage playwright-report test-results tmp-live-artifact-demo .playwright-visible-demo-profile .codex-dev-*",
     "lint": "eslint . --ext .ts,.tsx,.js,.mjs --max-warnings=0",
